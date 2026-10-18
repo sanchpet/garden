@@ -1,0 +1,59 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [garden-texts]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Full history: page dates come from git, and a shallow clone silently stamps every text with HEAD's date.
+      - uses: actions/checkout@v6
+        with:
+          repository: sanchpet/garden-texts
+          path: content
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: |
+          set -o pipefail
+          npx quartz build -d content -o public 2>&1 | tee build.log
+
+      - name: Report stripped private links
+        run: |
+          {
+            echo "## Private links stripped"
+            grep 'garden: private link stripped' build.log | sed 's/^.*stripped: /- /' || echo "None."
+          } >> "$GITHUB_STEP_SUMMARY"
+          grep 'garden: private link stripped' build.log | sed 's/^/::warning::/' || true
+
+      # The cluster serves this branch through git-sync, so a single commit keeps its clone small.
+      - name: Push to the public branch
+        working-directory: public
+        run: |
+          texts=$(git -C ../content rev-parse --short HEAD)
+          git init -q -b public
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Build from garden ${GITHUB_SHA::7}, garden-texts ${texts}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" public
