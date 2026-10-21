@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <title>Valve handwheel</title>
+  <defs>
+    <filter id="marker" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="turbulence" baseFrequency=".07" numOctaves="2" seed="9" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.3" xChannelSelector="R" yChannelSelector="G" result="wob"/>
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="4" result="grain"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 1  0 0 0 0 .38  0 0 0 0 .36  2.6 0 0 0 -1.75" result="specks"/>
+      <feComposite in="specks" in2="wob" operator="in" result="tex"/>
+      <feMerge><feMergeNode in="wob"/><feMergeNode in="tex"/></feMerge>
+    </filter>
+    <radialGradient id="eye" cx=".4" cy=".38" r=".7">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".6" stop-color="#c9c9cc"/>
+      <stop offset="1" stop-color="#7e7e84"/>
+    </radialGradient>
+  </defs>
+  <g filter="url(#marker)" style="isolation:isolate">
+    <path d="M46.39 15.32 Q50.37 17.77 54.46 18.76 Q58.44 20.74 62.48 22.3 Q66.46 24.33 70.72 25.35 Q74.29 26.96 78.52 29.39" fill="none" stroke="#EC0E16" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M46.39 15.32 Q50.94 17.98 54.68 18.26 Q59.03 22.01 62.21 22.92 Q66.28 24.45 69.89 27.23 Q74.95 26.21 78.52 29.39" fill="none" stroke="#EC0E16" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M78.52 29.39 Q79.85 33.67 79.56 38.1 Q80.99 42.44 81.15 46.74 Q80.62 51.15 81.88 55.49 Q82.07 59.85 82.86 64.2" fill="none" stroke="#EC0E16" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M78.52 29.39 Q79.2 33.66 79.09 38.16 Q78.58 42.58 79.11 46.99 Q81.82 51.04 81.12 55.58 Q82.99 59.68 82.86 64.2" fill="none" stroke="#EC0E16" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M82.86 64.2 Q79.27 66.18 75.2 68.8 Q71.32 71.17 68.2 74.36 Q64.68 76.07 61.19 79.93 Q57.02 80.96 53.3 84.17" fill="none" stroke="#EC0E16" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M82.86 64.2 Q79.93 66.36 75.66 69.47 Q72.19 72.79 67.58 73.45 Q63.55 76 60.99 79.62 Q57.68 82.35 53.3 84.17" fill="none" stroke="#EC0E16" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M53.3 84.17 Q49.06 82 45.16 81.47 Q41.56 79.21 37.36 77.98 Q33.83 76.37 29.52 74.59 Q25.91 73.03 21.88 70.72" fill="none" stroke="#EC0E16" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M53.3 84.17 Q49.01 83.17 45.35 81.04 Q41.9 79.7 38.19 76.06 Q33.3 76.07 30.22 72.95 Q26.26 71.98 21.88 70.72" fill="none" stroke="#EC0E16" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M21.88 70.72 Q22.08 66.34 19.82 61.92 Q20.34 57.41 18.75 52.97 Q17.74 48.57 17.46 44.06 Q17.3 39.62 16.47 35.1" fill="none" stroke="#EC0E16" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M21.88 70.72 Q20.8 66.29 20.85 61.76 Q19.8 57.32 20.63 52.69 Q17.5 48.62 18.98 43.83 Q18.44 39.4 16.47 35.1" fill="none" stroke="#EC0E16" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M16.47 35.1 Q19.9 32.99 23.7 29.78 Q27.39 28.36 31.87 25.87 Q35.28 22.62 39.29 20.84 Q42.26 17.1 46.39 15.32" fill="none" stroke="#EC0E16" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M16.47 35.1 Q19.75 33.17 24.77 31.39 Q28.26 27.94 31 24.56 Q34.6 23.32 38.55 19.71 Q41.89 17.06 46.39 15.32" fill="none" stroke="#EC0E16" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M50 50 Q50.03 44.2 48.9 38.43 Q48.94 32.71 47.2 26.92 Q46.13 21.14 46.39 15.32" fill="none" stroke="#EC0E16" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M50 50 Q54.29 46.09 59.45 43.05 Q64.34 39.16 68.88 36.07 Q73.62 33.4 78.52 29.39" fill="none" stroke="#EC0E16" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M50 50 Q55.37 52.68 60.61 55.53 Q66.69 56.33 71.85 59.61 Q77.73 62.51 82.86 64.2" fill="none" stroke="#EC0E16" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M50 50 Q49.72 55.61 50.74 61.43 Q51.68 67.13 51.96 72.81 Q53.07 78.56 53.3 84.17" fill="none" stroke="#EC0E16" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M50 50 Q45.26 53.11 41.08 57.52 Q35.69 60.06 30.83 63.23 Q26.26 66.66 21.88 70.72" fill="none" stroke="#EC0E16" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M50 50 Q44.55 46.86 38.72 45.28 Q33.18 42.07 27.92 39.46 Q22.33 37.47 16.47 35.1" fill="none" stroke="#EC0E16" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:multiply"/>
+    <path d="M55.39 12.04 Q56.58 15.32 55.49 18.68 Q54.41 22.04 51.31 23.85 Q48.22 25.66 44.86 24.71 Q41.51 23.77 39 21.35 Q36.48 18.92 36.25 15.23 Q36.02 11.54 38.49 8.72 Q40.95 5.89 44.6 5.35 Q48.25 4.81 51.22 6.79 Q54.2 8.76 55.39 12.04 Z" fill="#EC0E16"/>
+    <path d="M87.69 26.14 Q89.12 29.39 87.8 32.73 Q86.49 36.08 83.46 38.13 Q80.42 40.18 77 39.07 Q73.57 37.96 70.96 35.53 Q68.34 33.1 68.82 29.56 Q69.29 26.03 71.25 23.11 Q73.21 20.19 76.77 19.64 Q80.34 19.09 83.3 21 Q86.26 22.9 87.69 26.14 Z" fill="#EC0E16"/>
+    <path d="M91.9 61 Q93.3 64.2 92.14 67.61 Q90.98 71.02 87.88 73.04 Q84.78 75.06 81.3 74.01 Q77.82 72.95 75.76 70.24 Q73.7 67.54 73.51 64.13 Q73.32 60.73 75.42 57.84 Q77.52 54.95 81.06 54.64 Q84.6 54.33 87.55 56.06 Q90.51 57.79 91.9 61 Z" fill="#EC0E16"/>
+    <path d="M63.07 80.55 Q64.21 84.17 62.82 87.58 Q61.42 90.99 58.34 93.11 Q55.25 95.24 51.66 94.23 Q48.08 93.22 45.56 90.56 Q43.04 87.91 43.35 84.28 Q43.65 80.66 45.83 77.83 Q48 75 51.62 74.11 Q55.23 73.23 58.58 75.08 Q61.93 76.93 63.07 80.55 Z" fill="#EC0E16"/>
+    <path d="M31.45 67.09 Q32.38 70.72 31.26 74.18 Q30.14 77.64 26.91 79.3 Q23.69 80.96 20.25 80.23 Q16.81 79.5 14.34 76.93 Q11.88 74.36 11.65 70.63 Q11.43 66.91 13.87 63.99 Q16.31 61.06 20.05 60.5 Q23.79 59.93 27.16 61.69 Q30.53 63.46 31.45 67.09 Z" fill="#EC0E16"/>
+    <path d="M25.19 31.76 Q25.94 35.1 24.98 38.27 Q24.03 41.44 21.08 43.01 Q18.14 44.57 14.92 43.97 Q11.71 43.36 9.48 40.91 Q7.25 38.46 7.11 35.05 Q6.97 31.64 9.24 29.08 Q11.51 26.51 14.83 26.04 Q18.15 25.58 21.3 26.99 Q24.44 28.41 25.19 31.76 Z" fill="#EC0E16"/>
+    <path d="M62.01 46.64 Q63.58 50 62.23 53.5 Q60.89 57 58.04 59.18 Q55.19 61.36 51.71 61.84 Q48.23 62.31 44.71 61.24 Q41.19 60.16 39.62 56.84 Q38.05 53.51 37.67 49.89 Q37.29 46.27 39.36 43.19 Q41.43 40.11 44.81 38.74 Q48.18 37.36 51.86 37.61 Q55.55 37.86 58 40.57 Q60.45 43.28 62.01 46.64 Z" fill="#EC0E16"/>
+  </g>
+  <path d="M58.92 47.02 Q59.64 50 58.84 52.93 Q58.05 55.85 55.5 57.45 Q52.94 59.06 49.88 59.44 Q46.81 59.82 44.47 57.77 Q42.12 55.72 41.24 52.86 Q40.36 50 41.32 47.19 Q42.28 44.39 44.57 42.38 Q46.87 40.37 49.97 40.45 Q53.07 40.54 55.63 42.29 Q58.2 44.05 58.92 47.02 Z" fill="#141214"/>
+  <path d="M54.82 48.05 Q55.84 49.8 55.08 51.81 Q54.31 53.81 52.31 54.71 Q50.3 55.61 48.33 54.67 Q46.36 53.74 45.77 51.77 Q45.17 49.8 45.83 47.9 Q46.5 46 48.4 45.34 Q50.3 44.69 52.05 45.49 Q53.81 46.29 54.82 48.05 Z" fill="url(#eye)"/>
+  <path d="M48.2 50.4 a2.2 2.4 0 1 1 3.6 1.2" fill="none" stroke="#5c5c62" stroke-width=".9" stroke-linecap="round"/>
+</svg>

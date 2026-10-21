@@ -17,7 +17,7 @@ const LABELS: Record<Language, { short: string; name: string; missing: string }>
   en: { short: "EN", name: "English", missing: "No English version yet" },
 }
 
-function languageOf(slug: string | undefined): Language | undefined {
+export function languageOf(slug: string | undefined): Language | undefined {
   const root = slug?.split("/")[0]
   return LANGUAGES.find((lang) => lang === root)
 }

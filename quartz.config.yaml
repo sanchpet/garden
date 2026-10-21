@@ -12,6 +12,9 @@ configuration:
     - private
     - templates
     - .obsidian
+    # Quartz's own icon and social card; local-plugins/brand.tsx emits ours.
+    - icon.png
+    - og-image.png
   theme:
     fontOrigin: googleFonts
     cdnCaching: true
@@ -117,9 +120,9 @@ plugins:
       enableSiteMap: true
       enableRSS: true
   - source: "@quartz-community/favicon"
-    enabled: true
+    enabled: false
   - source: "@quartz-community/og-image"
-    enabled: true
+    enabled: false
   - source: "@quartz-community/cname"
     enabled: false
   - source: "@quartz-community/canvas-page"
