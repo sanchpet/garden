@@ -108,36 +108,48 @@ export const LegacyRedirects: QuartzEmitterPlugin = () => ({
 })
 
 export const LanguageSwitch = (() => {
-  const Switch: QuartzComponent = ({ fileData, ctx }) => {
+  const Switch: QuartzComponent = ({ fileData, ctx, allFiles }) => {
     const slug = fileData.slug!
     const current = languageOf(slug)
     const published = publishedSlugs(ctx)
+    // The note about the site's languages lives in each language's home note, so it is edited as text.
+    const noteOf = (lang: Language) =>
+      allFiles.find((file) => file.slug === `${lang}/index`)?.frontmatter?.language_note as
+        string | undefined
     return (
       <nav class="language-switch" aria-label="Language / Язык">
         {LANGUAGES.map((lang) => {
-          if (lang === current) {
-            return (
-              <span class="active" lang={lang} aria-current="true" title={LABELS[lang].name}>
-                {LABELS[lang].short}
-              </span>
-            )
-          }
           const twin = current ? inLanguage(slug, lang) : undefined
           const translated = twin !== undefined && published.has(twin)
-          const missing = current !== undefined && !translated
+          const missing = current !== undefined && lang !== current && !translated
           const target = translated ? twin : (`${lang}/index` as FullSlug)
+          const note = noteOf(lang)
+          const option =
+            lang === current ? (
+              <span class="active" lang={lang} aria-current="true">
+                {LABELS[lang].short}
+              </span>
+            ) : (
+              <a
+                href={resolveRelative(slug, target)}
+                lang={lang}
+                hreflang={lang}
+                aria-label={missing ? LABELS[lang].missing : LABELS[lang].name}
+                class={translated ? "twin" : missing ? "missing" : "home"}
+                data-lang={lang}
+                {...(translated ? { "data-router-ignore": "" } : {})}
+              >
+                {LABELS[lang].short}
+              </a>
+            )
           return (
-            <a
-              href={resolveRelative(slug, target)}
-              lang={lang}
-              hreflang={lang}
-              title={missing ? LABELS[lang].missing : LABELS[lang].name}
-              class={translated ? "twin" : missing ? "missing" : "home"}
-              data-lang={lang}
-              {...(translated ? { "data-router-ignore": "" } : {})}
-            >
-              {LABELS[lang].short}
-            </a>
+            <span class="language-option">
+              {option}
+              <span class="language-note" role="tooltip" lang={lang}>
+                <strong>{missing ? LABELS[lang].missing : LABELS[lang].name}</strong>
+                {note && <span>{note}</span>}
+              </span>
+            </span>
           )
         })}
       </nav>
@@ -153,7 +165,10 @@ export const LanguageSwitch = (() => {
   font-size: 0.85rem;
   font-family: var(--headerFont);
 }
-.language-switch > * {
+.language-option {
+  position: relative;
+}
+.language-option > :first-child {
   padding: 0.1rem 0.45rem;
   border-radius: 4px;
   text-decoration: none;
@@ -171,6 +186,49 @@ export const LanguageSwitch = (() => {
 }
 .language-switch a.missing {
   opacity: 0.5;
+}
+.language-note {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 10;
+  width: max-content;
+  max-width: min(24rem, 80vw);
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+  background: var(--light);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  color: var(--darkgray);
+  font-family: var(--bodyFont);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.language-note strong {
+  display: block;
+  color: var(--dark);
+}
+.language-note strong + span {
+  display: block;
+  margin-top: 0.3rem;
+}
+/* Touch screens have no hover: a tap switches the language, and a sticky note would cover the page. */
+@media (hover: hover) {
+  .language-option:hover .language-note {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0.15s;
+  }
+}
+/* Keyboard focus only: a tap also focuses the link and would pin the note open. */
+.language-option:has(:focus-visible) .language-note {
+  visibility: visible;
+  opacity: 1;
 }
 `
   return Switch
