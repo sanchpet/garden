@@ -6,6 +6,7 @@ import {
   LegacyRedirects,
   PageLanguage,
 } from "./local-plugins/bilingual"
+import { GardenStyles } from "./local-plugins/garden-styles"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -20,11 +21,11 @@ config.plugins.transformers.push(
 
 // The config loader builds the page dispatcher from the YAML layout, so a local component
 // has to go into a fresh layout and a dispatcher rebuilt from it. Per-page-type layouts
-// are full copies, hence the switch goes into each of them.
+// are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
-const languageSwitch = LanguageSwitch()
+const header = [LanguageSwitch(), GardenStyles()]
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
-  pageLayout.header = [...(pageLayout.header ?? []), languageSwitch]
+  pageLayout.header = [...(pageLayout.header ?? []), ...header]
 }
 config.plugins.emitters.push(LegacyRedirects())
 const dispatcher = config.plugins.emitters.findIndex((e) => e.name === "PageTypeDispatcher")
