@@ -64,18 +64,36 @@ function stopLoading() {
 
 let isNavigating = false
 let p: DOMParser
-async function _navigate(url: URL, isBack: boolean = false) {
+
+// Pages fetched ahead of a likely navigation (e.g. the same page in another language),
+// so that navigating to them needs no network round trip.
+const prefetched = new Map<string, Promise<string | undefined>>()
+const pageKey = (url: URL) => url.origin + url.pathname
+
+function fetchPage(url: URL): Promise<string | undefined> {
+  return fetchCanonical(url).then((res) =>
+    res.headers.get("content-type")?.startsWith("text/html") ? res.text() : undefined,
+  )
+}
+
+function prefetch(url: URL) {
+  const key = pageKey(url)
+  if (prefetched.has(key)) return
+  const page = fetchPage(url).catch(() => undefined)
+  prefetched.set(key, page)
+  page.then((contents) => contents === undefined && prefetched.delete(key))
+}
+
+window.spaPrefetch = prefetch
+
+async function _navigate(url: URL, isBack: boolean = false, opts: SpaNavigateOptions = {}) {
   isNavigating = true
   startLoading()
   p = p || new DOMParser()
-  const contents = await fetchCanonical(url)
-    .then((res) => {
-      const contentType = res.headers.get("content-type")
-      if (contentType?.startsWith("text/html")) {
-        return res.text()
-      } else {
-        window.location.assign(url)
-      }
+  const contents = await (prefetched.get(pageKey(url)) ?? fetchPage(url))
+    .then((contents) => {
+      if (contents === undefined) window.location.assign(url)
+      return contents
     })
     .catch(() => {
       window.location.assign(url)
@@ -109,9 +127,11 @@ async function _navigate(url: URL, isBack: boolean = false) {
 
   document.querySelector(".navigation-progress")?.remove()
   micromorph(document.body, html.body)
+  document.documentElement.lang = html.documentElement.lang
+  document.documentElement.dir = html.documentElement.dir
 
   // scroll into place and add history
-  if (!isBack) {
+  if (!isBack && !opts.keepScroll) {
     if (url.hash) {
       const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
       el?.scrollIntoView()
@@ -128,7 +148,9 @@ async function _navigate(url: URL, isBack: boolean = false) {
 
   // delay setting the url until now
   // at this point everything is loaded so changing the url should resolve to the correct addresses
-  if (!isBack) {
+  if (opts.replace) {
+    history.replaceState({}, "", url)
+  } else if (!isBack) {
     history.pushState({}, "", url)
   }
 
@@ -136,11 +158,11 @@ async function _navigate(url: URL, isBack: boolean = false) {
   delete announcer.dataset.persist
 }
 
-async function navigate(url: URL, isBack: boolean = false) {
+async function navigate(url: URL, isBack: boolean = false, opts: SpaNavigateOptions = {}) {
   if (isNavigating) return
   isNavigating = true
   try {
-    await _navigate(url, isBack)
+    await _navigate(url, isBack, opts)
   } catch (e) {
     console.error(e)
     window.location.assign(url)
