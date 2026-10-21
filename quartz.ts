@@ -7,6 +7,7 @@ import {
   PageLanguage,
 } from "./local-plugins/bilingual"
 import { GardenStyles } from "./local-plugins/garden-styles"
+import { GardenBrand } from "./local-plugins/brand"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -27,7 +28,7 @@ const header = [LanguageSwitch(), GardenStyles()]
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
 }
-config.plugins.emitters.push(LegacyRedirects())
+config.plugins.emitters.push(LegacyRedirects(), GardenBrand())
 const dispatcher = config.plugins.emitters.findIndex((e) => e.name === "PageTypeDispatcher")
 config.plugins.emitters[dispatcher] = PageTypeDispatcher(layout)
 
