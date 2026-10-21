@@ -4,6 +4,7 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import type { QuartzEmitterPlugin, QuartzTransformerPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import { FilePath, FullSlug, resolveRelative, simplifySlug } from "../quartz/util/path"
+import { publishedSlugs } from "./garden"
 // @ts-ignore
 import script from "./language-switch.inline"
 
@@ -45,14 +46,16 @@ export const PageLanguage: QuartzTransformerPlugin = () => ({
 export const LanguageLinks: QuartzTransformerPlugin = () => ({
   name: "LanguageLinks",
   htmlPlugins(ctx) {
-    const published = new Set<string>(ctx.allSlugs)
+    const published = publishedSlugs(ctx)
     // Quartz leaves a link ambiguous when the name exists in both folders; match it by path suffix.
     const resolve = (target: string, lang: Language): FullSlug | undefined => {
       if (published.has(target)) {
         const twin = languageOf(target) && inLanguage(target, lang)
         return (twin && published.has(twin) ? twin : target) as FullSlug
       }
-      const matches = ctx.allSlugs.filter((slug) => slug.endsWith(`/${target}`) && languageOf(slug))
+      const matches = [...published].filter(
+        (slug) => slug.endsWith(`/${target}`) && languageOf(slug),
+      )
       const own = matches.filter((slug) => languageOf(slug) === lang)
       const pick = (list: string[]) => list.sort((a, b) => a.length - b.length)[0]
       return (pick(own) ?? pick(matches)) as FullSlug | undefined
@@ -83,7 +86,7 @@ export const LanguageLinks: QuartzTransformerPlugin = () => ({
 export const LegacyRedirects: QuartzEmitterPlugin = () => ({
   name: "LegacyRedirects",
   async *emit(ctx, content) {
-    const published = new Set<string>(ctx.allSlugs)
+    const published = publishedSlugs(ctx)
     for (const [, file] of content) {
       const slug = file.data.slug!
       if (languageOf(slug) !== "ru") continue
@@ -108,7 +111,7 @@ export const LanguageSwitch = (() => {
   const Switch: QuartzComponent = ({ fileData, ctx }) => {
     const slug = fileData.slug!
     const current = languageOf(slug)
-    const published = new Set<string>(ctx.allSlugs)
+    const published = publishedSlugs(ctx)
     return (
       <nav class="language-switch" aria-label="Language / Язык">
         {LANGUAGES.map((lang) => {
