@@ -72,7 +72,25 @@ export function pageResources(
   })
 
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  const contentIndexScript = `const fetchData = fetch("${contentIndexPath}").then(data => data.json())`
+  // On a site with a top-level folder per language (en/, ru/, …), graph and explorer
+  // stay within the current page's language; the getter follows <html lang> across SPA navigations.
+  const contentIndexScript = `(() => {
+    const all = fetch("${contentIndexPath}").then((data) => data.json())
+    const scoped = new Map()
+    Object.defineProperty(window, "fetchData", {
+      configurable: true,
+      get() {
+        const lang = document.documentElement.lang
+        if (!scoped.has(lang)) {
+          scoped.set(lang, all.then((data) => {
+            const own = Object.entries(data).filter(([slug]) => slug.startsWith(lang + "/"))
+            return own.length > 0 ? Object.fromEntries(own) : data
+          }))
+        }
+        return scoped.get(lang)
+      },
+    })
+  })()`
 
   const resources: StaticResources = {
     css: [
