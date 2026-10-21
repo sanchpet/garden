@@ -87,7 +87,8 @@ export function pageResources(
             return own.length > 0 ? Object.fromEntries(own) : data
           }))
         }
-        return scoped.get(lang)
+        // A fresh copy per read: consumers such as search merge entries into what they get.
+        return scoped.get(lang).then((data) => ({ ...data }))
       },
     })
   })()`
