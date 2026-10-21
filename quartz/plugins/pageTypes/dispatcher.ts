@@ -10,6 +10,7 @@ import { StaticResources } from "../../util/resources"
 import { render } from "preact-render-to-string"
 import { fromHtml } from "hast-util-from-html"
 import { Root as HtmlRoot } from "hast"
+import { localeForLang } from "../../i18n"
 
 function getPageTypes(ctx: BuildCtx): QuartzPageTypePluginInstance[] {
   return (ctx.cfg.plugins.pageTypes ?? []) as unknown as QuartzPageTypePluginInstance[]
@@ -68,6 +69,24 @@ interface DispatcherOptions {
   byPageType: Record<string, Partial<FullPageLayout>>
 }
 
+/**
+ * A page's `lang` from its frontmatter; pages without one (folder and tag listings)
+ * inherit it from the index note of the nearest folder above them.
+ */
+function pageLang(
+  fileData: ProcessedContent[1]["data"],
+  allFiles: ProcessedContent[1]["data"][],
+): unknown {
+  if (fileData.frontmatter?.lang) return fileData.frontmatter.lang
+  const segments = (fileData.slug ?? "").split("/")
+  for (let depth = segments.length - 1; depth > 0; depth--) {
+    const index = `${segments.slice(0, depth).join("/")}/index`
+    const lang = allFiles.find((file) => file.slug === index)?.frontmatter?.lang
+    if (lang) return lang
+  }
+  return undefined
+}
+
 async function emitPage(
   ctx: BuildCtx,
   slug: FullSlug,
@@ -78,7 +97,10 @@ async function emitPage(
   resources: StaticResources,
   treeTransforms?: TreeTransform[],
 ) {
-  const cfg = ctx.cfg.configuration
+  // A page written in another language gets its interface strings in that language too.
+  const siteCfg = ctx.cfg.configuration
+  const locale = localeForLang(pageLang(fileData, allFiles), siteCfg.locale)
+  const cfg = locale === siteCfg.locale ? siteCfg : { ...siteCfg, locale }
   // For the 404 page, use an absolute base path so assets resolve correctly
   // when the hosting provider serves 404.html from any URL depth.
   // During local dev (--serve), the dev server strips baseDir itself and
