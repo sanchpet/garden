@@ -86,5 +86,18 @@ export const TRANSLATIONS = {
 
 export const defaultTranslation = "en-US"
 export const i18n = (locale: ValidLocale): Translation => TRANSLATIONS[locale ?? defaultTranslation]
+
+/**
+ * Resolve a page's `lang` (a full locale like "en-GB" or a bare language like "en")
+ * to a supported locale. A bare language prefers the site locale when it shares it.
+ */
+export function localeForLang(lang: unknown, siteLocale: ValidLocale): ValidLocale {
+  if (typeof lang !== "string" || lang === "") return siteLocale
+  if (lang in TRANSLATIONS) return lang as ValidLocale
+  const language = lang.split("-")[0].toLowerCase()
+  if (siteLocale.split("-")[0] === language) return siteLocale
+  const match = Object.keys(TRANSLATIONS).find((locale) => locale.split("-")[0] === language)
+  return (match as ValidLocale | undefined) ?? siteLocale
+}
 export type ValidLocale = keyof typeof TRANSLATIONS
 export type ValidCallout = keyof CalloutTranslation
