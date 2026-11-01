@@ -6,3 +6,4 @@ run() { uv run -q --with resvg-py --with pillow python "$@"; }
 run src/gen_icon.py out
 run src/rasterize.py out
 run src/gen_og.py out "fonts/Caveat[wght].ttf" 600
+run src/gen_avatar.py out
