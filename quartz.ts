@@ -8,6 +8,7 @@ import {
 } from "./local-plugins/bilingual"
 import { GardenStyles } from "./local-plugins/garden-styles"
 import { GardenBrand } from "./local-plugins/brand"
+import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -18,13 +19,14 @@ config.plugins.transformers.push(
   GardenFrontmatter(),
   LanguageLinks(),
   StripPrivateLinks(),
+  FootnoteLinks(),
 )
 
 // The config loader builds the page dispatcher from the YAML layout, so a local component
 // has to go into a fresh layout and a dispatcher rebuilt from it. Per-page-type layouts
 // are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
-const header = [LanguageSwitch(), GardenStyles()]
+const header = [LanguageSwitch(), GardenStyles(), FootnoteTooltip()]
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
 }
