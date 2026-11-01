@@ -11,6 +11,7 @@ import { GardenBrand } from "./local-plugins/brand"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
+import { ShareStubs } from "./local-plugins/share"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -37,7 +38,7 @@ for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)])
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
 }
-config.plugins.emitters.push(LegacyRedirects(), GardenBrand())
+config.plugins.emitters.push(LegacyRedirects(), GardenBrand(), ShareStubs())
 const dispatcher = config.plugins.emitters.findIndex((e) => e.name === "PageTypeDispatcher")
 config.plugins.emitters[dispatcher] = PageTypeDispatcher(layout)
 
