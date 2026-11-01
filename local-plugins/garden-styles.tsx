@@ -4,7 +4,7 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 export const GardenStyles = (() => {
   const Styles: QuartzComponent = () => null
   // A note marked `cssclasses: [home]` is a landing page: a single column of text, without
-  // sidebars, breadcrumbs, properties, dates or the folder listing it gets as its folder's page.
+  // sidebars, breadcrumbs or the folder listing it gets as its folder's page.
   Styles.css = `
 .page:has(article.home) > #quartz-body {
   max-width: 800px;
@@ -27,8 +27,6 @@ export const GardenStyles = (() => {
 .page:has(article.home) > #quartz-body :is(
   .sidebar,
   .breadcrumb-container,
-  .note-properties,
-  .content-meta,
   .center > hr,
   .page-footer,
   article.home + .page-listing
