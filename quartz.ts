@@ -9,6 +9,7 @@ import {
 import { GardenStyles } from "./local-plugins/garden-styles"
 import { GardenBrand } from "./local-plugins/brand"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
+import { NoteHeader } from "./local-plugins/note-header"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -27,8 +28,11 @@ config.plugins.transformers.push(
 // are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
 const header = [LanguageSwitch(), GardenStyles(), FootnoteTooltip()]
+const noteHeader = NoteHeader()
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
+  // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
+  pageLayout.beforeBody = [...(pageLayout.beforeBody ?? []), noteHeader]
 }
 config.plugins.emitters.push(LegacyRedirects(), GardenBrand())
 const dispatcher = config.plugins.emitters.findIndex((e) => e.name === "PageTypeDispatcher")
