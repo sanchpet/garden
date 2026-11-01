@@ -5,7 +5,7 @@ export const GardenStyles = (() => {
   const Styles: QuartzComponent = () => null
   // The garden has no left sidebar; on desktop its empty column keeps the text centred.
   // A note marked `cssclasses: [home]` is a landing page: a single column of text, without
-  // sidebars, breadcrumbs or the folder listing it gets as its folder's page.
+  // sidebars or the folder listing it gets as its folder's page.
   Styles.css = `
 .page[data-frame="default"] > #quartz-body .sidebar.left {
   display: none;
@@ -64,7 +64,6 @@ export const GardenStyles = (() => {
 
 .page:has(article.home) > #quartz-body :is(
   .sidebar,
-  .breadcrumb-container,
   .center > hr,
   .page-footer,
   article.home + .page-listing
