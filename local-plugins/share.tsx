@@ -8,7 +8,9 @@ import { coverOf } from "./cover"
 
 // Telegram's link-preview servers cannot reach the hub in Russia, so links shared there go
 // through SHARE_HOST (GitHub Pages): a stub per page carries the preview tags and sends the
-// reader on to the site. publish.yaml moves SHARE_DIR out of the build into the `share` branch.
+// reader on to the site. The redirect is JS only: with canonical and meta refresh in the stub,
+// Telegram showed no preview, presumably following them to the hub. publish.yaml moves
+// SHARE_DIR out of the build into the `share` branch.
 export const SHARE_HOST = "l.sanch.pet"
 export const SHARE_DIR = ".share"
 const SITE = "https://sanch.pet"
@@ -27,8 +29,7 @@ function page(lang: string, title: string, description: string, image: string, t
 <meta property="og:image" content="${i}">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="canonical" href="${u}">
-<meta http-equiv="refresh" content="0; url=${u}">
+<meta name="robots" content="noindex">
 <script>location.replace(${JSON.stringify(target)})</script>
 </head>
 <body><a href="${u}">${t}</a></body>
