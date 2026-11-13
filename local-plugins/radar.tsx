@@ -21,9 +21,9 @@ import {
 import { hashPath, type Point } from "./bookcase/geometry"
 
 // A Bases view, `type: radar`: the author's own tech radar, drawn as a pencil instrument with
-// a fan-shaped scope. A ring says how far his own experience with a tool goes, the nearest to
-// the hub being what he reaches for first; a sector is an area of his work, named in the
-// view's `sectors`. The scope is the picture, the list under it is the content. No script.
+// a round scope. A ring says how far his own experience with a tool goes, the nearest to
+// the hub being what he reaches for first; the sectors are named in the view's `sectors`,
+// four of them making the quadrants of the Thoughtworks radar. The scope is the picture, the list under it is the content. No script.
 
 export const RINGS = ["adopt", "trial", "assess", "hold"] as const
 export type Ring = (typeof RINGS)[number]
@@ -83,26 +83,27 @@ export function day(value: unknown, lang: Language): string {
   })
 }
 
-// The scope: a half disc on its flat side, the hub in the middle of that side.
+// The scope is a disc; the panel under it starts at BASE.
 const W = 720
 const CX = W / 2
-const BASE = 352
-const R = 290
+const R = 270
 const BEZEL = 30
+const CY = 26 + BEZEL + R
+const BASE = CY + R + BEZEL + 6
 const PANEL = 104
 const H = BASE + PANEL + 26
 // Where each ring ends, from the hub outwards; the first begins clear of the knob.
 const EDGE: Record<Ring, [number, number]> = {
-  adopt: [26, 120],
-  trial: [120, 184],
-  assess: [184, 238],
-  hold: [238, R],
+  adopt: [24, 114],
+  trial: [114, 174],
+  assess: [174, 224],
+  hold: [224, R],
 }
 const DOT = 11
 
 const polar = (r: number, deg: number): Point => {
   const a = (deg * Math.PI) / 180
-  return [CX + r * Math.cos(a), BASE - r * Math.sin(a)]
+  return [CX + r * Math.cos(a), CY - r * Math.sin(a)]
 }
 
 // An arc drawn by hand: it leaves the true circle by up to `amp` and comes back.
@@ -192,15 +193,19 @@ viewRegistry.register({
     blips.forEach((blip, i) => (blip.number = i + 1))
     const placed = blips.filter((blip) => blip.ring)
 
-    // Only the sectors that hold something are drawn, in the order the view names them.
-    const sectors = [...Object.keys(named), REST].filter((id) =>
-      placed.some((blip) => blip.area === id),
-    )
-    const span = 180 / Math.max(1, sectors.length)
-    // Sectors run left to right, as they are read.
+    // Every sector the view names is drawn, clockwise from nine o'clock, so four of them are
+    // the quadrants read as a page: the upper pair, then the lower pair right to left.
+    const sectors = [
+      ...Object.keys(named),
+      ...(placed.some((blip) => blip.area === REST) || Object.keys(named).length === 0
+        ? [REST]
+        : []),
+    ]
+    const span = 360 / sectors.length
+    const start = sectors.length === 1 ? 270 : 180
     const bounds = (id: string): [number, number] => {
       const i = sectors.indexOf(id)
-      return [180 - i * span, 180 - (i + 1) * span]
+      return [start - i * span, start - (i + 1) * span]
     }
 
     // A dot keeps clear of the ring edges, the spokes and the dots already down; the path
@@ -238,7 +243,7 @@ viewRegistry.register({
     )
     const left = CX - R - BEZEL - 22
     const right = CX + R + BEZEL + 22
-    const top = BASE - R - BEZEL - 14
+    const top = CY - R - BEZEL - 14
     const bottom = BASE + PANEL
     const cut = 22
     const body: Point[] = [
@@ -299,7 +304,7 @@ viewRegistry.register({
           />
           {/* shade down the right side and along the foot */}
           {pencil(
-            Array.from({ length: 26 }, (_, i) => {
+            Array.from({ length: Math.ceil((bottom - top) / 15) }, (_, i) => {
               const y = top + 34 + i * 15 + rnd() * 5
               return y > bottom - 30
                 ? ""
@@ -327,7 +332,7 @@ viewRegistry.register({
 
           {/* the bezel and the glass */}
           <path
-            d={`${arc(rnd, R + BEZEL, 180, 0, 1.6)}${wobble(rnd, polar(R + BEZEL, 0), polar(R + BEZEL, 180), 1, false)}Z`}
+            d={`${arc(rnd, R + BEZEL, 180, -180, 1.6)}Z`}
             fill={PAPER}
             stroke={PENCIL}
             stroke-width="1.8"
@@ -335,12 +340,12 @@ viewRegistry.register({
           />
           <path
             class="radar-glass"
-            d={`${arc(rnd, R, 180, 0, 1.2)}${wobble(rnd, polar(R, 0), polar(R, 180), 0.8, false)}Z`}
+            d={`${arc(rnd, R, 180, -180, 1.2)}Z`}
             stroke={PENCIL}
             stroke-width="1.6"
             stroke-linejoin="round"
           />
-          {pencil(arc(rnd, R - 3, 176, 4, 1.8), 0.8, 0.45)}
+          {pencil(arc(rnd, R - 3, 168, 24, 1.8), 0.8, 0.45)}
 
           {/* the afterglow behind the sweep */}
           {pencil(
@@ -356,13 +361,12 @@ viewRegistry.register({
           {/* rings and spokes */}
           {RINGS.slice(0, -1).map((ring) => (
             <g>
-              {pencil(arc(rnd, EDGE[ring][1], 180, 0, 1.6), 1.2, 0.85)}
+              {pencil(`${arc(rnd, EDGE[ring][1], 180, -180, 1.6)}Z`, 1.2, 0.85)}
               {pencil(arc(rnd, EDGE[ring][1] + 1.5, 172, 9, 2), 0.7, 0.4)}
             </g>
           ))}
-          {sectors
-            .slice(1)
-            .map((id) =>
+          {sectors.length > 1 &&
+            sectors.map((id) =>
               pencil(
                 wobble(rnd, polar(EDGE.adopt[0], bounds(id)[0]), polar(R, bounds(id)[0]), 1.4),
               ),
@@ -371,14 +375,20 @@ viewRegistry.register({
           {/* sector names round the bezel */}
           {sectors.map((id, i) => {
             const [a0, a1] = bounds(id)
-            const [p, q] = [polar(R + 9, a0 - 2), polar(R + 9, a1 + 2)]
-            const room = (((a0 - a1 - 4) * Math.PI) / 180) * (R + 9)
+            const mid = (a0 + a1) / 2
+            const half = Math.min(span / 2 - 2, 60)
+            // Under the hub the lettering runs the other way round, so it is never upside down.
+            const lower = Math.sin((mid * Math.PI) / 180) < 0
+            const [p, q] = lower
+              ? [polar(R + 9, mid - half), polar(R + 9, mid + half)]
+              : [polar(R + 9, mid + half), polar(R + 9, mid - half)]
+            const room = ((2 * half * Math.PI) / 180) * (R + 9)
             const label = lettering(sectorLabel(id), 22, room)
             return (
               <g>
                 <path
                   id={`radar-rim-${i}`}
-                  d={`M${f(p[0])} ${f(p[1])}A${R + 9} ${R + 9} 0 0 1 ${f(q[0])} ${f(q[1])}`}
+                  d={`M${f(p[0])} ${f(p[1])}A${R + 9} ${R + 9} 0 0 ${lower ? 0 : 1} ${f(q[0])} ${f(q[1])}`}
                   fill="none"
                 />
                 <text class="radar-rim" style={`fill:${PENCIL};font-size:${f(label.size)}px`}>
@@ -390,7 +400,7 @@ viewRegistry.register({
             )
           })}
 
-          {/* the scale under the glass: the rings by name */}
+          {/* the scale under the scope: the rings by name, as far from the middle as on the glass */}
           {RINGS.map((ring) => {
             const [r0, r1] = [ring === "adopt" ? 0 : EDGE[ring][0], EDGE[ring][1]]
             const label = lettering(RING[lang][ring].name, 17, r1 - r0 - 4, 0.5)
@@ -461,13 +471,13 @@ viewRegistry.register({
           <path d={round(rnd, knob, 6, 0.5)} fill={CREAM} stroke={BURGUNDY} stroke-width="1.6" />
 
           {/* the hub */}
-          <path d={round(rnd, [CX, BASE], 9, 0.8)} fill={PENCIL} stroke={PENCIL} stroke-width="1" />
+          <path d={round(rnd, [CX, CY], 9, 0.8)} fill={PENCIL} stroke={PENCIL} stroke-width="1" />
 
           {/* the blips, each with the trace of where it came from */}
           {placed.map((blip) => {
             const at = blip.at!
             const dot = seeded(hashPath(blip.path) + 1)
-            const r = Math.hypot(at[0] - CX, at[1] - BASE)
+            const r = Math.hypot(at[0] - CX, at[1] - CY)
             const out =
               blip.was && blip.was !== blip.ring
                 ? RINGS.indexOf(blip.was) > RINGS.indexOf(blip.ring!)
