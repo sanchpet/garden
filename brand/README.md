@@ -8,7 +8,7 @@ A red valve handwheel with an eye for a hub, drawn from the author's hand sketch
 
 - `sketch/` — the original sketch and `valve-alt1.svg`, the first vector take the final drawing grew from.
 - `src/gen_icon.py` — draws `valve.svg` and `valve-small.svg`. The drawing is seeded, so a run is reproducible; tweak the colours and `Drawing(...)` parameters at the top.
-- `src/rasterize.py` — favicons, touch icon, the 512 px icon and the 72 px header logo. The full drawing turns to mush at 16 px, so that size comes from `valve-small.svg`.
+- `src/rasterize.py` — favicons, touch icon, the 512 px icon and the 88 px header logo. The full drawing turns to mush at 16 px, so that size comes from `valve-small.svg`.
 - `src/gen_og.py` — the 1200×630 link preview cards, Russian and English: deep steel blue `#1E3959`, the valve left of centre so that a square crop keeps it whole, title in Caveat.
 - `src/gen_avatar.py` — the 640×640 Telegram avatar: the valve on the cards' steel blue, small enough to stay whole inside the round crop. Not served by the site.
 
