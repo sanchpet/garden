@@ -64,6 +64,19 @@ function mount(root: HTMLElement) {
     fitted = aim(scene.dataset.fit, glide) ?? 1
   }
 
+  // The opening view: close enough to read the shelf tags, from the top shelf down.
+  const home = () => {
+    fit(false)
+    const [bx, by, bw] = (scene.dataset.fit ?? "").split(",").map(Number)
+    const pad = 28
+    const w = stage.clientWidth
+    const k = Math.max(fitted, Math.min(1.25, Math.max(0.9, (w - pad * 2) / bw)))
+    camera.k = k
+    camera.x = (bw * k <= w - pad * 2 ? (w - bw * k) / 2 : pad) - (bx - origin.x) * k
+    camera.y = pad - (by - origin.y) * k
+    apply()
+  }
+
   const zoom = (factor: number, cx = stage.clientWidth / 2, cy = stage.clientHeight / 2) => {
     const k = Math.min(Math.max(fitted * 0.6, camera.k * factor), Math.max(3, fitted * 6))
     camera.x = cx - ((cx - camera.x) * k) / camera.k
@@ -105,15 +118,84 @@ function mount(root: HTMLElement) {
     apply(true)
   }
 
+  // The picked book as a volume: drag it, or use the arrow keys, to turn it round.
+  const volume = (book: SVGAElement) => {
+    const data = book.dataset
+    const holder = document.createElement("div")
+    holder.className = "bookcase-volume"
+    holder.tabIndex = 0
+    holder.setAttribute("role", "img")
+    holder.setAttribute("aria-label", data.title ?? "")
+    const body = document.createElement("div")
+    body.className = "bookcase-volume-body"
+    const thick = Math.min(42, Math.max(14, Number(data.thick) * 1.2 || 20))
+    const turn = { x: -8, y: 30 }
+    const size = (ratio: number) => {
+      const w = Math.min(120, 190 / ratio)
+      body.style.setProperty("--w", `${w}px`)
+      body.style.setProperty("--h", `${w * ratio}px`)
+    }
+    const set = () => {
+      body.style.setProperty("--rx", `${turn.x}deg`)
+      body.style.setProperty("--ry", `${turn.y}deg`)
+    }
+    body.style.setProperty("--t", `${thick}px`)
+    body.style.setProperty("--colour", data.colour ?? "")
+    body.style.setProperty("--ink", data.ink ?? "")
+    body.style.setProperty("--edge", data.edge ?? "")
+    size(1.5)
+    set()
+    for (const name of ["back", "pages", "top", "bottom", "spine", "front"]) {
+      const face = document.createElement("div")
+      face.className = `bookcase-volume-${name}`
+      if (name === "spine" || name === "front") face.textContent = data.title ?? ""
+      if (name === "front" && data.cover) {
+        const img = document.createElement("img")
+        img.src = data.cover
+        img.alt = ""
+        img.draggable = false
+        img.addEventListener("load", () => size(img.naturalHeight / img.naturalWidth), {
+          once: true,
+        })
+        face.append(img)
+      }
+      body.append(face)
+    }
+    holder.append(body)
+    let from: { x: number; y: number } | null = null
+    holder.addEventListener("pointerdown", (event) => {
+      from = { x: event.clientX, y: event.clientY }
+      holder.setPointerCapture(event.pointerId)
+    })
+    holder.addEventListener("pointermove", (event) => {
+      if (!from) return
+      turn.y += (event.clientX - from.x) * 0.7
+      turn.x = Math.min(40, Math.max(-40, turn.x - (event.clientY - from.y) * 0.5))
+      from = { x: event.clientX, y: event.clientY }
+      set()
+    })
+    const letGo = () => (from = null)
+    holder.addEventListener("pointerup", letGo)
+    holder.addEventListener("pointercancel", letGo)
+    holder.addEventListener("keydown", (event) => {
+      const step = {
+        ArrowLeft: [0, -15],
+        ArrowRight: [0, 15],
+        ArrowUp: [10, 0],
+        ArrowDown: [-10, 0],
+      }[event.key]
+      if (!step) return
+      event.preventDefault()
+      turn.x = Math.min(40, Math.max(-40, turn.x + step[0]))
+      turn.y += step[1]
+      set()
+    })
+    return holder
+  }
+
   const describe = (book: SVGAElement) => {
     const data = book.dataset
-    panel.replaceChildren()
-    if (data.cover) {
-      const img = document.createElement("img")
-      img.src = data.cover
-      img.alt = ""
-      panel.append(img)
-    }
+    panel.replaceChildren(volume(book))
     const text = document.createElement("div")
     const line = (tag: string, content: string | undefined, className?: string) => {
       if (!content) return
@@ -290,11 +372,11 @@ function mount(root: HTMLElement) {
     }
   })
 
-  const resized = new ResizeObserver(() => fit(false))
+  const resized = new ResizeObserver(() => home())
   resized.observe(stage)
   cleanups.push(() => resized.disconnect())
   cleanups.push(() => (document.documentElement.style.overflow = ""))
-  fit(false)
+  home()
   return () => cleanups.forEach((fn) => fn())
 }
 

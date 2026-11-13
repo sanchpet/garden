@@ -3,26 +3,18 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
 import { coverName } from "./cover"
-import {
-  CASE,
-  COS30,
-  box,
-  hashPath,
-  packShelves,
-  project,
-  type Point,
-  type ShelfGroup,
-} from "./bookcase/geometry"
+import { CASE, hashPath, packShelves, type Point, type ShelfGroup } from "./bookcase/geometry"
 // @ts-ignore
 import script from "./bookcase.inline"
 
-// A Bases view, `type: bookcase`: the query result as one isometric bookcase, a shelf run per
-// `groupBy` value. The solids and the packing are aarnphm's (bookcase/geometry.ts); the hand is
+// A Bases view, `type: bookcase`: the query result as one bookcase drawn in parallel
+// projection, a shelf run per `groupBy` value. The book sizes and the shelf packing are
+// aarnphm's (bookcase/geometry.ts); the hand is
 // the valve logo's (brand/src/gen_icon.py): seeded wobbly strokes and a dark contour, baked
 // into the paths so the drawing stays sharp at any zoom. The case is pencil, the books are
 // marker, and a book not yet read stays a pencil outline.
 
-const PALETTE = [
+export const PALETTE = [
   "#1E3959",
   "#2F5D50",
   "#B8553A",
@@ -32,24 +24,42 @@ const PALETTE = [
   "#284B63",
   "#8C2F39",
 ]
-const CREAM = "#F5ECDC"
+export const CREAM = "#F5ECDC"
 const PAGES = "#EFE6D4"
-const INK = "#1B1A1C"
-const MARK = "#EC0E16"
-const BURGUNDY = "#5E0611"
-const HEX = /^#[0-9a-f]{6}$/i
-const PENCIL = "var(--darkgray)"
-const PAPER = "var(--light)"
+export const INK = "#1B1A1C"
+export const MARK = "#EC0E16"
+export const BURGUNDY = "#5E0611"
+export const HEX = /^#[0-9a-f]{6}$/i
+export const PENCIL = "var(--darkgray)"
+export const PAPER = "var(--light)"
 const MIN_SHELVES = 3
 const ROWS = 5
 // A pulled book clears the case and its label tags, so the scene keeps this much room around it.
-const MARGIN = { left: 190, right: 30, top: 30, bottom: 110 }
+const MARGIN = { left: 120, right: 30, top: 30, bottom: 90 }
+
+// World axes as in geometry.ts: +x along the shelf, +y away from the viewer, +z up. The case
+// is turned towards the reader more than an isometric one: the shelf runs at 18° and the depth
+// is foreshortened, so spines and shelf tags face the page.
+const AXIS_X: Point = [0.951, 0.309]
+const AXIS_Y: Point = [0.508, -0.356]
+
+function project(x: number, y: number, z: number): Point {
+  return [x * AXIS_X[0] + y * AXIS_Y[0], x * AXIS_X[1] + y * AXIS_Y[1] - z]
+}
+
+// The three faces a viewer sees of a box, and its silhouette.
+function box(x: number, y: number, z: number, w: number, d: number, h: number) {
+  const [A, B, C] = [project(x, y, z), project(x + w, y, z), project(x + w, y + d, z)]
+  const [D, E] = [project(x + w, y + d, z + h), project(x, y + d, z + h)]
+  const [F, N] = [project(x, y, z + h), project(x + w, y, z + h)]
+  return { front: [A, B, N, F], side: [B, C, D, N], top: [F, N, D, E], edge: [A, B, C, D, E, F] }
+}
 
 export const STATUS = {
   ru: { later: "в очереди", "in-progress": "читаю", done: "прочитано" },
   en: { later: "to read", "in-progress": "reading", done: "read" },
 } as const
-type Language = keyof typeof STATUS
+export type Language = keyof typeof STATUS
 
 const UI = {
   ru: {
@@ -72,6 +82,14 @@ const UI = {
   },
 }
 
+export const FONT_FACE = `
+@font-face {
+  font-family: "Caveat";
+  src: url("/static/caveat.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}`
+
 export function statusLabel(lang: Language, status: unknown): string | undefined {
   const words: Record<string, string> = STATUS[lang]
   return typeof status === "string" && Object.hasOwn(words, status) ? words[status] : undefined
@@ -87,7 +105,7 @@ export function plain(value: unknown): string {
 }
 
 // mulberry32: a drawing must come out the same on every build.
-function seeded(seed: number): () => number {
+export function seeded(seed: number): () => number {
   let a = seed
   return () => {
     a = (a + 0x6d2b79f5) | 0
@@ -97,10 +115,10 @@ function seeded(seed: number): () => number {
   }
 }
 
-const f = (v: number) => String(Math.round(v * 10) / 10)
+export const f = (v: number) => String(Math.round(v * 10) / 10)
 
 // A stroke from a to b that drifts off the straight line by up to `amp`, as a hand does.
-function wobble(rnd: () => number, a: Point, b: Point, amp: number, move = true): string {
+export function wobble(rnd: () => number, a: Point, b: Point, amp: number, move = true): string {
   const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
   const length = Math.hypot(dx, dy) || 1
   const n = Math.max(1, Math.round(length / 70))
@@ -117,19 +135,19 @@ function wobble(rnd: () => number, a: Point, b: Point, amp: number, move = true)
   return d
 }
 
-function outline(rnd: () => number, points: readonly Point[], amp: number): string {
+export function outline(rnd: () => number, points: readonly Point[], amp: number): string {
   return (
     points.map((p, i) => wobble(rnd, p, points[(i + 1) % points.length], amp, i === 0)).join("") +
     "Z"
   )
 }
 
-function luminance(hex: string): number {
+export function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-function darken(hex: string, by: number): string {
+export function darken(hex: string, by: number): string {
   return (
     "#" +
     [1, 3, 5]
@@ -143,7 +161,7 @@ function darken(hex: string, by: number): string {
 }
 
 // Caveat's advance by kind of glyph, in em, measured on the bold cut and rounded up.
-function inkWidth(text: string, size: number): number {
+export function inkWidth(text: string, size: number): number {
   let em = 0
   for (const ch of text) {
     if (ch === " ") em += 0.24
@@ -155,16 +173,22 @@ function inkWidth(text: string, size: number): number {
 }
 
 // A text too long for its room is first written smaller, then cut.
-function lettering(text: string, size: number, room: number): { text: string; size: number } {
+export function lettering(
+  text: string,
+  size: number,
+  room: number,
+  floor = 0.66,
+): { text: string; size: number } {
   const natural = inkWidth(text, size)
   if (natural <= room) return { text, size }
-  const smaller = Math.max(size * 0.66, (size * room) / natural)
+  const smaller = Math.max(size * floor, (size * room) / natural)
+  if (smaller > size * floor) return { text, size: smaller }
   let cut = text
   while (cut.length > 1 && inkWidth(`${cut}…`, smaller) > room) cut = cut.slice(0, -1).trimEnd()
   return { text: cut === text ? text : `${cut}…`, size: smaller }
 }
 
-interface Shelved {
+export interface Shelved {
   entry: BasesEntry
   foreign: boolean
 }
@@ -191,7 +215,7 @@ const withoutLanguage = (slug: string) =>
   languageOf(slug) ? slug.slice(slug.indexOf("/") + 1) : slug
 
 // A book has one card; where both languages have it, the shelf shows the page's own.
-function ownLanguage(entries: BasesEntry[], lang: Language): Shelved[] {
+export function ownLanguage(entries: BasesEntry[], lang: Language): Shelved[] {
   const byBook = new Map<string, Shelved>()
   for (const entry of entries) {
     const foreign = languageOf(entry.slug) !== undefined && languageOf(entry.slug) !== lang
@@ -203,7 +227,7 @@ function ownLanguage(entries: BasesEntry[], lang: Language): Shelved[] {
 
 // Bases sorts the entries by the view's `sort`, so the shelves take their order from the
 // group value itself.
-function grouped(
+export function grouped(
   books: Shelved[],
   property: string | undefined,
   descending: boolean,
@@ -356,7 +380,7 @@ viewRegistry.register({
       const signed = lettering(surname, authorSize, authorRoom)
       // An English spine reads top to bottom, a Russian one bottom to top.
       const down = languageOf(entry.slug) === "en"
-      const turn = down ? [0, 1, -COS30, -0.5] : [0, -1, COS30, 0.5]
+      const turn = down ? [0, 1, -AXIS_X[0], -AXIS_X[1]] : [0, -1, ...AXIS_X]
       const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17)]
       const matrix = (p: Point) => `matrix(${[...turn, ...p].map(f).join(" ")})`
 
@@ -383,6 +407,10 @@ viewRegistry.register({
           data-state={statusLabel(lang, status) ?? ""}
           data-description={plain(props.description)}
           data-cover={image ? resolveRelative(slug as FullSlug, image as FullSlug) : ""}
+          data-colour={unread ? PAPER : colour}
+          data-ink={letters}
+          data-edge={contour}
+          data-thick={f(w)}
           data-face={[N, D, B].flat().map(f).join(",")}
           data-note={foreign ? note : ""}
           aria-label={[title, author, year, statusLabel(lang, status)].filter(Boolean).join(", ")}
@@ -461,19 +489,19 @@ viewRegistry.register({
       const rnd = seeded(hashPath(shelf.label))
       const x = bayX(Math.floor(shelf.index / rows)) + 8
       const z = floor(shelf.index) - CASE.board
-      const w = inkWidth(shelf.label, 13) + 12
+      const w = inkWidth(shelf.label, 16) + 14
       const plate: Point[] = [
         project(x, -1, z + 2),
         project(x + w, -1, z + 2),
-        project(x + w, -1, z - 16),
-        project(x, -1, z - 16),
+        project(x + w, -1, z - 20),
+        project(x, -1, z - 20),
       ]
       return (
         <g>
           <Face d={outline(rnd, plate, 0.4)} fill={PAPER} stroke={PENCIL} width={1} />
           <text
             class="bookcase-tag"
-            transform={`matrix(${[COS30, 0.5, 0, 1, ...project(x + 6, -1, z - 7)].map(f).join(" ")})`}
+            transform={`matrix(${[...AXIS_X, 0, 1, ...project(x + 7, -1, z - 9)].map(f).join(" ")})`}
           >
             {shelf.label}
           </text>
@@ -579,12 +607,7 @@ viewRegistry.register({
     )
   },
   css: `
-@font-face {
-  font-family: "Caveat";
-  src: url("/static/caveat.woff2") format("woff2");
-  font-weight: 400 700;
-  font-display: swap;
-}
+${FONT_FACE}
 .bookcase {
   margin: 1.5rem 0 2rem;
 }
@@ -601,7 +624,7 @@ article:has(.bookcase) + .page-listing {
 }
 .bookcase.is-live .bookcase-stage {
   overflow: hidden;
-  height: min(72vh, 620px);
+  height: min(84vh, 760px);
   touch-action: pan-y;
   cursor: grab;
 }
@@ -644,7 +667,7 @@ article:has(.bookcase) + .page-listing {
   text-anchor: end;
 }
 .bookcase-scene .bookcase-tag {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   fill: var(--darkgray);
 }
@@ -725,14 +748,101 @@ article:has(.bookcase) + .page-listing {
   max-height: 40vh;
   overflow: auto;
 }
-.bookcase-panel img {
+/* The picked book as a volume to turn in the hand. */
+.bookcase-volume {
   flex: none;
-  width: 92px;
-  height: auto;
-  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  width: 170px;
+  height: 220px;
+  perspective: 900px;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+}
+.bookcase-volume:active {
+  cursor: grabbing;
+}
+.bookcase-volume:focus-visible {
+  outline: 2px dashed var(--secondary);
+  outline-offset: 2px;
+}
+.bookcase-volume-body {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+}
+.bookcase-volume-body > * {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px solid var(--edge);
+  background: var(--colour);
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+.bookcase-volume-front,
+.bookcase-volume-back {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  color: var(--ink);
+  font-family: "Caveat", cursive;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  transform: translateZ(calc(var(--t) / 2));
+}
+.bookcase-volume-back {
+  transform: rotateY(180deg) translateZ(calc(var(--t) / 2));
+}
+.bookcase-volume-front img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
-  border-radius: 3px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+  object-fit: cover;
+}
+.bookcase-volume-spine,
+.bookcase-volume-pages {
+  top: 0;
+  left: calc(50% - var(--t) / 2);
+  width: var(--t);
+  height: 100%;
+}
+.bookcase-volume-spine {
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  font-family: "Caveat", cursive;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+}
+.bookcase-volume-pages {
+  transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+}
+.bookcase-volume-top,
+.bookcase-volume-bottom {
+  left: 0;
+  top: calc(50% - var(--t) / 2);
+  width: 100%;
+  height: var(--t);
+  transform: rotateX(90deg) translateZ(calc(var(--h) / 2));
+}
+.bookcase-volume-bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+}
+.bookcase-volume-body > :is(.bookcase-volume-pages, .bookcase-volume-top, .bookcase-volume-bottom) {
+  background: repeating-linear-gradient(90deg, ${PAGES} 0 2px, #d9cfbb 2px 3px);
 }
 .bookcase-panel h3 {
   margin: 0 0 0.2rem;
