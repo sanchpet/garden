@@ -7,3 +7,7 @@ run src/gen_icon.py out
 run src/rasterize.py out
 run src/gen_og.py out "fonts/Caveat[wght].ttf" 600
 run src/gen_avatar.py out
+# The site's handwriting: Caveat cut down to Latin and Cyrillic.
+uv run -q --with fonttools --with brotli pyftsubset "fonts/Caveat[wght].ttf" \
+  --unicodes="U+0020-007E,U+00A0-00FF,U+0400-045F,U+2010-2026,U+00AB,U+00BB" \
+  --flavor=woff2 --output-file=out/caveat.woff2

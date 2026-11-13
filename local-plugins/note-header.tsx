@@ -1,36 +1,70 @@
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import { Date as DateTag } from "../quartz/components/Date"
 import { FullSlug, resolveRelative, slugTag } from "../quartz/util/path"
+import { plain, statusLabel } from "./bookcase"
 
 const LABELS = {
-  ru: { tags: "Теги", modified: "Изменено", reading: "Чтение", minutes: "мин" },
-  en: { tags: "Tags", modified: "Modified", reading: "Reading", minutes: "min" },
+  ru: {
+    tags: "Теги",
+    modified: "Изменено",
+    reading: "Чтение",
+    minutes: "мин",
+    author: "Автор",
+    year: "Год",
+    status: "Статус",
+  },
+  en: {
+    tags: "Tags",
+    modified: "Modified",
+    reading: "Reading",
+    minutes: "min",
+    author: "Author",
+    year: "Year",
+    status: "Status",
+  },
 }
 const WORDS_PER_MINUTE = 200
 
 // Under the title: the note's annotation (`description`), then tags, last edit and reading
 // time on one unframed line. Replaces the Properties table and the content-meta line.
+// A catalogue card (`type: book`) may have no text yet: it shows the book's own fields instead.
 export const NoteHeader = (() => {
   const Header: QuartzComponent = ({ cfg, fileData }) => {
     const fm = (fileData.frontmatter ?? {}) as Record<string, unknown>
     const text = (fileData as { text?: string }).text
     const classes = Array.isArray(fm.cssclasses) ? fm.cssclasses : []
-    if (!text || classes.includes("home")) return null
+    const book = fm.type === "book"
+    if ((!text && !book) || classes.includes("home")) return null
 
-    const l = cfg.locale.startsWith("ru") ? LABELS.ru : LABELS.en
+    const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
+    const l = LABELS[lang]
+    const fields: [string, string | undefined][] = book
+      ? [
+          [l.author, plain(fm.author)],
+          [l.year, plain(fm.year)],
+          [l.status, statusLabel(lang, fm.status)],
+        ]
+      : []
     const annotation = typeof fm.description === "string" ? fm.description.trim() : ""
     const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : []
     const modified = fileData.dates?.modified
-    const minutes = Math.max(
-      1,
-      Math.ceil(text.split(/\s+/).filter(Boolean).length / WORDS_PER_MINUTE),
-    )
+    const words = (text ?? "").split(/\s+/).filter(Boolean).length
+    const minutes = Math.ceil(words / WORDS_PER_MINUTE)
     const slug = fileData.slug as FullSlug
 
     return (
       <div class="note-header">
         {annotation && <p class="note-annotation">{annotation}</p>}
         <dl class="note-meta">
+          {fields.map(
+            ([label, value]) =>
+              value && (
+                <div>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ),
+          )}
           {tags.length > 0 && (
             <div>
               <dt>{l.tags}</dt>
@@ -54,12 +88,14 @@ export const NoteHeader = (() => {
               </dd>
             </div>
           )}
-          <div>
-            <dt>{l.reading}</dt>
-            <dd>
-              {minutes} {l.minutes}
-            </dd>
-          </div>
+          {minutes > 0 && (
+            <div>
+              <dt>{l.reading}</dt>
+              <dd>
+                {minutes} {l.minutes}
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     )
