@@ -64,7 +64,7 @@ export type Language = keyof typeof STATUS
 const UI = {
   ru: {
     all: "все",
-    open: "Открыть карточку",
+    open: "Заметки по книге",
     turn: "можно повертеть",
     close: "Вернуть на полку",
     zoomIn: "Приблизить",
@@ -75,7 +75,7 @@ const UI = {
   },
   en: {
     all: "all",
-    open: "Open the card",
+    open: "Notes on the book",
     turn: "drag to turn",
     close: "Put it back",
     zoomIn: "Zoom in",
