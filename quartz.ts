@@ -12,6 +12,8 @@ import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
 import { ShareStubs } from "./local-plugins/share"
+import { BookcaseScript } from "./local-plugins/bookcase"
+import "./local-plugins/shelves"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -30,7 +32,7 @@ config.plugins.transformers.push(
 // has to go into a fresh layout and a dispatcher rebuilt from it. Per-page-type layouts
 // are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
-const header = [HomeLogo(), LanguageSwitch(), GardenStyles(), FootnoteTooltip()]
+const header = [HomeLogo(), LanguageSwitch(), GardenStyles(), BookcaseScript(), FootnoteTooltip()]
 const noteHeader = NoteHeader()
 const cover = NoteCover()
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
