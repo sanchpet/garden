@@ -75,20 +75,21 @@ export const GardenBrand: QuartzEmitterPlugin = () => ({
   },
 })
 
-// The valve at the top left leads to the home page of the page's language; the home page itself goes without it.
+// The valve at the top left leads to the home page of the page's language; on the home page it is just the mark.
 export const HomeLogo = (() => {
   const Logo: QuartzComponent = ({ fileData }) => {
     const slug = fileData.slug!
     const lang = languageOf(slug)
     const home = (lang ? `${lang}/index` : "index") as FullSlug
-    if (slug === home) return null
+    const image = <img src="/static/logo-72.png" alt="" width="36" height="36" />
+    if (slug === home) return <span class="home-logo">{image}</span>
     return (
       <a
         class="home-logo"
         href={resolveRelative(slug, home)}
         aria-label={lang === "en" ? "Home" : "На главную"}
       >
-        <img src="/static/logo-72.png" alt="" width="36" height="36" />
+        {image}
       </a>
     )
   }
