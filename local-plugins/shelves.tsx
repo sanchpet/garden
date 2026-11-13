@@ -9,8 +9,8 @@ import {
   INK,
   MARK,
   PALETTE,
-  PAPER,
-  PENCIL,
+  WRAP,
+  blob,
   darken,
   f,
   grouped,
@@ -51,7 +51,7 @@ function Spine({
   const id = hashPath(path)
   const rnd = seeded(id)
   const status = typeof props.status === "string" ? props.status : ""
-  const unread = status === "later"
+  const wrapped = status === "later"
   const colour =
     typeof props.spine === "string" && HEX.test(props.spine)
       ? props.spine
@@ -64,21 +64,23 @@ function Spine({
   const pad = 4
   const [w, h] = [width + pad * 2, height + pad * 2 + tab]
   const [x0, y0, x1, y1] = [pad, pad + tab, pad + width, pad + tab + height]
-  const letters = unread ? PENCIL : luminance(colour) > 0.55 ? INK : CREAM
-  const contour = unread ? PENCIL : darken(colour, 0.55)
+  const letters = luminance(colour) > 0.55 ? INK : CREAM
+  const contour = darken(colour, 0.55)
+  // The band takes the foot of the spine, and the lettering starts above it.
+  const raised = wrapped ? 24 : 0
   const band = (y: number) => wobble(rnd, [x0 + 3, y], [x1 - 3, y], 0.7)
 
   const full = plain(entry.title) || entry.fileProperties.basename
   const title = full.split(": ")[0].trim() || full
   const author = plain(props.author)
-  const run = height - 44
+  const run = height - 44 - raised
   const named = lettering(title, 20, author ? run * 0.62 : run, 0.56)
   const authorRoom = run - inkWidth(named.text, named.size) - 10
   const surname = inkWidth(author, 14) > authorRoom ? author.split(" ").pop()! : author
   const signed = lettering(surname, 14, authorRoom, 0.6)
   // An English spine reads top to bottom, a Russian one bottom to top.
   const turn = languageOf(entry.slug) === "en" ? 90 : -90
-  const [cx, top, bottom] = [(x0 + x1) / 2, y0 + 22, y1 - 22]
+  const [cx, top, bottom] = [(x0 + x1) / 2, y0 + 22, y1 - 22 - raised]
   const at = (y: number) => `translate(${f(cx)} ${f(y)}) rotate(${turn})`
   const ribbon: Point[] = [
     [x0 + 9, pad],
@@ -118,41 +120,61 @@ function Spine({
             ],
             1.2,
           )}
-          fill={unread ? PAPER : colour}
+          fill={colour}
           stroke={contour}
-          stroke-width={unread ? 1.6 : 2.4}
+          stroke-width="2.4"
           stroke-linejoin="round"
         />
-        {unread ? (
-          <path
-            d={Array.from({ length: Math.floor(height / 14) }, (_, i) =>
-              wobble(rnd, [x1 - 3, y0 + 8 + i * 14], [x1 - 13, y0 + 20 + i * 14], 0.6),
-            ).join("")}
-            fill="none"
-            stroke="var(--gray)"
-            stroke-width="1"
-            stroke-linecap="round"
-          />
-        ) : (
-          <path
-            d={[0.24, 0.55, 0.83]
-              .map((t) => wobble(rnd, [x0 + width * t, y0 + 5], [x0 + width * t, y1 - 5], 1.6))
-              .join("")}
-            fill="none"
-            stroke={darken(colour, 0.3)}
-            stroke-width={f(width * 0.12)}
-            stroke-linecap="round"
-            opacity="0.3"
-          />
-        )}
         <path
-          d={band(y0 + 10) + band(y0 + 14) + band(y1 - 11)}
+          d={[0.24, 0.55, 0.83]
+            .map((t) => wobble(rnd, [x0 + width * t, y0 + 5], [x0 + width * t, y1 - 5], 1.6))
+            .join("")}
+          fill="none"
+          stroke={darken(colour, 0.3)}
+          stroke-width={f(width * 0.12)}
+          stroke-linecap="round"
+          opacity="0.3"
+        />
+        <path
+          d={band(y0 + 10) + band(y0 + 14) + (wrapped ? "" : band(y1 - 11))}
           fill="none"
           stroke={letters}
           stroke-width="1.4"
           stroke-linecap="round"
           opacity="0.85"
         />
+        {wrapped && (
+          <path
+            d={outline(
+              rnd,
+              [
+                [x0 - 1, y1 - 34],
+                [x1 + 1, y1 - 34],
+                [x1 + 1, y1 - 7],
+                [x0 - 1, y1 - 7],
+              ],
+              0.8,
+            )}
+            fill={WRAP.paper}
+            stroke={WRAP.edge}
+            stroke-width="1.4"
+            stroke-linejoin="round"
+          />
+        )}
+        {wrapped && (
+          <path
+            d={blob(
+              Array.from({ length: 8 }, (_, i) => {
+                const a = (i * Math.PI) / 4
+                const r = Math.min(width / 2 - 6, 9) + (rnd() - 0.5)
+                return [cx + r * Math.cos(a), y1 - 20.5 + r * Math.sin(a)] as Point
+              }),
+            )}
+            fill={WRAP.tag}
+            stroke={WRAP.ink}
+            stroke-width="1.1"
+          />
+        )}
         <text
           class="shelves-title"
           transform={at(turn > 0 ? top : bottom)}

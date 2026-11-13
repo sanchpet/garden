@@ -29,6 +29,14 @@ const PAGES = "#EFE6D4"
 export const INK = "#1B1A1C"
 export const MARK = "#EC0E16"
 export const BURGUNDY = "#5E0611"
+// A book not yet begun still wears the publisher's paper band, with the shop's price sticker.
+export const WRAP = {
+  paper: "#F3EAD8",
+  side: "#DED2BA",
+  edge: "#6B6252",
+  tag: "#F2B705",
+  ink: "#8A6500",
+}
 export const HEX = /^#[0-9a-f]{6}$/i
 export const PENCIL = "var(--darkgray)"
 export const PAPER = "var(--light)"
@@ -139,6 +147,17 @@ export function wobble(rnd: () => number, a: Point, b: Point, amp: number, move 
   return d
 }
 
+// A closed, slightly uneven round shape through the given points.
+export function blob(points: readonly Point[]): string {
+  const mid = (a: Point, b: Point) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+  const start = mid(points[points.length - 1], points[0])
+  const arcs = points.map((p, i) => {
+    const m = mid(p, points[(i + 1) % points.length])
+    return `Q${f(p[0])} ${f(p[1])} ${f(m[0])} ${f(m[1])}`
+  })
+  return `M${f(start[0])} ${f(start[1])}${arcs.join("")}Z`
+}
+
 export function outline(rnd: () => number, points: readonly Point[], amp: number): string {
   return (
     points.map((p, i) => wobble(rnd, p, points[(i + 1) % points.length], amp, i === 0)).join("") +
@@ -189,7 +208,7 @@ export function lettering(
   if (smaller > size * floor) return { text, size: smaller }
   let cut = text
   while (cut.length > 1 && inkWidth(`${cut}…`, smaller) > room) cut = cut.slice(0, -1).trimEnd()
-  return { text: cut === text ? text : `${cut}…`, size: smaller }
+  return { text: cut === text ? text : `${cut.replace(/[\s….,:;—-]+$/, "")}…`, size: smaller }
 }
 
 export interface Shelved {
@@ -349,7 +368,7 @@ viewRegistry.register({
       const id = hashPath(placed.path)
       const rnd = seeded(id)
       const status = typeof props.status === "string" ? props.status : ""
-      const unread = status === "later"
+      const wrapped = status === "later"
       const colour =
         typeof props.spine === "string" && HEX.test(props.spine)
           ? props.spine
@@ -364,9 +383,12 @@ viewRegistry.register({
       ]
       const solid = box(x, y, z, w, d, h)
       grow(sections[layout.shelves[placed.shelf].group], solid.edge)
-      const contour = unread ? PENCIL : darken(colour, 0.55)
-      const stroke = unread ? 1.1 : 1.6
-      const letters = unread ? PENCIL : luminance(colour) > 0.55 ? INK : CREAM
+      const contour = darken(colour, 0.55)
+      const stroke = 1.6
+      const letters = luminance(colour) > 0.55 ? INK : CREAM
+      // The band takes the foot of the spine, and the lettering starts above it.
+      const wrap = wrapped ? { from: 5, to: 30 } : undefined
+      const raised = wrap ? wrap.to - 4 : 0
       const at = (dx: number, dz: number) => project(x + dx, y, z + dz)
       const band = (dz: number) => wobble(rnd, at(2, dz), at(w - 2, dz), 0.4)
 
@@ -375,7 +397,7 @@ viewRegistry.register({
       const author = plain(props.author)
       const year = plain(props.year)
       const size = Math.min(15, Math.max(9, w * 0.58))
-      const run = h - 34
+      const run = h - 34 - raised
       const named = lettering(title, size, author ? run * 0.64 : run)
       // The author gets what the title leaves; a name still too long is signed by its surname.
       const authorSize = size * 0.72
@@ -385,7 +407,7 @@ viewRegistry.register({
       // An English spine reads top to bottom, a Russian one bottom to top.
       const down = languageOf(entry.slug) === "en"
       const turn = down ? [0, 1, -AXIS_X[0], -AXIS_X[1]] : [0, -1, ...AXIS_X]
-      const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17)]
+      const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17 + raised)]
       const matrix = (p: Point) => `matrix(${[...turn, ...p].map(f).join(" ")})`
 
       const cover = coverName(props.cover)
@@ -397,6 +419,7 @@ viewRegistry.register({
         project(x + w / 2 - 3, y + d * 0.3, z + h + 13),
       ]
       const [B, , D, N] = solid.side
+      const sticker = Math.min(w / 2 - 3, 7)
 
       return (
         <a
@@ -411,7 +434,7 @@ viewRegistry.register({
           data-state={statusLabel(lang, status) ?? ""}
           data-description={plain(props.description)}
           data-cover={image ? resolveRelative(slug as FullSlug, image as FullSlug) : ""}
-          data-colour={unread ? PAPER : colour}
+          data-colour={colour}
           data-ink={letters}
           data-edge={contour}
           data-thick={f(w)}
@@ -422,52 +445,79 @@ viewRegistry.register({
           <Face
             class="bookcase-cover"
             d={outline(rnd, solid.side, 0.5)}
-            fill={unread ? PAPER : darken(colour, 0.22)}
+            fill={darken(colour, 0.22)}
             stroke={contour}
             width={stroke}
           />
-          <Face
-            d={outline(rnd, solid.top, 0.4)}
-            fill={unread ? PAPER : PAGES}
-            stroke={contour}
-            width={stroke}
-          />
+          {wrap && (
+            <Face
+              d={outline(
+                rnd,
+                [
+                  project(x + w, y, z + wrap.from),
+                  project(x + w, y + d, z + wrap.from),
+                  project(x + w, y + d, z + wrap.to),
+                  project(x + w, y, z + wrap.to),
+                ],
+                0.4,
+              )}
+              fill={WRAP.side}
+              stroke={WRAP.edge}
+              width={1}
+            />
+          )}
+          <Face d={outline(rnd, solid.top, 0.4)} fill={PAGES} stroke={contour} width={stroke} />
           {status === "in-progress" && (
             <Face d={outline(rnd, ribbon, 0.3)} fill={MARK} stroke={BURGUNDY} width={1.1} />
           )}
-          <Face
-            d={outline(rnd, solid.front, 0.5)}
-            fill={unread ? PAPER : colour}
-            stroke={contour}
-            width={stroke}
-          />
-          {unread ? (
-            <path
-              d={Array.from({ length: Math.floor(h / 13) }, (_, i) =>
-                wobble(rnd, at(w - 2, h - 6 - i * 13), at(w - 9, h - 15 - i * 13), 0.4),
-              ).join("")}
-              fill="none"
-              stroke="var(--gray)"
-              stroke-width="0.8"
-            />
-          ) : (
-            <path
-              d={[0.3, 0.72].map((t) => wobble(rnd, at(w * t, 5), at(w * t, h - 5), 0.9)).join("")}
-              fill="none"
-              stroke={darken(colour, 0.3)}
-              stroke-width={f(w * 0.16)}
-              stroke-linecap="round"
-              opacity="0.3"
-            />
-          )}
+          <Face d={outline(rnd, solid.front, 0.5)} fill={colour} stroke={contour} width={stroke} />
           <path
-            d={band(h - 7) + band(h - 10) + band(8)}
+            d={[0.3, 0.72].map((t) => wobble(rnd, at(w * t, 5), at(w * t, h - 5), 0.9)).join("")}
+            fill="none"
+            stroke={darken(colour, 0.3)}
+            stroke-width={f(w * 0.16)}
+            stroke-linecap="round"
+            opacity="0.3"
+          />
+          <path
+            d={band(h - 7) + band(h - 10) + (wrap ? "" : band(8))}
             fill="none"
             stroke={letters}
             stroke-width="0.9"
             stroke-linecap="round"
             opacity="0.85"
           />
+          {wrap && (
+            <Face
+              d={outline(
+                rnd,
+                [
+                  at(-0.5, wrap.from),
+                  at(w + 0.5, wrap.from),
+                  at(w + 0.5, wrap.to),
+                  at(-0.5, wrap.to),
+                ],
+                0.4,
+              )}
+              fill={WRAP.paper}
+              stroke={WRAP.edge}
+              width={1}
+            />
+          )}
+          {wrap && (
+            <path
+              d={blob(
+                Array.from({ length: 8 }, (_, i) => {
+                  const a = (i * Math.PI) / 4
+                  const r = sticker + (rnd() - 0.5)
+                  return at(w / 2 + r * Math.cos(a), (wrap.from + wrap.to) / 2 + r * Math.sin(a))
+                }),
+              )}
+              fill={WRAP.tag}
+              stroke={WRAP.ink}
+              stroke-width="0.8"
+            />
+          )}
           <text
             class="bookcase-title"
             transform={matrix(down ? head : foot)}
@@ -892,6 +942,29 @@ article:has(.bookcase) + .page-listing {
 }
 .bookcase-volume-bottom {
   transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+}
+/* The paper band of a book not yet begun goes round the volume, the price sticker on its front. */
+.bookcase-volume-body.is-wrapped > :is(.bookcase-volume-front, .bookcase-volume-back, .bookcase-volume-spine, .bookcase-volume-pages)::after {
+  content: "";
+  position: absolute;
+  left: -1.5px;
+  right: -1.5px;
+  bottom: 8%;
+  height: 16%;
+  border-block: 1.5px solid ${WRAP.edge};
+  background: ${WRAP.paper};
+}
+.bookcase-volume-body.is-wrapped > .bookcase-volume-front::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 12%;
+  bottom: 10%;
+  width: 22%;
+  aspect-ratio: 1;
+  border: 1.5px solid ${WRAP.ink};
+  border-radius: 50%;
+  background: ${WRAP.tag};
 }
 .bookcase-volume-body > :is(.bookcase-volume-pages, .bookcase-volume-top, .bookcase-volume-bottom) {
   background: repeating-linear-gradient(90deg, ${PAGES} 0 2px, #d9cfbb 2px 3px);

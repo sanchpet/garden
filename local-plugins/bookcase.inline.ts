@@ -168,6 +168,7 @@ function mount(root: HTMLElement) {
       cover.src = data.cover
     }
     body.classList.add("is-new")
+    body.classList.toggle("is-wrapped", data.status === "later")
     holder.append(body)
     let from: { x: number; y: number } | null = null
     holder.addEventListener("pointerdown", (event) => {
