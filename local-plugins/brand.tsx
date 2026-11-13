@@ -14,7 +14,7 @@ const BRAND = path.join("brand", "out")
 const FILES: Record<string, string> = {
   "favicon.ico": "favicon.ico",
   "static/icon.png": "icon.png",
-  "static/logo-72.png": "logo-72.png",
+  "static/logo-88.png": "logo-88.png",
   "static/favicon-16.png": "favicon-16.png",
   "static/favicon-32.png": "favicon-32.png",
   "static/favicon-48.png": "favicon-48.png",
@@ -81,7 +81,7 @@ export const HomeLogo = (() => {
     const slug = fileData.slug!
     const lang = languageOf(slug)
     const home = (lang ? `${lang}/index` : "index") as FullSlug
-    const image = <img src="/static/logo-72.png" alt="" width="36" height="36" />
+    const image = <img src="/static/logo-88.png" alt="" width="44" height="44" />
     if (slug === home) return <span class="home-logo">{image}</span>
     return (
       <a
