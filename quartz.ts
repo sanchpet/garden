@@ -7,7 +7,7 @@ import {
   PageLanguage,
 } from "./local-plugins/bilingual"
 import { GardenStyles } from "./local-plugins/garden-styles"
-import { GardenBrand } from "./local-plugins/brand"
+import { GardenBrand, HomeLogo } from "./local-plugins/brand"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
@@ -30,7 +30,7 @@ config.plugins.transformers.push(
 // has to go into a fresh layout and a dispatcher rebuilt from it. Per-page-type layouts
 // are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
-const header = [LanguageSwitch(), GardenStyles(), FootnoteTooltip()]
+const header = [HomeLogo(), LanguageSwitch(), GardenStyles(), FootnoteTooltip()]
 const noteHeader = NoteHeader()
 const cover = NoteCover()
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {

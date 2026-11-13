@@ -1,7 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
+import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
-import { FilePath, joinSegments } from "../quartz/util/path"
+import { FilePath, FullSlug, joinSegments, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
 import { coverOf } from "./cover"
 
@@ -13,6 +14,7 @@ const BRAND = path.join("brand", "out")
 const FILES: Record<string, string> = {
   "favicon.ico": "favicon.ico",
   "static/icon.png": "icon.png",
+  "static/logo-72.png": "logo-72.png",
   "static/favicon-16.png": "favicon-16.png",
   "static/favicon-32.png": "favicon-32.png",
   "static/favicon-48.png": "favicon-48.png",
@@ -72,3 +74,34 @@ export const GardenBrand: QuartzEmitterPlugin = () => ({
     }
   },
 })
+
+// The valve at the top left leads to the home page of the page's language; the home page itself goes without it.
+export const HomeLogo = (() => {
+  const Logo: QuartzComponent = ({ fileData }) => {
+    const slug = fileData.slug!
+    const lang = languageOf(slug)
+    const home = (lang ? `${lang}/index` : "index") as FullSlug
+    if (slug === home) return null
+    return (
+      <a
+        class="home-logo"
+        href={resolveRelative(slug, home)}
+        aria-label={lang === "en" ? "Home" : "На главную"}
+      >
+        <img src="/static/logo-72.png" alt="" width="36" height="36" />
+      </a>
+    )
+  }
+  Logo.css = `
+.page-header header > .home-logo {
+  order: -1;
+  margin-right: auto;
+  display: flex;
+}
+.home-logo img {
+  margin: 0;
+  border-radius: 0;
+}
+`
+  return Logo
+}) satisfies QuartzComponentConstructor
