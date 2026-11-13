@@ -40,6 +40,11 @@ export const GardenStyles = (() => {
   order: 1;
 }
 
+/* The title sits close under the header row with the logo. */
+.page-header .article-title {
+  margin-top: 0.75rem;
+}
+
 /* On mobile the left sidebar gave the page its top padding. */
 @media (max-width: 800px) {
   .page[data-frame="default"] > #quartz-body .page-header {
