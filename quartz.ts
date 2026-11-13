@@ -14,6 +14,7 @@ import { CoverImage, NoteCover } from "./local-plugins/cover"
 import { ShareStubs } from "./local-plugins/share"
 import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
+import "./local-plugins/radar"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()

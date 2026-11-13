@@ -2,6 +2,7 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import { Date as DateTag } from "../quartz/components/Date"
 import { FullSlug, resolveRelative, slugTag } from "../quartz/util/path"
 import { plain, statusLabel } from "./bookcase"
+import { RING, day, ringOf } from "./radar"
 
 const LABELS = {
   ru: {
@@ -12,6 +13,9 @@ const LABELS = {
     author: "Автор",
     year: "Год",
     status: "Статус",
+    ring: "На радаре",
+    since: "С",
+    repo: "Репозиторий",
   },
   en: {
     tags: "Tags",
@@ -21,30 +25,42 @@ const LABELS = {
     author: "Author",
     year: "Year",
     status: "Status",
+    ring: "On the radar",
+    since: "Since",
+    repo: "Repository",
   },
 }
 const WORDS_PER_MINUTE = 200
 
 // Under the title: the note's annotation (`description`), then tags, last edit and reading
 // time on one unframed line. Replaces the Properties table and the content-meta line.
-// A catalogue card (`type: book`) may have no text yet: it shows the book's own fields instead.
+// A catalogue card (`type: book`) or a radar entry (`type: tool`) may have no text yet: it
+// shows its own fields instead.
 export const NoteHeader = (() => {
   const Header: QuartzComponent = ({ cfg, fileData }) => {
     const fm = (fileData.frontmatter ?? {}) as Record<string, unknown>
     const text = (fileData as { text?: string }).text
     const classes = Array.isArray(fm.cssclasses) ? fm.cssclasses : []
     const book = fm.type === "book"
-    if ((!text && !book) || classes.includes("home")) return null
+    const tool = fm.type === "tool"
+    if ((!text && !book && !tool) || classes.includes("home")) return null
 
     const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
     const l = LABELS[lang]
+    const ring = ringOf(fm.ring)
     const fields: [string, string | undefined][] = book
       ? [
           [l.author, plain(fm.author)],
           [l.year, plain(fm.year)],
           [l.status, statusLabel(lang, fm.status)],
         ]
-      : []
+      : tool
+        ? [
+            [l.ring, ring && RING[lang][ring].name],
+            [l.since, day(fm.since, lang) || undefined],
+          ]
+        : []
+    const repo = tool && typeof fm.repo === "string" && /^https:\/\//.test(fm.repo) ? fm.repo : ""
     const annotation = typeof fm.description === "string" ? fm.description.trim() : ""
     const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : []
     const modified = fileData.dates?.modified
@@ -64,6 +80,16 @@ export const NoteHeader = (() => {
                   <dd>{value}</dd>
                 </div>
               ),
+          )}
+          {repo && (
+            <div>
+              <dt>{l.repo}</dt>
+              <dd>
+                <a class="external" href={repo}>
+                  {repo.replace(/^https:\/\/(www\.)?/, "")}
+                </a>
+              </dd>
+            </div>
           )}
           {tags.length > 0 && (
             <div>
