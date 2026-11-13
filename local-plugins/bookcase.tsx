@@ -65,6 +65,8 @@ const UI = {
   ru: {
     all: "все",
     open: "Открыть карточку",
+    turn: "можно повертеть",
+    close: "Вернуть на полку",
     zoomIn: "Приблизить",
     zoomOut: "Отдалить",
     fit: "Весь шкаф",
@@ -74,6 +76,8 @@ const UI = {
   en: {
     all: "all",
     open: "Open the card",
+    turn: "drag to turn",
+    close: "Put it back",
     zoomIn: "Zoom in",
     zoomOut: "Zoom out",
     fit: "Whole bookcase",
@@ -546,6 +550,8 @@ viewRegistry.register({
       <div
         class="bookcase"
         data-open={ui.open}
+        data-turn={ui.turn}
+        data-close={ui.close}
         style={`--pull-x:${f(pull[0])}px;--pull-y:${f(pull[1])}px`}
       >
         <div class="bookcase-stage">
@@ -601,8 +607,8 @@ viewRegistry.register({
               )}
             </div>
           )}
+          <aside class="bookcase-panel" hidden aria-live="polite" />
         </div>
-        <aside class="bookcase-panel" hidden aria-live="polite" />
       </div>
     )
   },
@@ -730,31 +736,78 @@ article:has(.bookcase) + .page-listing {
 .bookcase button small {
   opacity: 0.6;
 }
+/* The card of a picked book comes up over the scene, beside the book. */
 .bookcase-panel {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 3.3rem;
+  z-index: 2;
   display: flex;
-  gap: 1rem;
-  margin-top: 0.9rem;
+  gap: 0.9rem;
+  width: min(25rem, calc(100% - 1.2rem));
+  max-height: calc(100% - 4.2rem);
+  overflow: auto;
+  box-sizing: border-box;
   padding: 0.9rem 1rem;
   border: 1px solid var(--lightgray);
   border-radius: 6px;
+  background: var(--light);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  cursor: default;
+  animation: bookcase-card 0.25s ease-out;
+}
+@keyframes bookcase-card {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 .bookcase-panel[hidden] {
   display: none;
 }
-.bookcase.is-full .bookcase-panel {
+.bookcase-panel h3 {
+  margin: 0 1.6rem 0.2rem 0;
+  font-size: 1.15rem;
+}
+.bookcase-panel p {
+  margin: 0.25rem 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.bookcase-panel .bookcase-byline {
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+.bookcase-panel .bookcase-note {
+  color: var(--gray);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+.bookcase-panel > button {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border-color: transparent;
+}
+.bookcase-figure {
+  flex: none;
   margin: 0;
-  border-width: 1px 0 0;
-  border-radius: 0;
-  max-height: 40vh;
-  overflow: auto;
+  text-align: center;
+}
+.bookcase-figure figcaption {
+  font-family: "Caveat", cursive;
+  font-size: 1rem;
+  color: var(--gray);
 }
 /* The picked book as a volume to turn in the hand. */
 .bookcase-volume {
-  flex: none;
   display: grid;
   place-items: center;
-  width: 170px;
-  height: 220px;
+  width: 150px;
+  height: 200px;
   perspective: 900px;
   touch-action: none;
   cursor: grab;
@@ -774,12 +827,20 @@ article:has(.bookcase) + .page-listing {
   transform-style: preserve-3d;
   transform: rotateX(var(--rx)) rotateY(var(--ry));
 }
+/* It turns once on its own as it appears, to show that it can be turned. */
+.bookcase-volume-body.is-new {
+  animation: bookcase-turn 1.3s ease-in-out;
+}
+@keyframes bookcase-turn {
+  40% {
+    transform: rotateX(var(--rx)) rotateY(calc(var(--ry) - 55deg));
+  }
+}
 .bookcase-volume-body > * {
   position: absolute;
   box-sizing: border-box;
   border: 1.5px solid var(--edge);
-  background: var(--colour);
-  overflow: hidden;
+  background: var(--colour) center / 100% 100% no-repeat;
   backface-visibility: hidden;
 }
 .bookcase-volume-front,
@@ -798,15 +859,6 @@ article:has(.bookcase) + .page-listing {
 }
 .bookcase-volume-back {
   transform: rotateY(180deg) translateZ(calc(var(--t) / 2));
-}
-.bookcase-volume-front img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border-radius: 0;
-  object-fit: cover;
 }
 .bookcase-volume-spine,
 .bookcase-volume-pages {
@@ -863,6 +915,10 @@ article:has(.bookcase) + .page-listing {
   .bookcase.is-gliding .bookcase-scene,
   .bookcase-lift > g {
     transition: none;
+  }
+  .bookcase-panel,
+  .bookcase-volume-body.is-new {
+    animation: none;
   }
 }
 `,

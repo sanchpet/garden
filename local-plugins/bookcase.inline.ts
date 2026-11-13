@@ -111,7 +111,12 @@ function mount(root: HTMLElement) {
     const [left, right] = [at.left + Math.min(0, pullX) - pad, at.right + pad]
     const [top, bottom] = [at.top - pad, at.bottom + Math.max(0, pullY) + pad]
     const dx = left < view.left ? view.left - left : right > view.right ? view.right - right : 0
-    const dy = top < view.top ? view.top - top : bottom > view.bottom ? view.bottom - bottom : 0
+    let dy = top < view.top ? view.top - top : bottom > view.bottom ? view.bottom - bottom : 0
+    // The card lies over the lower right of the stage; a book under it is lifted clear of it.
+    const card = panel.getBoundingClientRect()
+    if (right + dx > card.left && bottom + dy > card.top && card.top - view.top > at.height) {
+      dy = card.top - bottom
+    }
     if (!dx && !dy) return
     camera.x += dx
     camera.y += dy
@@ -149,21 +154,24 @@ function mount(root: HTMLElement) {
       const face = document.createElement("div")
       face.className = `bookcase-volume-${name}`
       if (name === "spine" || name === "front") face.textContent = data.title ?? ""
-      if (name === "front" && data.cover) {
-        const img = document.createElement("img")
-        img.src = data.cover
-        img.alt = ""
-        img.draggable = false
-        img.addEventListener("load", () => size(img.naturalHeight / img.naturalWidth), {
-          once: true,
-        })
-        face.append(img)
-      }
       body.append(face)
     }
+    if (data.cover) {
+      // The cover is the face's own background: a child image drops out of a 3D face at some angles.
+      const front = body.lastElementChild as HTMLElement
+      const cover = new Image()
+      cover.addEventListener("load", () => {
+        size(cover.naturalHeight / cover.naturalWidth)
+        front.textContent = ""
+        front.style.backgroundImage = `url("${cover.src}")`
+      })
+      cover.src = data.cover
+    }
+    body.classList.add("is-new")
     holder.append(body)
     let from: { x: number; y: number } | null = null
     holder.addEventListener("pointerdown", (event) => {
+      body.classList.remove("is-new")
       from = { x: event.clientX, y: event.clientY }
       holder.setPointerCapture(event.pointerId)
     })
@@ -186,6 +194,7 @@ function mount(root: HTMLElement) {
       }[event.key]
       if (!step) return
       event.preventDefault()
+      body.classList.remove("is-new")
       turn.x = Math.min(40, Math.max(-40, turn.x + step[0]))
       turn.y += step[1]
       set()
@@ -195,7 +204,18 @@ function mount(root: HTMLElement) {
 
   const describe = (book: SVGAElement) => {
     const data = book.dataset
-    panel.replaceChildren(volume(book))
+    const figure = document.createElement("figure")
+    figure.className = "bookcase-figure"
+    const hint = document.createElement("figcaption")
+    hint.textContent = `↔ ${root.dataset.turn ?? ""}`
+    figure.append(volume(book), hint)
+    const close = document.createElement("button")
+    close.type = "button"
+    close.dataset.do = "close"
+    close.textContent = "×"
+    close.title = root.dataset.close ?? ""
+    close.setAttribute("aria-label", close.title)
+    panel.replaceChildren(figure, close)
     const text = document.createElement("div")
     const line = (tag: string, content: string | undefined, className?: string) => {
       if (!content) return
@@ -244,10 +264,10 @@ function mount(root: HTMLElement) {
     }
     lift.append(out)
     book.classList.add("is-out")
-    reveal(book)
     // A frame apart, or the pull would start already finished.
     requestAnimationFrame(() => requestAnimationFrame(() => out.classList.add("is-pulled")))
     describe(book)
+    reveal(book)
   }
 
   const go = (book: SVGAElement) => window.spaNavigate(new URL(book.href.baseVal, location.href))
@@ -261,7 +281,7 @@ function mount(root: HTMLElement) {
   let dragged = false
   let travelled = 0
   on(stage, "pointerdown", (event: PointerEvent) => {
-    if ((event.target as Element).closest("button")) return
+    if ((event.target as Element).closest("button, .bookcase-panel")) return
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
     travelled = 0
     dragged = false
@@ -315,6 +335,7 @@ function mount(root: HTMLElement) {
       if (action === "in") zoom(ZOOM_STEP)
       else if (action === "out") zoom(1 / ZOOM_STEP)
       else if (action === "fit") fit()
+      else if (action === "close") drop()
       else if (action === "full") {
         const full = root.classList.toggle("is-full")
         button.setAttribute("aria-pressed", String(full))
@@ -323,6 +344,7 @@ function mount(root: HTMLElement) {
       } else aim(button.dataset.to)
       return
     }
+    if ((event.target as Element).closest(".bookcase-panel")) return
     if (dragged) {
       event.preventDefault()
       dragged = false
@@ -347,6 +369,7 @@ function mount(root: HTMLElement) {
     "wheel",
     (event: WheelEvent) => {
       const full = root.classList.contains("is-full")
+      if ((event.target as Element).closest(".bookcase-panel")) return
       if (!event.ctrlKey && !event.metaKey && !full) return
       event.preventDefault()
       const box = stage.getBoundingClientRect()
