@@ -67,6 +67,8 @@ function mount(root: HTMLElement) {
   // The opening view: close enough to read the shelf tags, from the top shelf down.
   const home = () => {
     fit(false)
+    // With nothing on the shelves yet, the nightstand is the whole story.
+    if (scene.dataset.opening === "whole") return
     const [bx, by, bw] = (scene.dataset.fit ?? "").split(",").map(Number)
     const pad = 28
     const w = stage.clientWidth
@@ -250,7 +252,13 @@ function mount(root: HTMLElement) {
     // The cover goes onto the face that the shelf was hiding: the book's front board.
     const face = (book.dataset.face ?? "").split(",").map(Number)
     const board = out.querySelector(".bookcase-cover")
-    if (book.dataset.cover && board && face.length === 6 && face.every(Number.isFinite)) {
+    if (
+      book.dataset.cover &&
+      board &&
+      !out.querySelector("image") &&
+      face.length === 6 &&
+      face.every(Number.isFinite)
+    ) {
       const [nx, ny, dx, dy, bx, by] = face
       const image = document.createElementNS(SVG, "image")
       image.setAttribute("href", book.dataset.cover)

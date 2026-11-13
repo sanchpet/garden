@@ -3,7 +3,15 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
 import { coverName } from "./cover"
-import { CASE, hashPath, packShelves, type Point, type ShelfGroup } from "./bookcase/geometry"
+import {
+  CASE,
+  bookSize,
+  hashPath,
+  packShelves,
+  type BookSize,
+  type Point,
+  type ShelfGroup,
+} from "./bookcase/geometry"
 // @ts-ignore
 import script from "./bookcase.inline"
 
@@ -12,7 +20,8 @@ import script from "./bookcase.inline"
 // aarnphm's (bookcase/geometry.ts); the hand is
 // the valve logo's (brand/src/gen_icon.py): seeded wobbly strokes and a dark contour, baked
 // into the paths so the drawing stays sharp at any zoom. The case is pencil, the books are
-// marker, and a book not yet read stays a pencil outline.
+// marker. The shelves hold what has been read; what has not been begun lies in stacks on
+// nightstands beside the case, still in its paper band, with the books being read on top.
 
 export const PALETTE = [
   "#1E3959",
@@ -40,6 +49,8 @@ export const WRAP = {
 export const HEX = /^#[0-9a-f]{6}$/i
 export const PENCIL = "var(--darkgray)"
 export const PAPER = "var(--light)"
+// A nightstand takes two stacks; a stack is closed when it would grow taller than `tall`.
+const STAND = { gap: 46, height: 176, pad: 14, between: 18, tall: 300 }
 const MIN_SHELVES = 3
 const ROWS = 5
 // A pulled book clears the case and its label tags, so the scene keeps this much room around it.
@@ -69,9 +80,10 @@ export const STATUS = {
 } as const
 export type Language = keyof typeof STATUS
 
-const UI = {
+export const UI = {
   ru: {
     all: "все",
+    stand: "тумбочка",
     open: "Заметки по книге",
     turn: "можно повертеть",
     close: "Вернуть на полку",
@@ -83,6 +95,7 @@ const UI = {
   },
   en: {
     all: "all",
+    stand: "nightstand",
     open: "Notes on the book",
     turn: "drag to turn",
     close: "Put it back",
@@ -234,8 +247,12 @@ const grow = (b: Bounds, points: readonly Point[]) => {
 const empty = (): Bounds => ({ x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity })
 const rect = (b: Bounds) => [b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0].map(f).join(",")
 
-const withoutLanguage = (slug: string) =>
+export const withoutLanguage = (slug: string) =>
   languageOf(slug) ? slug.slice(slug.indexOf("/") + 1) : slug
+export const statusOf = (book: Shelved) =>
+  typeof book.entry.properties.status === "string" ? book.entry.properties.status : ""
+// A book begun or waiting is not on the shelves.
+export const shelved = (book: Shelved) => !["later", "in-progress"].includes(statusOf(book))
 
 // A book has one card; where both languages have it, the shelf shows the page's own.
 export function ownLanguage(entries: BasesEntry[], lang: Language): Shelved[] {
@@ -333,8 +350,9 @@ viewRegistry.register({
     const lang: Language = languageOf(slug) ?? "ru"
     const ui = UI[lang]
     const note = typeof view.fallbackNote === "string" ? view.fallbackNote : ""
+    const owned = ownLanguage(entries, lang)
     const groups = grouped(
-      ownLanguage(entries, lang),
+      owned.filter(shelved),
       view.groupBy?.property,
       view.groupBy?.direction === "DESC",
     )
@@ -362,17 +380,72 @@ viewRegistry.register({
     )
     const sections = groups.map(() => empty())
 
-    const book = (placed: (typeof layout.books)[number]) => {
-      const { entry, foreign } = placed.item
+    // What a book looks like wherever it is put, and what the card says about it.
+    const describe = (item: Shelved, path: string) => {
+      const { entry, foreign } = item
       const props = entry.properties
-      const id = hashPath(placed.path)
-      const rnd = seeded(id)
-      const status = typeof props.status === "string" ? props.status : ""
-      const wrapped = status === "later"
+      const id = hashPath(path)
       const colour =
         typeof props.spine === "string" && HEX.test(props.spine)
           ? props.spine
           : PALETTE[id % PALETTE.length]
+      const full = plain(entry.title) || entry.fileProperties.basename
+      const cover = coverName(props.cover)
+      return {
+        entry,
+        foreign,
+        colour,
+        full,
+        status: statusOf(item),
+        rnd: seeded(id),
+        contour: darken(colour, 0.55),
+        letters: luminance(colour) > 0.55 ? INK : CREAM,
+        title: full.split(": ")[0].trim() || full,
+        author: plain(props.author),
+        year: plain(props.year),
+        description: plain(props.description),
+        image: cover && allSlugs.find((s) => s === cover || s.endsWith(`/${cover}`)),
+      }
+    }
+    type Described = ReturnType<typeof describe>
+    const from = slug as FullSlug
+    const coverUrl = (b: Described) => (b.image ? resolveRelative(from, b.image as FullSlug) : "")
+    // `face` is the board the cover goes on once the book is pulled out: its corner, the end
+    // of its top edge and the end of its spine edge.
+    const link = (b: Described, group: number, thick: number, face: Point[]) => ({
+      class: "bookcase-book",
+      href: resolveRelative(from, b.entry.slug as FullSlug),
+      "data-router-ignore": true,
+      "data-status": b.status,
+      "data-group": group,
+      "data-title": b.full,
+      "data-author": b.author,
+      "data-year": b.year,
+      "data-state": statusLabel(lang, b.status) ?? "",
+      "data-description": b.description,
+      "data-cover": coverUrl(b),
+      "data-colour": b.colour,
+      "data-ink": b.letters,
+      "data-edge": b.contour,
+      "data-thick": f(thick),
+      "data-face": face.flat().map(f).join(","),
+      "data-note": b.foreign ? note : "",
+      "aria-label": [b.title, b.author, b.year, statusLabel(lang, b.status)]
+        .filter(Boolean)
+        .join(", "),
+    })
+    const lettered = (b: Described, size: number, run: number) => {
+      const named = lettering(b.title, size, b.author ? run * 0.64 : run)
+      // The author gets what the title leaves; a name still too long is signed by its surname.
+      const authorSize = size * 0.72
+      const room = run - inkWidth(named.text, named.size) - 10
+      const surname = inkWidth(b.author, authorSize) > room ? b.author.split(" ").pop()! : b.author
+      return { named, signed: lettering(surname, authorSize, room) }
+    }
+
+    const book = (placed: (typeof layout.books)[number]) => {
+      const b = describe(placed.item, placed.path)
+      const { rnd, colour, contour, letters } = b
       const x = bayX(Math.floor(placed.shelf / rows)) + placed.x
       const [y, z, w, d, h] = [
         placed.setback,
@@ -382,95 +455,30 @@ viewRegistry.register({
         placed.height,
       ]
       const solid = box(x, y, z, w, d, h)
-      grow(sections[layout.shelves[placed.shelf].group], solid.edge)
-      const contour = darken(colour, 0.55)
-      const stroke = 1.6
-      const letters = luminance(colour) > 0.55 ? INK : CREAM
-      // The band takes the foot of the spine, and the lettering starts above it.
-      const wrap = wrapped ? { from: 5, to: 30 } : undefined
-      const raised = wrap ? wrap.to - 4 : 0
+      const group = layout.shelves[placed.shelf].group
+      grow(sections[group], solid.edge)
       const at = (dx: number, dz: number) => project(x + dx, y, z + dz)
       const band = (dz: number) => wobble(rnd, at(2, dz), at(w - 2, dz), 0.4)
-
-      const full = plain(entry.title) || entry.fileProperties.basename
-      const title = full.split(": ")[0].trim() || full
-      const author = plain(props.author)
-      const year = plain(props.year)
       const size = Math.min(15, Math.max(9, w * 0.58))
-      const run = h - 34 - raised
-      const named = lettering(title, size, author ? run * 0.64 : run)
-      // The author gets what the title leaves; a name still too long is signed by its surname.
-      const authorSize = size * 0.72
-      const authorRoom = run - inkWidth(named.text, named.size) - 10
-      const surname = inkWidth(author, authorSize) > authorRoom ? author.split(" ").pop()! : author
-      const signed = lettering(surname, authorSize, authorRoom)
+      const { named, signed } = lettered(b, size, h - 34)
       // An English spine reads top to bottom, a Russian one bottom to top.
-      const down = languageOf(entry.slug) === "en"
+      const down = languageOf(b.entry.slug) === "en"
       const turn = down ? [0, 1, -AXIS_X[0], -AXIS_X[1]] : [0, -1, ...AXIS_X]
-      const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17 + raised)]
+      const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17)]
       const matrix = (p: Point) => `matrix(${[...turn, ...p].map(f).join(" ")})`
-
-      const cover = coverName(props.cover)
-      const image = cover && allSlugs.find((s) => s === cover || s.endsWith(`/${cover}`))
-      const ribbon: Point[] = [
-        project(x + w / 2 - 3, y + d * 0.3, z + h - 2),
-        project(x + w / 2 + 3, y + d * 0.3, z + h - 2),
-        project(x + w / 2 + 3, y + d * 0.3, z + h + 13),
-        project(x + w / 2 - 3, y + d * 0.3, z + h + 13),
-      ]
       const [B, , D, N] = solid.side
-      const sticker = Math.min(w / 2 - 3, 7)
 
       return (
-        <a
-          class="bookcase-book"
-          href={resolveRelative(slug as FullSlug, entry.slug as FullSlug)}
-          data-router-ignore
-          data-status={status}
-          data-group={layout.shelves[placed.shelf].group}
-          data-title={full}
-          data-author={author}
-          data-year={year}
-          data-state={statusLabel(lang, status) ?? ""}
-          data-description={plain(props.description)}
-          data-cover={image ? resolveRelative(slug as FullSlug, image as FullSlug) : ""}
-          data-colour={colour}
-          data-ink={letters}
-          data-edge={contour}
-          data-thick={f(w)}
-          data-face={[N, D, B].flat().map(f).join(",")}
-          data-note={foreign ? note : ""}
-          aria-label={[title, author, year, statusLabel(lang, status)].filter(Boolean).join(", ")}
-        >
+        <a {...link(b, group, w, [N, D, B])}>
           <Face
             class="bookcase-cover"
             d={outline(rnd, solid.side, 0.5)}
             fill={darken(colour, 0.22)}
             stroke={contour}
-            width={stroke}
+            width={1.6}
           />
-          {wrap && (
-            <Face
-              d={outline(
-                rnd,
-                [
-                  project(x + w, y, z + wrap.from),
-                  project(x + w, y + d, z + wrap.from),
-                  project(x + w, y + d, z + wrap.to),
-                  project(x + w, y, z + wrap.to),
-                ],
-                0.4,
-              )}
-              fill={WRAP.side}
-              stroke={WRAP.edge}
-              width={1}
-            />
-          )}
-          <Face d={outline(rnd, solid.top, 0.4)} fill={PAGES} stroke={contour} width={stroke} />
-          {status === "in-progress" && (
-            <Face d={outline(rnd, ribbon, 0.3)} fill={MARK} stroke={BURGUNDY} width={1.1} />
-          )}
-          <Face d={outline(rnd, solid.front, 0.5)} fill={colour} stroke={contour} width={stroke} />
+          <Face d={outline(rnd, solid.top, 0.4)} fill={PAGES} stroke={contour} width={1.6} />
+          <Face d={outline(rnd, solid.front, 0.5)} fill={colour} stroke={contour} width={1.6} />
           <path
             d={[0.3, 0.72].map((t) => wobble(rnd, at(w * t, 5), at(w * t, h - 5), 0.9)).join("")}
             fill="none"
@@ -480,44 +488,13 @@ viewRegistry.register({
             opacity="0.3"
           />
           <path
-            d={band(h - 7) + band(h - 10) + (wrap ? "" : band(8))}
+            d={band(h - 7) + band(h - 10) + band(8)}
             fill="none"
             stroke={letters}
             stroke-width="0.9"
             stroke-linecap="round"
             opacity="0.85"
           />
-          {wrap && (
-            <Face
-              d={outline(
-                rnd,
-                [
-                  at(-0.5, wrap.from),
-                  at(w + 0.5, wrap.from),
-                  at(w + 0.5, wrap.to),
-                  at(-0.5, wrap.to),
-                ],
-                0.4,
-              )}
-              fill={WRAP.paper}
-              stroke={WRAP.edge}
-              width={1}
-            />
-          )}
-          {wrap && (
-            <path
-              d={blob(
-                Array.from({ length: 8 }, (_, i) => {
-                  const a = (i * Math.PI) / 4
-                  const r = sticker + (rnd() - 0.5)
-                  return at(w / 2 + r * Math.cos(a), (wrap.from + wrap.to) / 2 + r * Math.sin(a))
-                }),
-              )}
-              fill={WRAP.tag}
-              stroke={WRAP.ink}
-              stroke-width="0.8"
-            />
-          )}
           <text
             class="bookcase-title"
             transform={matrix(down ? head : foot)}
@@ -536,6 +513,220 @@ viewRegistry.register({
           )}
         </a>
       )
+    }
+
+    // The nightstands: every book not yet begun lies flat, face up, spine to the reader; the
+    // books being read lie on top of the first stack, a ribbon out of each.
+    interface Lying {
+      item: Shelved
+      path: string
+      size: BookSize
+    }
+    const lie = (item: Shelved): Lying => {
+      const path = withoutLanguage(item.entry.slug)
+      return { item, path, size: bookSize(path) }
+    }
+    const stacks: Lying[][] = []
+    let tall = 0
+    for (const waiting of owned.filter((b) => statusOf(b) === "later").map(lie)) {
+      if (stacks.length === 0 || tall + waiting.size.thickness > STAND.tall) {
+        stacks.push([])
+        tall = 0
+      }
+      stacks[stacks.length - 1].push(waiting)
+      tall += waiting.size.thickness
+    }
+    // A book being read goes on top of the first stack while there is room, else starts one.
+    const stackHeight = (stack: Lying[]) => stack.reduce((sum, one) => sum + one.size.thickness, 0)
+    for (const reading of owned.filter((b) => statusOf(b) === "in-progress").map(lie)) {
+      if (stacks.length === 0 || stackHeight(stacks[0]) + reading.size.thickness > STAND.tall) {
+        stacks.unshift([])
+      }
+      stacks[0].push(reading)
+    }
+    const plot = layout.bookHeight
+    // A stand is as wide as the stacks on it: the last one may carry a single stack.
+    const onStand = (i: number) => stacks.slice(i * 2, i * 2 + 2)
+    const standWidth = (i: number) =>
+      STAND.pad * 2 + onStand(i).length * plot + (onStand(i).length - 1) * STAND.between
+    const standX = (i: number): number =>
+      i === 0 ? width + CASE.overhang + STAND.gap : standX(i - 1) + standWidth(i - 1) + STAND.gap
+    const aside = empty()
+    const standGroup = groups.length
+
+    const lying = ({ item, path, size }: Lying, x0: number, z: number, top: boolean) => {
+      const b = describe(item, path)
+      const { rnd, colour, contour, letters } = b
+      const [l, d, t] = [size.height, size.depth, size.thickness]
+      const [x, y] = [x0 + rnd() * (plot - l), 4 + size.setback]
+      const solid = box(x, y, z, l, d, t)
+      grow(aside, solid.edge)
+      const at = (dx: number, dz: number) => project(x + dx, y, z + dz)
+      const up = (dx: number, dy: number) => project(x + dx, y + dy, z + t)
+      const wrap = b.status === "later" ? { from: 5, to: 30 } : undefined
+      const raised = wrap ? wrap.to - 2 : 0
+      const fontSize = Math.min(15, Math.max(9, t * 0.58))
+      const { named, signed } = lettered(b, fontSize, l - 30 - raised)
+      const matrix = (p: Point) => `matrix(${[...AXIS_X, 0, 1, ...p].map(f).join(" ")})`
+      const tick = (dx: number) => wobble(rnd, at(dx, 2), at(dx, t - 2), 0.4)
+      const ribbon: Point[] = [
+        project(x + l - 2, y + d * 0.3, z + t / 2 - 2.5),
+        project(x + l + 13, y + d * 0.3, z + t / 2 - 2.5),
+        project(x + l + 13, y + d * 0.3, z + t / 2 + 2.5),
+        project(x + l - 2, y + d * 0.3, z + t / 2 + 2.5),
+      ]
+      if (b.status === "in-progress") grow(aside, ribbon)
+      // Face up with the spine to the reader, a book has its head to the left.
+      const face = [up(0, 0), up(0, d), up(l, 0)]
+      const sticker = Math.min(t / 2 - 2.5, 6)
+      const onto = [
+        (face[1][0] - face[0][0]) / 100,
+        (face[1][1] - face[0][1]) / 100,
+        (face[2][0] - face[0][0]) / 100,
+        (face[2][1] - face[0][1]) / 100,
+        ...face[0],
+      ].map((n) => Math.round(n * 10000) / 10000)
+
+      return (
+        <a {...link(b, standGroup, t, face)}>
+          <Face d={outline(rnd, solid.side, 0.4)} fill={PAGES} stroke={contour} width={1.6} />
+          {b.status === "in-progress" && (
+            <Face d={outline(rnd, ribbon, 0.3)} fill={MARK} stroke={BURGUNDY} width={1.1} />
+          )}
+          <Face
+            class="bookcase-cover"
+            d={outline(rnd, solid.top, 0.5)}
+            fill={darken(colour, 0.22)}
+            stroke={contour}
+            width={1.6}
+          />
+          {top && b.image && (
+            <image
+              href={coverUrl(b)}
+              width="100"
+              height="100"
+              preserveAspectRatio="none"
+              transform={`matrix(${onto.join(" ")})`}
+            />
+          )}
+          {wrap && (
+            <Face
+              d={outline(
+                rnd,
+                [up(wrap.from, 0), up(wrap.to, 0), up(wrap.to, d), up(wrap.from, d)],
+                0.4,
+              )}
+              fill={WRAP.side}
+              stroke={WRAP.edge}
+              width={1}
+            />
+          )}
+          <Face d={outline(rnd, solid.front, 0.5)} fill={colour} stroke={contour} width={1.6} />
+          <path
+            d={wobble(rnd, at(4, t / 2), at(l - 4, t / 2), 0.9)}
+            fill="none"
+            stroke={darken(colour, 0.3)}
+            stroke-width={f(t * 0.2)}
+            stroke-linecap="round"
+            opacity="0.3"
+          />
+          <path
+            d={tick(l - 7) + tick(l - 10) + (wrap ? "" : tick(8))}
+            fill="none"
+            stroke={letters}
+            stroke-width="0.9"
+            stroke-linecap="round"
+            opacity="0.85"
+          />
+          {wrap && (
+            <Face
+              d={outline(
+                rnd,
+                [
+                  at(wrap.from, -0.4),
+                  at(wrap.to, -0.4),
+                  at(wrap.to, t + 0.4),
+                  at(wrap.from, t + 0.4),
+                ],
+                0.4,
+              )}
+              fill={WRAP.paper}
+              stroke={WRAP.edge}
+              width={1}
+            />
+          )}
+          {wrap && (
+            <path
+              d={blob(
+                Array.from({ length: 8 }, (_, i) => {
+                  const a = (i * Math.PI) / 4
+                  const r = sticker + (rnd() - 0.5)
+                  return at((wrap.from + wrap.to) / 2 + r * Math.cos(a), t / 2 + r * Math.sin(a))
+                }),
+              )}
+              fill={WRAP.tag}
+              stroke={WRAP.ink}
+              stroke-width="0.8"
+            />
+          )}
+          <text
+            class="bookcase-title"
+            transform={matrix(at(10 + raised, t / 2))}
+            style={`fill:${letters};font-size:${f(named.size)}px`}
+          >
+            {named.text}
+          </text>
+          {signed.text && (
+            <text
+              class="bookcase-author"
+              transform={matrix(at(l - 15, t / 2))}
+              style={`fill:${letters};font-size:${f(signed.size)}px`}
+            >
+              {signed.text}
+            </text>
+          )}
+        </a>
+      )
+    }
+
+    const stands = Array.from({ length: Math.ceil(stacks.length / 2) }, (_, i) => {
+      const x = standX(i)
+      const wide = standWidth(i)
+      const depth = layout.depth + 8
+      const rnd = seeded(500 + i)
+      grow(aside, box(x, 0, 0, wide, depth, STAND.height).edge)
+      const drawer: Point[] = [
+        project(x + 14, 0, STAND.height - 20),
+        project(x + wide - 14, 0, STAND.height - 20),
+        project(x + wide - 14, 0, 26),
+        project(x + 14, 0, 26),
+      ]
+      const knob = Array.from({ length: 8 }, (_, k) => {
+        const a = (k * Math.PI) / 4
+        return project(x + wide / 2 + 6 * Math.cos(a), 0, STAND.height / 2 + 6 * Math.sin(a))
+      })
+      return (
+        <g>
+          <Solid at={[x, 0, 0, wide, depth, STAND.height]} seed={600 + i} />
+          <path d={outline(rnd, drawer, 0.7)} fill="none" stroke={PENCIL} stroke-width="1.1" />
+          <path d={blob(knob)} fill={PAPER} stroke={PENCIL} stroke-width="1.1" />
+          {onStand(i).map((stack, j) => {
+            let z = STAND.height
+            return stack.map((one, k) => {
+              const at = x + STAND.pad + j * (plot + STAND.between)
+              const drawn = lying(one, at, z, k === stack.length - 1)
+              z += one.size.thickness
+              return drawn
+            })
+          })}
+        </g>
+      )
+    })
+    if (stacks.length > 0) {
+      grow(scene, [
+        [aside.x0, aside.y0],
+        [aside.x1, aside.y1],
+      ])
     }
 
     const tag = (shelf: (typeof layout.shelves)[number]) => {
@@ -594,7 +785,7 @@ viewRegistry.register({
     const [vx, vy] = [scene.x0 - MARGIN.left, scene.y0 - MARGIN.top]
     const [vw, vh] = [scene.x1 - vx + MARGIN.right, scene.y1 - vy + MARGIN.bottom]
     const pull = project(0, -(layout.depth + CASE.setback + CASE.pullClear), CASE.lift)
-    const tabs = groups.filter((g) => g.label).length > 1
+    const tabs = groups.filter((g) => g.label).length > 1 || stacks.length > 0
 
     return (
       <div
@@ -611,6 +802,7 @@ viewRegistry.register({
             height={f(vh)}
             viewBox={[vx, vy, vw, vh].map(f).join(" ")}
             data-fit={rect(scene)}
+            data-opening={layout.books.length === 0 ? "whole" : "shelves"}
           >
             <Face d={outline(back, panel, 0.8)} fill={PAPER} stroke={PENCIL} width={1.3} />
             {drawn}
@@ -626,6 +818,7 @@ viewRegistry.register({
               ]}
               seed={4}
             />
+            {stands}
             <g class="bookcase-lift" aria-hidden="true" />
           </svg>
           <div class="bookcase-controls">
@@ -654,6 +847,11 @@ viewRegistry.register({
                       {group.label} <small>{group.books.length}</small>
                     </button>
                   ),
+              )}
+              {stacks.length > 0 && (
+                <button type="button" data-to={rect(aside)}>
+                  {ui.stand} <small>{stacks.flat().length}</small>
+                </button>
               )}
             </div>
           )}

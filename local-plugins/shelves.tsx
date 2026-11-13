@@ -9,6 +9,7 @@ import {
   INK,
   MARK,
   PALETTE,
+  UI,
   WRAP,
   blob,
   darken,
@@ -21,7 +22,10 @@ import {
   ownLanguage,
   plain,
   seeded,
+  shelved,
   statusLabel,
+  statusOf,
+  withoutLanguage,
   wobble,
   type Language,
   type Shelved,
@@ -29,22 +33,28 @@ import {
 import { bookSize, hashPath, type Point } from "./bookcase/geometry"
 
 // A Bases view, `type: shelves`: the same books as the bookcase, face on — spines in rows that
-// wrap with the page, a pencil board under each row. No script: a spine is a link.
+// wrap with the page, a pencil board under each row, and after the shelves the stacks from the
+// nightstand: what is being read on what has not been begun. No script: a spine is a link.
 
 const BOOK_BOX = 232 // every book stands in a box this tall, so a wrapped row has a known height
 const BOARD = 34
 const TILE = 640
+
+// The room a spine takes in a stack, where it lies on its side.
+const lyingHeight = (path: string) => Math.round(bookSize(path).thickness * 1.2 + 16) + 8
 
 function Spine({
   book,
   path,
   from,
   lang,
+  lying = false,
 }: {
   book: Shelved
   path: string
   from: FullSlug
   lang: Language
+  lying?: boolean
 }) {
   const { entry } = book
   const props = entry.properties
@@ -91,13 +101,17 @@ function Spine({
 
   return (
     <a
-      class="internal shelves-book"
+      class={lying ? "internal shelves-book is-lying" : "internal shelves-book"}
       href={resolveRelative(from, entry.slug as FullSlug)}
       data-slug={entry.slug}
       aria-label={[title, author, plain(props.year), statusLabel(lang, status)]
         .filter(Boolean)
         .join(", ")}
-      style={`--lean:${f((rnd() * 2 - 1) * 1.2)}deg`}
+      style={
+        lying
+          ? `width:${h}px;height:${w}px;--turn:${-turn}deg`
+          : `--lean:${f((rnd() * 2 - 1) * 1.2)}deg`
+      }
     >
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
         {tab > 0 && (
@@ -228,11 +242,36 @@ viewRegistry.register({
   icon: "library",
   render: ({ entries, view, slug }) => {
     const lang: Language = languageOf(slug) ?? "ru"
+    const owned = ownLanguage(entries, lang)
     const groups = grouped(
-      ownLanguage(entries, lang),
+      owned.filter(shelved),
       view.groupBy?.property,
       view.groupBy?.direction === "DESC",
     )
+    // The stacks, each listed from the top down: what is being read lies on the first one.
+    const aside = (status: string) =>
+      owned
+        .filter((b) => statusOf(b) === status)
+        .map((item) => ({ item, path: withoutLanguage(item.entry.slug) }))
+    const stacks: ReturnType<typeof aside>[] = []
+    let tall = 0
+    for (const waiting of aside("later")) {
+      if (stacks.length === 0 || tall + lyingHeight(waiting.path) > BOOK_BOX) {
+        stacks.push([])
+        tall = 0
+      }
+      stacks[stacks.length - 1].unshift(waiting)
+      tall += lyingHeight(waiting.path)
+    }
+    // A book being read goes on top of the first stack while there is room, else starts one.
+    const height = (stack: ReturnType<typeof aside>) =>
+      stack.reduce((sum, { path }) => sum + lyingHeight(path), 0)
+    for (const reading of aside("in-progress")) {
+      if (stacks.length === 0 || height(stacks[0]) + lyingHeight(reading.path) + 15 > BOOK_BOX) {
+        stacks.unshift([])
+      }
+      stacks[0].unshift(reading)
+    }
     return (
       <div class="shelves">
         {groups.map((group) => (
@@ -245,6 +284,20 @@ viewRegistry.register({
             {group.label && <p class="shelves-label">{group.label}</p>}
           </section>
         ))}
+        {stacks.length > 0 && (
+          <section class="shelves-shelf">
+            <div class="shelves-row">
+              {stacks.map((stack) => (
+                <div class="shelves-stack">
+                  {stack.map(({ path, item }) => (
+                    <Spine book={item} path={path} from={slug as FullSlug} lang={lang} lying />
+                  ))}
+                </div>
+              ))}
+            </div>
+            <p class="shelves-label">{UI[lang].stand}</p>
+          </section>
+        )}
       </div>
     )
   },
@@ -315,6 +368,33 @@ a.internal.shelves-book:focus-visible {
 a.internal.shelves-book:focus-visible {
   outline: 2px dashed var(--secondary);
   outline-offset: 2px;
+}
+/* A stack: the same spines lying on their sides, one on another. */
+.shelves-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: ${BOOK_BOX}px;
+  margin: 0 0.9rem ${BOARD}px 0;
+}
+a.internal.shelves-book.is-lying {
+  position: relative;
+  display: block;
+  flex: none;
+  margin: 0;
+  transform: none;
+}
+a.internal.shelves-book.is-lying > svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%) rotate(var(--turn));
+}
+a.internal.shelves-book.is-lying:hover,
+a.internal.shelves-book.is-lying:focus-visible {
+  transform: translateX(-10px);
 }
 .shelves text {
   font-family: "Caveat", cursive;
