@@ -1,3 +1,5 @@
 public
 node_modules
 .quartz-cache
+local-plugins/bookcase/geometry.ts
+local-plugins/bookcase/LICENSE

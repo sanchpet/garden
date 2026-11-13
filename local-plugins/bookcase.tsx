@@ -1,0 +1,767 @@
+import { viewRegistry, type BasesEntry } from "@quartz-community/bases-page"
+import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
+import { FullSlug, resolveRelative } from "../quartz/util/path"
+import { languageOf } from "./bilingual"
+import { coverName } from "./cover"
+import {
+  CASE,
+  COS30,
+  box,
+  hashPath,
+  packShelves,
+  project,
+  type Point,
+  type ShelfGroup,
+} from "./bookcase/geometry"
+// @ts-ignore
+import script from "./bookcase.inline"
+
+// A Bases view, `type: bookcase`: the query result as one isometric bookcase, a shelf run per
+// `groupBy` value. The solids and the packing are aarnphm's (bookcase/geometry.ts); the hand is
+// the valve logo's (brand/src/gen_icon.py): seeded wobbly strokes and a dark contour, baked
+// into the paths so the drawing stays sharp at any zoom. The case is pencil, the books are
+// marker, and a book not yet read stays a pencil outline.
+
+const PALETTE = [
+  "#1E3959",
+  "#2F5D50",
+  "#B8553A",
+  "#D9A441",
+  "#5B3A5E",
+  "#84A59D",
+  "#284B63",
+  "#8C2F39",
+]
+const CREAM = "#F5ECDC"
+const PAGES = "#EFE6D4"
+const INK = "#1B1A1C"
+const MARK = "#EC0E16"
+const BURGUNDY = "#5E0611"
+const HEX = /^#[0-9a-f]{6}$/i
+const PENCIL = "var(--darkgray)"
+const PAPER = "var(--light)"
+const MIN_SHELVES = 3
+const ROWS = 5
+// A pulled book clears the case and its label tags, so the scene keeps this much room around it.
+const MARGIN = { left: 190, right: 30, top: 30, bottom: 110 }
+
+export const STATUS = {
+  ru: { later: "в очереди", "in-progress": "читаю", done: "прочитано" },
+  en: { later: "to read", "in-progress": "reading", done: "read" },
+} as const
+type Language = keyof typeof STATUS
+
+const UI = {
+  ru: {
+    all: "все",
+    open: "Открыть карточку",
+    zoomIn: "Приблизить",
+    zoomOut: "Отдалить",
+    fit: "Весь шкаф",
+    full: "На весь экран",
+    sections: "Разделы",
+  },
+  en: {
+    all: "all",
+    open: "Open the card",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    fit: "Whole bookcase",
+    full: "Full screen",
+    sections: "Sections",
+  },
+}
+
+export function statusLabel(lang: Language, status: unknown): string | undefined {
+  const words: Record<string, string> = STATUS[lang]
+  return typeof status === "string" && Object.hasOwn(words, status) ? words[status] : undefined
+}
+
+// A property as a reader would see it: the first of a list, a wikilink by its name.
+export function plain(value: unknown): string {
+  const first = Array.isArray(value) ? value[0] : value
+  if (typeof first !== "string" && typeof first !== "number") return ""
+  const text = String(first).trim()
+  const link = /^\[\[([^\]|]*)(?:\|([^\]]*))?\]\]$/.exec(text)
+  return link ? (link[2] ?? link[1].split("/").pop()!).trim() : text
+}
+
+// mulberry32: a drawing must come out the same on every build.
+function seeded(seed: number): () => number {
+  let a = seed
+  return () => {
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+const f = (v: number) => String(Math.round(v * 10) / 10)
+
+// A stroke from a to b that drifts off the straight line by up to `amp`, as a hand does.
+function wobble(rnd: () => number, a: Point, b: Point, amp: number, move = true): string {
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
+  const length = Math.hypot(dx, dy) || 1
+  const n = Math.max(1, Math.round(length / 70))
+  const [nx, ny] = [-dy / length, dx / length]
+  const off = () => (rnd() * 2 - 1) * amp
+  let d = move ? `M${f(a[0])} ${f(a[1])}` : ""
+  for (let i = 1; i <= n; i++) {
+    const t = i / n
+    const end = i < n ? off() : 0
+    const mid = off()
+    const tm = t - 0.5 / n
+    d += `Q${f(a[0] + dx * tm + nx * mid)} ${f(a[1] + dy * tm + ny * mid)} ${f(a[0] + dx * t + nx * end)} ${f(a[1] + dy * t + ny * end)}`
+  }
+  return d
+}
+
+function outline(rnd: () => number, points: readonly Point[], amp: number): string {
+  return (
+    points.map((p, i) => wobble(rnd, p, points[(i + 1) % points.length], amp, i === 0)).join("") +
+    "Z"
+  )
+}
+
+function luminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function darken(hex: string, by: number): string {
+  return (
+    "#" +
+    [1, 3, 5]
+      .map((i) =>
+        Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - by))
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("")
+  )
+}
+
+// Caveat's advance by kind of glyph, in em, measured on the bold cut and rounded up.
+function inkWidth(text: string, size: number): number {
+  let em = 0
+  for (const ch of text) {
+    if (ch === " ") em += 0.24
+    else if (/[A-ZА-ЯЁ]/.test(ch)) em += 0.6
+    else if (/[а-яёmw]/.test(ch)) em += 0.48
+    else em += 0.36
+  }
+  return em * size
+}
+
+// A text too long for its room is first written smaller, then cut.
+function lettering(text: string, size: number, room: number): { text: string; size: number } {
+  const natural = inkWidth(text, size)
+  if (natural <= room) return { text, size }
+  const smaller = Math.max(size * 0.66, (size * room) / natural)
+  let cut = text
+  while (cut.length > 1 && inkWidth(`${cut}…`, smaller) > room) cut = cut.slice(0, -1).trimEnd()
+  return { text: cut === text ? text : `${cut}…`, size: smaller }
+}
+
+interface Shelved {
+  entry: BasesEntry
+  foreign: boolean
+}
+
+interface Bounds {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
+const grow = (b: Bounds, points: readonly Point[]) => {
+  for (const [x, y] of points) {
+    b.x0 = Math.min(b.x0, x)
+    b.y0 = Math.min(b.y0, y)
+    b.x1 = Math.max(b.x1, x)
+    b.y1 = Math.max(b.y1, y)
+  }
+}
+const empty = (): Bounds => ({ x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity })
+const rect = (b: Bounds) => [b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0].map(f).join(",")
+
+const withoutLanguage = (slug: string) =>
+  languageOf(slug) ? slug.slice(slug.indexOf("/") + 1) : slug
+
+// A book has one card; where both languages have it, the shelf shows the page's own.
+function ownLanguage(entries: BasesEntry[], lang: Language): Shelved[] {
+  const byBook = new Map<string, Shelved>()
+  for (const entry of entries) {
+    const foreign = languageOf(entry.slug) !== undefined && languageOf(entry.slug) !== lang
+    const key = withoutLanguage(entry.slug)
+    if (!byBook.has(key) || !foreign) byBook.set(key, { entry, foreign })
+  }
+  return [...byBook.values()]
+}
+
+// Bases sorts the entries by the view's `sort`, so the shelves take their order from the
+// group value itself.
+function grouped(
+  books: Shelved[],
+  property: string | undefined,
+  descending: boolean,
+): ShelfGroup<Shelved>[] {
+  const key = property?.replace(/^note\./, "")
+  const groups = new Map<string, Shelved[]>()
+  for (const book of books) {
+    const name = key ? plain(book.entry.properties[key]) : ""
+    groups.set(name, [...(groups.get(name) ?? []), book])
+  }
+  const named = [...groups].sort(
+    ([a], [b]) => (a === "" ? 1 : b === "" ? -1 : a.localeCompare(b)) * (descending ? -1 : 1),
+  )
+  return named.map(([label, members]) => ({
+    label: label || null,
+    books: members.map((item) => ({ path: withoutLanguage(item.entry.slug), item })),
+  }))
+}
+
+function Face({
+  d,
+  fill,
+  stroke,
+  width,
+  class: className,
+}: {
+  d: string
+  fill: string
+  stroke: string
+  width: number
+  class?: string
+}) {
+  return (
+    <path
+      class={className}
+      d={d}
+      fill={fill}
+      stroke={stroke}
+      stroke-width={width}
+      stroke-linejoin="round"
+    />
+  )
+}
+
+function Solid({
+  at,
+  seed,
+}: {
+  at: [number, number, number, number, number, number]
+  seed: number
+}) {
+  const rnd = seeded(seed)
+  const solid = box(...at)
+  const hatch = Array.from({ length: Math.floor(at[5] / 16) }, (_, i) => {
+    const z = at[2] + at[5] - 8 - i * 16 + rnd() * 6
+    const y = at[1] + 3 + rnd() * 10
+    if (rnd() < 0.35) return ""
+    return wobble(
+      rnd,
+      project(at[0] + at[3], y, z),
+      project(at[0] + at[3], y + 7 + rnd() * 5, z + 9 + rnd() * 5),
+      0.5,
+    )
+  }).join("")
+  return (
+    <g>
+      {[solid.side, solid.front, solid.top].map((face) => (
+        <Face d={outline(rnd, face, 0.7)} fill={PAPER} stroke={PENCIL} width={1.3} />
+      ))}
+      {hatch && <path d={hatch} fill="none" stroke={PENCIL} stroke-width="0.8" opacity="0.5" />}
+    </g>
+  )
+}
+
+viewRegistry.register({
+  id: "bookcase",
+  name: "Bookcase",
+  icon: "library",
+  render: ({ entries, view, slug, allSlugs }) => {
+    const lang: Language = languageOf(slug) ?? "ru"
+    const ui = UI[lang]
+    const note = typeof view.fallbackNote === "string" ? view.fallbackNote : ""
+    const groups = grouped(
+      ownLanguage(entries, lang),
+      view.groupBy?.property,
+      view.groupBy?.direction === "DESC",
+    )
+    const layout = packShelves(groups)
+    const shelves = Math.max(layout.shelves.length, MIN_SHELVES)
+    const rows = Math.min(ROWS, shelves)
+    const bays = Math.ceil(shelves / rows)
+    const inner = layout.shelfWidth + CASE.start
+    const height = CASE.plinth + rows * layout.pitch + CASE.board
+    const width = CASE.wall + bays * (inner + CASE.wall)
+    const bayX = (bay: number) => CASE.wall + bay * (inner + CASE.wall)
+    const floor = (shelf: number) =>
+      CASE.plinth + CASE.board + (rows - 1 - (shelf % rows)) * layout.pitch
+    const scene = empty()
+    grow(
+      scene,
+      box(
+        -CASE.overhang,
+        -CASE.overhang,
+        0,
+        width + 2 * CASE.overhang,
+        layout.depth + CASE.overhang,
+        height + CASE.crown,
+      ).edge,
+    )
+    const sections = groups.map(() => empty())
+
+    const book = (placed: (typeof layout.books)[number]) => {
+      const { entry, foreign } = placed.item
+      const props = entry.properties
+      const id = hashPath(placed.path)
+      const rnd = seeded(id)
+      const status = typeof props.status === "string" ? props.status : ""
+      const unread = status === "later"
+      const colour =
+        typeof props.spine === "string" && HEX.test(props.spine)
+          ? props.spine
+          : PALETTE[id % PALETTE.length]
+      const x = bayX(Math.floor(placed.shelf / rows)) + placed.x
+      const [y, z, w, d, h] = [
+        placed.setback,
+        floor(placed.shelf),
+        placed.thickness,
+        placed.depth,
+        placed.height,
+      ]
+      const solid = box(x, y, z, w, d, h)
+      grow(sections[layout.shelves[placed.shelf].group], solid.edge)
+      const contour = unread ? PENCIL : darken(colour, 0.55)
+      const stroke = unread ? 1.1 : 1.6
+      const letters = unread ? PENCIL : luminance(colour) > 0.55 ? INK : CREAM
+      const at = (dx: number, dz: number) => project(x + dx, y, z + dz)
+      const band = (dz: number) => wobble(rnd, at(2, dz), at(w - 2, dz), 0.4)
+
+      const full = plain(entry.title) || entry.fileProperties.basename
+      const title = full.split(": ")[0].trim() || full
+      const author = plain(props.author)
+      const year = plain(props.year)
+      const size = Math.min(15, Math.max(9, w * 0.58))
+      const run = h - 34
+      const named = lettering(title, size, author ? run * 0.64 : run)
+      // The author gets what the title leaves; a name still too long is signed by its surname.
+      const authorSize = size * 0.72
+      const authorRoom = run - inkWidth(named.text, named.size) - 10
+      const surname = inkWidth(author, authorSize) > authorRoom ? author.split(" ").pop()! : author
+      const signed = lettering(surname, authorSize, authorRoom)
+      // An English spine reads top to bottom, a Russian one bottom to top.
+      const down = languageOf(entry.slug) === "en"
+      const turn = down ? [0, 1, -COS30, -0.5] : [0, -1, COS30, 0.5]
+      const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17)]
+      const matrix = (p: Point) => `matrix(${[...turn, ...p].map(f).join(" ")})`
+
+      const cover = coverName(props.cover)
+      const image = cover && allSlugs.find((s) => s === cover || s.endsWith(`/${cover}`))
+      const ribbon: Point[] = [
+        project(x + w / 2 - 3, y + d * 0.3, z + h - 2),
+        project(x + w / 2 + 3, y + d * 0.3, z + h - 2),
+        project(x + w / 2 + 3, y + d * 0.3, z + h + 13),
+        project(x + w / 2 - 3, y + d * 0.3, z + h + 13),
+      ]
+      const [B, , D, N] = solid.side
+
+      return (
+        <a
+          class="bookcase-book"
+          href={resolveRelative(slug as FullSlug, entry.slug as FullSlug)}
+          data-router-ignore
+          data-status={status}
+          data-group={layout.shelves[placed.shelf].group}
+          data-title={full}
+          data-author={author}
+          data-year={year}
+          data-state={statusLabel(lang, status) ?? ""}
+          data-description={plain(props.description)}
+          data-cover={image ? resolveRelative(slug as FullSlug, image as FullSlug) : ""}
+          data-face={[N, D, B].flat().map(f).join(",")}
+          data-note={foreign ? note : ""}
+          aria-label={[title, author, year, statusLabel(lang, status)].filter(Boolean).join(", ")}
+        >
+          <Face
+            class="bookcase-cover"
+            d={outline(rnd, solid.side, 0.5)}
+            fill={unread ? PAPER : darken(colour, 0.22)}
+            stroke={contour}
+            width={stroke}
+          />
+          <Face
+            d={outline(rnd, solid.top, 0.4)}
+            fill={unread ? PAPER : PAGES}
+            stroke={contour}
+            width={stroke}
+          />
+          {status === "in-progress" && (
+            <Face d={outline(rnd, ribbon, 0.3)} fill={MARK} stroke={BURGUNDY} width={1.1} />
+          )}
+          <Face
+            d={outline(rnd, solid.front, 0.5)}
+            fill={unread ? PAPER : colour}
+            stroke={contour}
+            width={stroke}
+          />
+          {unread ? (
+            <path
+              d={Array.from({ length: Math.floor(h / 13) }, (_, i) =>
+                wobble(rnd, at(w - 2, h - 6 - i * 13), at(w - 9, h - 15 - i * 13), 0.4),
+              ).join("")}
+              fill="none"
+              stroke="var(--gray)"
+              stroke-width="0.8"
+            />
+          ) : (
+            <path
+              d={[0.3, 0.72].map((t) => wobble(rnd, at(w * t, 5), at(w * t, h - 5), 0.9)).join("")}
+              fill="none"
+              stroke={darken(colour, 0.3)}
+              stroke-width={f(w * 0.16)}
+              stroke-linecap="round"
+              opacity="0.3"
+            />
+          )}
+          <path
+            d={band(h - 7) + band(h - 10) + band(8)}
+            fill="none"
+            stroke={letters}
+            stroke-width="0.9"
+            stroke-linecap="round"
+            opacity="0.85"
+          />
+          <text
+            class="bookcase-title"
+            transform={matrix(down ? head : foot)}
+            style={`fill:${letters};font-size:${f(named.size)}px`}
+          >
+            {named.text}
+          </text>
+          {signed.text && (
+            <text
+              class="bookcase-author"
+              transform={matrix(down ? foot : head)}
+              style={`fill:${letters};font-size:${f(signed.size)}px`}
+            >
+              {signed.text}
+            </text>
+          )}
+        </a>
+      )
+    }
+
+    const tag = (shelf: (typeof layout.shelves)[number]) => {
+      if (!shelf.label) return null
+      const rnd = seeded(hashPath(shelf.label))
+      const x = bayX(Math.floor(shelf.index / rows)) + 8
+      const z = floor(shelf.index) - CASE.board
+      const w = inkWidth(shelf.label, 13) + 12
+      const plate: Point[] = [
+        project(x, -1, z + 2),
+        project(x + w, -1, z + 2),
+        project(x + w, -1, z - 16),
+        project(x, -1, z - 16),
+      ]
+      return (
+        <g>
+          <Face d={outline(rnd, plate, 0.4)} fill={PAPER} stroke={PENCIL} width={1} />
+          <text
+            class="bookcase-tag"
+            transform={`matrix(${[COS30, 0.5, 0, 1, ...project(x + 6, -1, z - 7)].map(f).join(" ")})`}
+          >
+            {shelf.label}
+          </text>
+        </g>
+      )
+    }
+
+    const drawn = Array.from({ length: bays }, (_, bay) => {
+      const x = bayX(bay)
+      const runs = Array.from({ length: rows }, (_, i) => bay * rows + rows - 1 - i)
+      return (
+        <g>
+          <Solid at={[x - CASE.wall, 0, 0, CASE.wall, layout.depth, height]} seed={bay * 97 + 1} />
+          <Solid at={[x, 0, 0, inner, layout.depth, CASE.plinth]} seed={bay * 97 + 2} />
+          {runs.map((index) => (
+            <g>
+              <Solid
+                at={[x, 0, floor(index) - CASE.board, inner, layout.depth, CASE.board]}
+                seed={index * 31 + 5}
+              />
+              {layout.books.filter((b) => b.shelf === index).map(book)}
+            </g>
+          ))}
+          {runs.map((index) => layout.shelves[index] && tag(layout.shelves[index]))}
+        </g>
+      )
+    })
+
+    const back = seeded(11)
+    const panel: Point[] = [
+      project(0, layout.depth, 0),
+      project(width, layout.depth, 0),
+      project(width, layout.depth, height),
+      project(0, layout.depth, height),
+    ]
+    const [vx, vy] = [scene.x0 - MARGIN.left, scene.y0 - MARGIN.top]
+    const [vw, vh] = [scene.x1 - vx + MARGIN.right, scene.y1 - vy + MARGIN.bottom]
+    const pull = project(0, -(layout.depth + CASE.setback + CASE.pullClear), CASE.lift)
+    const tabs = groups.filter((g) => g.label).length > 1
+
+    return (
+      <div
+        class="bookcase"
+        data-open={ui.open}
+        style={`--pull-x:${f(pull[0])}px;--pull-y:${f(pull[1])}px`}
+      >
+        <div class="bookcase-stage">
+          <svg
+            class="bookcase-scene"
+            width={f(vw)}
+            height={f(vh)}
+            viewBox={[vx, vy, vw, vh].map(f).join(" ")}
+            data-fit={rect(scene)}
+          >
+            <Face d={outline(back, panel, 0.8)} fill={PAPER} stroke={PENCIL} width={1.3} />
+            {drawn}
+            <Solid at={[width - CASE.wall, 0, 0, CASE.wall, layout.depth, height]} seed={3} />
+            <Solid
+              at={[
+                -CASE.overhang,
+                -CASE.overhang,
+                height,
+                width + 2 * CASE.overhang,
+                layout.depth + CASE.overhang,
+                CASE.crown,
+              ]}
+              seed={4}
+            />
+            <g class="bookcase-lift" aria-hidden="true" />
+          </svg>
+          <div class="bookcase-controls">
+            <button type="button" data-do="in" aria-label={ui.zoomIn} title={ui.zoomIn}>
+              +
+            </button>
+            <button type="button" data-do="out" aria-label={ui.zoomOut} title={ui.zoomOut}>
+              −
+            </button>
+            <button type="button" data-do="fit" aria-label={ui.fit} title={ui.fit}>
+              ⤢
+            </button>
+            <button type="button" data-do="full" aria-label={ui.full} title={ui.full}>
+              ⛶
+            </button>
+          </div>
+          {tabs && (
+            <div class="bookcase-sections" role="group" aria-label={ui.sections}>
+              <button type="button" data-do="fit">
+                {ui.all}
+              </button>
+              {groups.map(
+                (group, i) =>
+                  group.label && (
+                    <button type="button" data-to={rect(sections[i])}>
+                      {group.label} <small>{group.books.length}</small>
+                    </button>
+                  ),
+              )}
+            </div>
+          )}
+        </div>
+        <aside class="bookcase-panel" hidden aria-live="polite" />
+      </div>
+    )
+  },
+  css: `
+@font-face {
+  font-family: "Caveat";
+  src: url("/static/caveat.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+.bookcase {
+  margin: 1.5rem 0 2rem;
+}
+/* The catalogue is its folder's index note; the folder listing under it would repeat the shelf. */
+article:has(.bookcase) + .page-listing {
+  display: none;
+}
+.bookcase-stage {
+  position: relative;
+  overflow: auto;
+  max-height: min(78vh, 680px);
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+}
+.bookcase.is-live .bookcase-stage {
+  overflow: hidden;
+  height: min(72vh, 620px);
+  touch-action: pan-y;
+  cursor: grab;
+}
+.bookcase.is-live .bookcase-stage.is-dragging {
+  cursor: grabbing;
+}
+.bookcase.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--light);
+}
+.bookcase.is-full .bookcase-stage {
+  flex: 1;
+  height: auto;
+  max-height: none;
+  border: 0;
+  touch-action: none;
+}
+.bookcase-scene {
+  display: block;
+  transform-origin: 0 0;
+}
+.bookcase.is-gliding .bookcase-scene {
+  transition: transform 0.35s ease;
+}
+.bookcase-scene text {
+  font-family: "Caveat", cursive;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.bookcase-title {
+  font-weight: 700;
+}
+.bookcase-author {
+  font-weight: 500;
+  text-anchor: end;
+}
+.bookcase-scene .bookcase-tag {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--darkgray);
+}
+.bookcase-book {
+  cursor: pointer;
+  outline: none;
+}
+.bookcase-book:focus-visible > path[stroke-linejoin] {
+  stroke: var(--secondary);
+  stroke-width: 3;
+}
+.bookcase-book.is-out {
+  visibility: hidden;
+}
+.bookcase-lift > g {
+  transition: transform 0.28s ease-out;
+}
+.bookcase-lift > g.is-pulled {
+  transform: translate(var(--pull-x), var(--pull-y));
+}
+.bookcase-controls,
+.bookcase-sections {
+  display: none;
+}
+.bookcase.is-live .bookcase-controls,
+.bookcase.is-live .bookcase-sections {
+  position: absolute;
+  display: flex;
+  gap: 0.3rem;
+}
+.bookcase-controls {
+  top: 0.6rem;
+  right: 0.6rem;
+  flex-direction: column;
+}
+.bookcase-sections {
+  left: 0.6rem;
+  bottom: 0.6rem;
+  right: 0.6rem;
+  flex-wrap: wrap;
+}
+.bookcase button {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--lightgray);
+  border-radius: 4px;
+  background: var(--light);
+  color: var(--darkgray);
+  font-family: "Caveat", cursive;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.bookcase button:hover,
+.bookcase button[aria-pressed="true"] {
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+.bookcase button small {
+  opacity: 0.6;
+}
+.bookcase-panel {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.9rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+}
+.bookcase-panel[hidden] {
+  display: none;
+}
+.bookcase.is-full .bookcase-panel {
+  margin: 0;
+  border-width: 1px 0 0;
+  border-radius: 0;
+  max-height: 40vh;
+  overflow: auto;
+}
+.bookcase-panel img {
+  flex: none;
+  width: 92px;
+  height: auto;
+  align-self: flex-start;
+  margin: 0;
+  border-radius: 3px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+}
+.bookcase-panel h3 {
+  margin: 0 0 0.2rem;
+}
+.bookcase-panel p {
+  margin: 0.25rem 0;
+}
+.bookcase-panel .bookcase-byline {
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+.bookcase-panel .bookcase-note {
+  color: var(--gray);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bookcase.is-gliding .bookcase-scene,
+  .bookcase-lift > g {
+    transition: none;
+  }
+}
+`,
+})
+
+// The view's script travels with a header component: a base embedded in a note is rendered
+// without the script a view registers.
+export const BookcaseScript = (() => {
+  const Script: QuartzComponent = () => null
+  Script.afterDOMLoaded = script
+  return Script
+}) satisfies QuartzComponentConstructor
