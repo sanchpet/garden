@@ -25,3 +25,5 @@ for px, im in icons.items():
 icons[48].save(OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)], append_images=[icons[16], icons[32]])
 render("valve.svg", 180).save(OUT / "apple-touch-icon.png", optimize=True)
 render("valve.svg", 512).save(OUT / "icon.png", optimize=True)
+# The home link in the page header: 36 px CSS, sharp at 2x.
+render("valve.svg", 72).save(OUT / "logo-72.png", optimize=True)
