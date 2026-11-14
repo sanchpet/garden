@@ -1,5 +1,5 @@
 import { loadQuartzConfig, loadQuartzLayout } from "./quartz/plugins/loader/config-loader"
-import { GardenFrontmatter, StripPrivateLinks } from "./local-plugins/garden"
+import { GardenFrontmatter, ObsidianOnlyBlocks, StripPrivateLinks } from "./local-plugins/garden"
 import {
   LanguageLinks,
   LanguageSwitch,
@@ -21,6 +21,8 @@ import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 const config = await loadQuartzConfig()
 // Appended last: they read what the core transformers have already resolved,
 // and links must find their language before unpublished ones are stripped.
+// First, before the table of contents collects headings that are about to go.
+config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.push(
   PageLanguage(),
   GardenFrontmatter(),
