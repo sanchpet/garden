@@ -482,8 +482,8 @@ a.races-bib {
 .races-bibs > li:nth-child(even) a.races-bib {
   transform: rotate(0.7deg);
 }
-a.races-bib:hover,
-a.races-bib:focus-visible {
+.races-bibs > li a.races-bib:hover,
+.races-bibs > li a.races-bib:focus-visible {
   transform: rotate(0deg) scale(1.02);
   color: #2b2b2b;
 }
@@ -634,7 +634,7 @@ a.races-bib.is-planned {
 }
 .races-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem 1rem;
   margin-top: 0.75rem;
 }
@@ -657,8 +657,11 @@ a.races-bib.is-planned {
   margin-top: 0.6rem;
   font-size: 0.9rem;
 }
+/* The site pulls a checkbox left into a task list's gutter; here it sits before its label. */
 .races :is(.races-checks, .races-check) input {
-  accent-color: ${MARK};
+  margin-inline-start: 0;
+  transform: none;
+  vertical-align: text-bottom;
 }
 .races-reset,
 .races-more {
