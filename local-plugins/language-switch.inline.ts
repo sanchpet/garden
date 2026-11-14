@@ -32,7 +32,10 @@ async function switchTo(link: HTMLAnchorElement) {
   const max = document.documentElement.scrollHeight - window.innerHeight
   const ratio = max > 0 ? window.scrollY / max : 0
   rememberLanguage(link.dataset.lang!)
-  await window.spaNavigate(new URL(link.href), false, { replace: true, keepScroll: true })
+  // The twin is the same page in the other language, so what the query selects carries over.
+  const twin = new URL(link.href)
+  twin.search = location.search
+  await window.spaNavigate(twin, false, { replace: true, keepScroll: true })
   const newMax = document.documentElement.scrollHeight - window.innerHeight
   // "instant": the site scrolls smoothly, and an animated jump would read as navigation.
   window.scrollTo({ top: ratio * newMax, behavior: "instant" })

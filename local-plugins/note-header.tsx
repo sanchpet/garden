@@ -43,7 +43,9 @@ export const NoteHeader = (() => {
     const classes = Array.isArray(fm.cssclasses) ? fm.cssclasses : []
     const book = fm.type === "book"
     const tool = fm.type === "tool"
-    if ((!text && !book && !tool) || classes.includes("home")) return null
+    // The race calendar (`type: races`) is drawn under the note, which may have no text of its own.
+    const calendar = fm.type === "races"
+    if ((!text && !book && !tool && !calendar) || classes.includes("home")) return null
 
     const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
     const l = LABELS[lang]
@@ -106,7 +108,7 @@ export const NoteHeader = (() => {
               </dd>
             </div>
           )}
-          {modified && (
+          {modified && !calendar && (
             <div>
               <dt>{l.modified}</dt>
               <dd>

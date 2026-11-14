@@ -5,7 +5,7 @@ on:
     branches: [main]
   workflow_dispatch:
   repository_dispatch:
-    types: [garden-texts]
+    types: [garden-texts, races-feed]
 
 permissions:
   contents: write
@@ -31,6 +31,23 @@ jobs:
           repository: sanchpet/garden-texts
           path: content
           fetch-depth: 0
+
+      # The race calendar's data: one JSON on the public branch of sanchpet/races.
+      - uses: actions/checkout@v6
+        with:
+          repository: sanchpet/races
+          ref: public
+          path: races-feed
+
+      # A broken feed must not hold back a text: fall back to the feed the site already serves.
+      - name: Check the race feed
+        run: |
+          check() { jq -e '(.events | length > 0) and (.regions | length > 0) and (.regions | all(.labels.en))' "$1" > /dev/null; }
+          if ! check races-feed/events.json; then
+            echo "::warning::The race feed is missing or broken; keeping the one already published."
+            curl -fsS --retry 3 -o races-feed/events.json https://sanch.pet/static/races/events.json
+            check races-feed/events.json
+          fi
 
       - uses: actions/setup-node@v6
         with:
