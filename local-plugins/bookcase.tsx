@@ -785,10 +785,11 @@ viewRegistry.register({
                 at={[x, 0, floor(index) - CASE.board, inner, layout.depth, CASE.board]}
                 seed={index * 31 + 5}
               />
+              {/* The tag goes under its own books: one nudged forward passes in front of it. */}
+              {layout.shelves[index] && tag(layout.shelves[index])}
               {layout.books.filter((b) => b.shelf === index).map(book)}
             </g>
           ))}
-          {runs.map((index) => layout.shelves[index] && tag(layout.shelves[index]))}
         </g>
       )
     })
@@ -882,6 +883,8 @@ viewRegistry.register({
 ${FONT_FACE}
 .bookcase {
   margin: 1.5rem 0 2rem;
+  /* How far of the full pull a book comes out under the pointer. */
+  --near: 0.4;
 }
 /* The catalogue is its folder's index note; the folder listing under it would repeat the shelf. */
 article:has(.bookcase) + .page-listing {
@@ -965,10 +968,10 @@ article:has(.bookcase) + .page-listing {
     transition: translate 0.18s ease-out;
   }
   .bookcase-stage:not(.is-dragging) .bookcase-book:hover > :not(.bookcase-hit) {
-    translate: calc(var(--pull-x) * 0.15) calc(var(--pull-y) * 0.15);
+    translate: calc(var(--pull-x) * var(--near)) calc(var(--pull-y) * var(--near));
   }
   .bookcase-lift > g.is-near:not(.is-pulled) {
-    transform: translate(calc(var(--pull-x) * 0.15), calc(var(--pull-y) * 0.15));
+    transform: translate(calc(var(--pull-x) * var(--near)), calc(var(--pull-y) * var(--near)));
   }
 }
 .bookcase-controls,
