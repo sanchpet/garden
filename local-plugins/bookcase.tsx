@@ -287,6 +287,19 @@ export function grouped(
   }))
 }
 
+// A book's silhouette where it stands: the pointer is tested against this, not against the
+// faces a hover has nudged, or a book would flicker under a pointer resting at its edge.
+function Hit({ at }: { at: Point[] }) {
+  return (
+    <polygon
+      class="bookcase-hit"
+      points={at.map((p) => p.map(f).join(",")).join(" ")}
+      fill="none"
+      pointer-events="visibleFill"
+    />
+  )
+}
+
 function Face({
   d,
   fill,
@@ -470,6 +483,7 @@ viewRegistry.register({
 
       return (
         <a {...link(b, group, w, [N, D, B])}>
+          <Hit at={solid.edge} />
           <Face
             class="bookcase-cover"
             d={outline(rnd, solid.side, 0.5)}
@@ -589,6 +603,7 @@ viewRegistry.register({
 
       return (
         <a {...link(b, standGroup, t, face)}>
+          <Hit at={solid.edge} />
           <Face d={outline(rnd, solid.side, 0.4)} fill={PAGES} stroke={contour} width={1.6} />
           {b.status === "in-progress" && (
             <Face d={outline(rnd, ribbon, 0.3)} fill={MARK} stroke={BURGUNDY} width={1.1} />
@@ -941,6 +956,17 @@ article:has(.bookcase) + .page-listing {
 }
 .bookcase-lift > g.is-pulled {
   transform: translate(var(--pull-x), var(--pull-y));
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .bookcase-book > * {
+    transition: translate 0.18s ease-out;
+  }
+  .bookcase-stage:not(.is-dragging) .bookcase-book:hover > :not(.bookcase-hit) {
+    translate: calc(var(--pull-x) * 0.15) calc(var(--pull-y) * 0.15);
+  }
+  .bookcase-lift > g.is-near:not(.is-pulled) {
+    transform: translate(calc(var(--pull-x) * 0.15), calc(var(--pull-y) * 0.15));
+  }
 }
 .bookcase-controls,
 .bookcase-sections {
