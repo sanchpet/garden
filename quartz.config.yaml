@@ -14,6 +14,8 @@ configuration:
     - .obsidian
     # Obsidian-side view of the book cards; its filter is a vault path.
     - library.base
+    # Drawing sources; the page embeds the SVG rendered from them.
+    - "**/*.excalidraw.md"
     # Quartz's own icon and social card; local-plugins/brand.tsx emits ours.
     - icon.png
     - og-image.png
