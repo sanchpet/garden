@@ -94,7 +94,7 @@ function mount(root: HTMLElement) {
     picked = null
     panel.hidden = true
     if (!out) return book.classList.remove("is-out")
-    out.classList.remove("is-pulled")
+    out.classList.remove("is-pulled", "is-near")
     const done = () => {
       out.remove()
       book.classList.remove("is-out")
@@ -271,6 +271,8 @@ function mount(root: HTMLElement) {
       )
       board.after(image)
     }
+    // A hovered book is already nudged forward; the pull starts from there.
+    out.classList.toggle("is-near", book.matches(":hover"))
     lift.append(out)
     book.classList.add("is-out")
     // A frame apart, or the pull would start already finished.
