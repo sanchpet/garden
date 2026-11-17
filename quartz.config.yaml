@@ -12,6 +12,8 @@ configuration:
     - private
     - templates
     - .obsidian
+    # Obsidian-side view of the book cards; its filter is a vault path.
+    - library.base
     # Quartz's own icon and social card; local-plugins/brand.tsx emits ours.
     - icon.png
     - og-image.png
