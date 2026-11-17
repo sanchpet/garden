@@ -325,6 +325,21 @@ function Face({
   )
 }
 
+// The cover skewed onto a board given as its corner, the end of the image's top edge and the
+// end of its left edge; bookcase.inline.ts builds the same element for a board hidden at rest.
+function Cover({ href, face: [o, u, v] }: { href: string; face: Point[] }) {
+  const onto = [u[0] - o[0], u[1] - o[1], v[0] - o[0], v[1] - o[1]].map((n) => n / 100)
+  return (
+    <image
+      href={href}
+      width="100"
+      height="100"
+      preserveAspectRatio="none"
+      transform={`matrix(${[...onto, ...o].map((n) => Math.round(n * 10000) / 10000).join(" ")})`}
+    />
+  )
+}
+
 function Solid({
   at,
   seed,
@@ -456,7 +471,8 @@ viewRegistry.register({
       return { named, signed: lettering(surname, authorSize, room) }
     }
 
-    const book = (placed: (typeof layout.books)[number]) => {
+    // Only the last book of a run shows its board: a neighbour hides at least four fifths of it.
+    const book = (placed: (typeof layout.books)[number], i: number, run: unknown[]) => {
       const b = describe(placed.item, placed.path)
       const { rnd, colour, contour, letters } = b
       const x = bayX(Math.floor(placed.shelf / rows)) + placed.x
@@ -480,9 +496,10 @@ viewRegistry.register({
       const [head, foot] = [at(w / 2, h - 17), at(w / 2, 17)]
       const matrix = (p: Point) => `matrix(${[...turn, ...p].map(f).join(" ")})`
       const [B, , D, N] = solid.side
+      const face = [N, D, B]
 
       return (
-        <a {...link(b, group, w, [N, D, B])}>
+        <a {...link(b, group, w, face)}>
           <Hit at={solid.edge} />
           <Face
             class="bookcase-cover"
@@ -491,6 +508,7 @@ viewRegistry.register({
             stroke={contour}
             width={1.6}
           />
+          {i === run.length - 1 && b.image && <Cover href={coverUrl(b)} face={face} />}
           <Face d={outline(rnd, solid.top, 0.4)} fill={PAGES} stroke={contour} width={1.6} />
           <Face d={outline(rnd, solid.front, 0.5)} fill={colour} stroke={contour} width={1.6} />
           <path
@@ -593,13 +611,6 @@ viewRegistry.register({
       // Face up with the spine to the reader, a book has its head to the left.
       const face = [up(0, 0), up(0, d), up(l, 0)]
       const sticker = Math.min(t / 2 - 2.5, 6)
-      const onto = [
-        (face[1][0] - face[0][0]) / 100,
-        (face[1][1] - face[0][1]) / 100,
-        (face[2][0] - face[0][0]) / 100,
-        (face[2][1] - face[0][1]) / 100,
-        ...face[0],
-      ].map((n) => Math.round(n * 10000) / 10000)
 
       return (
         <a {...link(b, standGroup, t, face)}>
@@ -615,15 +626,7 @@ viewRegistry.register({
             stroke={contour}
             width={1.6}
           />
-          {top && b.image && (
-            <image
-              href={coverUrl(b)}
-              width="100"
-              height="100"
-              preserveAspectRatio="none"
-              transform={`matrix(${onto.join(" ")})`}
-            />
-          )}
+          {top && b.image && <Cover href={coverUrl(b)} face={face} />}
           {wrap && (
             <Face
               d={outline(

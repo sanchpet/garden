@@ -242,35 +242,36 @@ function mount(root: HTMLElement) {
     panel.hidden = false
   }
 
+  // The page arrives with covers only on the boards in plain view. A board behind a neighbour
+  // gets its cover when the pointer comes to its row: a nudge or a pull is about to show it.
+  const dress = (book: SVGAElement) => {
+    const face = (book.dataset.face ?? "").split(",").map(Number)
+    const board = book.querySelector(".bookcase-cover")
+    if (!book.dataset.cover || !board || book.querySelector("image")) return
+    if (face.length !== 6 || !face.every(Number.isFinite)) return
+    const [nx, ny, dx, dy, bx, by] = face
+    const image = document.createElementNS(SVG, "image")
+    image.setAttribute("href", book.dataset.cover)
+    image.setAttribute("width", "100")
+    image.setAttribute("height", "100")
+    image.setAttribute("preserveAspectRatio", "none")
+    image.setAttribute(
+      "transform",
+      `matrix(${(dx - nx) / 100} ${(dy - ny) / 100} ${(bx - nx) / 100} ${(by - ny) / 100} ${nx} ${ny})`,
+    )
+    board.after(image)
+  }
+  const dressRow = (book: SVGAElement) =>
+    book.parentElement?.querySelectorAll<SVGAElement>(":scope > .bookcase-book").forEach(dress)
+
   const pick = (book: SVGAElement) => {
     if (picked === book) return
     drop()
     lift.replaceChildren()
     picked = book
+    dressRow(book)
     const out = document.createElementNS(SVG, "g")
     for (const child of book.children) out.append(child.cloneNode(true))
-    // The cover goes onto the face that the shelf was hiding: the book's front board.
-    const face = (book.dataset.face ?? "").split(",").map(Number)
-    const board = out.querySelector(".bookcase-cover")
-    if (
-      book.dataset.cover &&
-      board &&
-      !out.querySelector("image") &&
-      face.length === 6 &&
-      face.every(Number.isFinite)
-    ) {
-      const [nx, ny, dx, dy, bx, by] = face
-      const image = document.createElementNS(SVG, "image")
-      image.setAttribute("href", book.dataset.cover)
-      image.setAttribute("width", "100")
-      image.setAttribute("height", "100")
-      image.setAttribute("preserveAspectRatio", "none")
-      image.setAttribute(
-        "transform",
-        `matrix(${(dx - nx) / 100} ${(dy - ny) / 100} ${(bx - nx) / 100} ${(by - ny) / 100} ${nx} ${ny})`,
-      )
-      board.after(image)
-    }
     // A hovered book is already nudged forward; the pull starts from there.
     out.classList.toggle("is-near", book.matches(":hover"))
     lift.append(out)
@@ -367,6 +368,11 @@ function mount(root: HTMLElement) {
     event.preventDefault()
     if (hit === picked) void go(hit)
     else pick(hit)
+  })
+
+  on(stage, "pointerover", (event: PointerEvent) => {
+    const book = bookAt(event.target)
+    if (book) dressRow(book)
   })
 
   on(stage, "focusin", (event: FocusEvent) => {
