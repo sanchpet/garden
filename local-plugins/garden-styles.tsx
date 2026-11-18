@@ -40,6 +40,41 @@ export const GardenStyles = (() => {
   order: 1;
 }
 
+/* A catalogue note is its folder's page; the folder listing under the table repeats it. */
+article:has(.bases-page) + .page-listing {
+  display: none;
+}
+
+/* A drawing inlined by InlineDrawings: column width on a wide screen, its own width
+   with a horizontal scroll on a narrow one, where it would shrink past reading. */
+@font-face {
+  font-family: "Caveat";
+  src: url("/static/caveat.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+.garden-drawing {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+.garden-drawing > svg {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  height: auto;
+}
+.garden-drawing a {
+  cursor: pointer;
+}
+.garden-drawing a:hover > :is(path, g > path),
+.garden-drawing a:focus-visible > :is(path, g > path) {
+  stroke-width: 4;
+}
+.garden-drawing a:hover text,
+.garden-drawing a:focus-visible text {
+  text-decoration: underline;
+}
+
 /* The title sits close under the header row with the logo. */
 .page-header .article-title {
   margin-top: 0.75rem;
