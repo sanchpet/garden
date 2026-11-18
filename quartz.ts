@@ -7,6 +7,7 @@ import {
   PageLanguage,
 } from "./local-plugins/bilingual"
 import { GardenStyles } from "./local-plugins/garden-styles"
+import { InlineDrawings } from "./local-plugins/drawing"
 import { GardenBrand, HomeLogo } from "./local-plugins/brand"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
@@ -24,6 +25,7 @@ const config = await loadQuartzConfig()
 // First, before the table of contents collects headings that are about to go.
 config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.push(
+  InlineDrawings(),
   PageLanguage(),
   GardenFrontmatter(),
   LanguageLinks(),
