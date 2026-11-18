@@ -11,6 +11,7 @@ const LABELS = {
     reading: "Чтение",
     minutes: "мин",
     author: "Автор",
+    provider: "Где",
     year: "Год",
     status: "Статус",
     ring: "На радаре",
@@ -23,6 +24,7 @@ const LABELS = {
     reading: "Reading",
     minutes: "min",
     author: "Author",
+    provider: "Where",
     year: "Year",
     status: "Status",
     ring: "On the radar",
@@ -30,22 +32,28 @@ const LABELS = {
     repo: "Repository",
   },
 }
+// A course is taken, not read: its statuses get their own words.
+const COURSE_STATUS: Record<string, Record<string, string>> = {
+  ru: { later: "в очереди", "in-progress": "прохожу", done: "пройден" },
+  en: { later: "queued", "in-progress": "taking", done: "finished" },
+}
 const WORDS_PER_MINUTE = 200
 
 // Under the title: the note's annotation (`description`), then tags, last edit and reading
 // time on one unframed line. Replaces the Properties table and the content-meta line.
-// A catalogue card (`type: book`) or a radar entry (`type: tool`) may have no text yet: it
-// shows its own fields instead.
+// A catalogue card (`type: book`, `type: course`) or a radar entry (`type: tool`) may have no
+// text yet: it shows its own fields instead.
 export const NoteHeader = (() => {
   const Header: QuartzComponent = ({ cfg, fileData }) => {
     const fm = (fileData.frontmatter ?? {}) as Record<string, unknown>
     const text = (fileData as { text?: string }).text
     const classes = Array.isArray(fm.cssclasses) ? fm.cssclasses : []
     const book = fm.type === "book"
+    const course = fm.type === "course"
     const tool = fm.type === "tool"
     // The race calendar (`type: races`) is drawn under the note, which may have no text of its own.
     const calendar = fm.type === "races"
-    if ((!text && !book && !tool && !calendar) || classes.includes("home")) return null
+    if ((!text && !book && !course && !tool && !calendar) || classes.includes("home")) return null
 
     const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
     const l = LABELS[lang]
@@ -56,12 +64,19 @@ export const NoteHeader = (() => {
           [l.year, plain(fm.year)],
           [l.status, statusLabel(lang, fm.status)],
         ]
-      : tool
+      : course
         ? [
-            [l.ring, ring && RING[lang][ring].name],
-            [l.since, day(fm.since, lang) || undefined],
+            [l.author, plain(fm.author)],
+            [l.provider, plain(fm.provider)],
+            [l.year, plain(fm.year)],
+            [l.status, typeof fm.status === "string" ? COURSE_STATUS[lang][fm.status] : undefined],
           ]
-        : []
+        : tool
+          ? [
+              [l.ring, ring && RING[lang][ring].name],
+              [l.since, day(fm.since, lang) || undefined],
+            ]
+          : []
     const repo = tool && typeof fm.repo === "string" && /^https:\/\//.test(fm.repo) ? fm.repo : ""
     const annotation = typeof fm.description === "string" ? fm.description.trim() : ""
     const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : []
