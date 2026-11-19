@@ -23,7 +23,7 @@ function page(lang: string, title: string, description: string, image: string, t
 <meta charset="utf-8">
 <title>${t}</title>
 <meta name="description" content="${d}">
-<meta property="og:site_name" content="${lang === "en" ? "Learning to think" : "Учусь мыслить"}">
+<meta property="og:site_name" content="sanchpet">
 <meta property="og:title" content="${t}">
 <meta property="og:description" content="${d}">
 <meta property="og:image" content="${i}">
