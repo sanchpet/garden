@@ -116,7 +116,7 @@ export function buildFeed(
 // Also drops the control characters XML 1.0 has no way to carry, escaped or not.
 export function escapeXml(value: string): string {
   return value
-    .replace(/[^\x09\x0A\x0D\x20-퟿-�\u{10000}-\u{10FFFF}]/gu, "")
+    .replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu, "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
