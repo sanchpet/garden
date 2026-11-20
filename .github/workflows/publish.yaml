@@ -12,16 +12,18 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: publish
-  cancel-in-progress: false
-
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Per job, not per workflow: an announcement waiting for Pages must not queue the next publication.
+    concurrency:
+      group: publish
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.share.outputs.page_url }}
+    outputs:
+      feeds: ${{ steps.feeds.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v6
 
@@ -93,3 +95,59 @@ jobs:
 
       - id: share
         uses: actions/deploy-pages@v5
+
+      # Copied out with their language folders: the artifact of a single file would lose its path.
+      - name: Collect the publication feeds
+        run: |
+          for feed in public/*/feed.xml; do
+            [ -f "$feed" ] || continue
+            lang=$(basename "$(dirname "$feed")")
+            mkdir -p "feeds/$lang"
+            cp "$feed" "feeds/$lang/"
+          done
+
+      - id: feeds
+        if: hashFiles('feeds/*/feed.xml') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: feeds
+          path: feeds
+          retention-days: 1
+
+  # A job of its own, after everything that publishes: its failure shows in the run without
+  # touching the site, and the bot token never meets the build.
+  announce:
+    needs: publish
+    if: needs.publish.outputs.feeds != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: announce
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: feeds
+          path: public
+
+      # Without the secret the script exits at once. The journal of what was announced lives
+      # on the announce-state branch, pushed with the token checkout has left in place.
+      - name: Announce new texts in Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: npx tsx scripts/announce/cli.ts
