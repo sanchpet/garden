@@ -1,36 +1,14 @@
 import assert from "node:assert"
-import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import test, { describe } from "node:test"
 import { emptyJournal, record, type Delivery, type Journal } from "./journal"
-import { fileStore, gitStore, type Git } from "./store"
+import { sandbox } from "./fixtures/git"
+import { fileStore, gitStore } from "./store"
 
 const sent: Delivery = { at: "2026-11-20T00:00:00.000Z", origin: "sent", messageId: 7 }
 const one = record(emptyJournal(), "https://sanch.pet/a", "blog", sent)
-
-// A bare repository stands in for GitHub, and a clone of it for the checkout on the runner.
-function sandbox(t: { after(fn: () => void): void }) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "announce-"))
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }))
-  const remote = path.join(root, "remote.git")
-  const identity = ["-c", "user.name=test", "-c", "user.email=test@example.invalid"]
-  const at =
-    (cwd: string): Git =>
-    (args, input) =>
-      execFileSync("git", [...identity, ...args], { cwd, input, encoding: "utf8", stdio: "pipe" })
-  execFileSync("git", ["init", "-q", "--bare", "-b", "main", remote])
-  const clone = (name: string) => {
-    const dir = path.join(root, name)
-    execFileSync("git", ["clone", "-q", remote, dir], { stdio: "pipe" })
-    return at(dir)
-  }
-  const first = clone("first")
-  first(["commit", "-q", "--allow-empty", "-m", "site"])
-  first(["push", "-q", "origin", "HEAD:main"])
-  return { remote: at(remote), first, clone }
-}
 
 describe("gitStore", () => {
   test("no branch means no journal", async (t) => {
@@ -42,7 +20,7 @@ describe("gitStore", () => {
     const { remote, first } = sandbox(t)
     const store = gitStore(first, "origin", "announce-state")
     await store.load()
-    await store.save(one, "Seed")
+    assert.deepStrictEqual(await store.save(one, "Seed"), one)
     const two = record(one, "https://sanch.pet/b", "blog", sent)
     await store.save(two, "Announce b")
 
@@ -67,8 +45,8 @@ describe("gitStore", () => {
     const base = (await theirs.load()) as Journal
     await theirs.save(record(base, "https://sanch.pet/theirs", "blog", sent), "Theirs")
 
-    await ours.save(record(one, "https://sanch.pet/ours", "blog", sent), "Ours")
-    const merged = (await gitStore(first, "origin", "announce-state").load()) as Journal
+    const merged = await ours.save(record(one, "https://sanch.pet/ours", "blog", sent), "Ours")
+    assert.deepStrictEqual(await gitStore(first, "origin", "announce-state").load(), merged)
     assert.deepStrictEqual(Object.keys(merged.delivered).sort(), [
       "https://sanch.pet/a",
       "https://sanch.pet/ours",

@@ -6,7 +6,8 @@ export const JOURNAL_FILE = "posted.json"
 export type Store = {
   // undefined: there is no journal yet.
   load(): Promise<Journal | undefined>
-  save(journal: Journal, subject: string): Promise<void>
+  // Returns what was stored: the given journal, plus anything another writer added meanwhile.
+  save(journal: Journal, subject: string): Promise<Journal>
 }
 
 // Runs git with the given arguments and standard input, returns its output, throws on failure.
@@ -43,7 +44,7 @@ export function gitStore(git: Git, remote: string, branch: string): Store {
         try {
           git(["push", "--quiet", remote, `${commit}:${ref}`])
           tip = commit
-          return
+          return journal
         } catch (error) {
           if (attempt === PUSH_ATTEMPTS) throw error
           // The branch moved under us: put our records on top of what is there now.
@@ -62,6 +63,7 @@ export function fileStore(file: string): Store {
     },
     async save(journal) {
       fs.writeFileSync(file, serializeJournal(journal))
+      return journal
     },
   }
 }

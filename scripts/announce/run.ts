@@ -1,6 +1,13 @@
 import type { Config } from "./config"
 import type { FeedEntry } from "./feed"
-import { isEmpty, record, serializeJournal, type Delivery } from "./journal"
+import {
+  isDelivered,
+  isEmpty,
+  mergeJournals,
+  record,
+  serializeJournal,
+  type Delivery,
+} from "./journal"
 import { buildText, messageUrl, stubUrl } from "./message"
 import { plan, seed } from "./plan"
 import type { Store } from "./store"
@@ -41,7 +48,6 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
       await store.save(seeded, `Seed the journal with ${entries.length} entries`)
     return 0
   }
-
   if (!options.token) {
     log("TELEGRAM_BOT_TOKEN is not set: nothing announced, the journal is not touched.")
     return 0
@@ -53,7 +59,10 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
   for (const { id, channel, url } of planned.recorded)
     log(`${tag}Announced by hand, recorded as delivered: ${id} → ${channel} (${url})`)
   if (planned.recorded.length && !dryRun)
-    await store.save(journal, `Record ${planned.recorded.length} announcements made by hand`)
+    journal = await store.save(
+      journal,
+      `Record ${planned.recorded.length} announcements made by hand`,
+    )
   if (!planned.sends.length) log(`${tag}Nothing new to announce.`)
 
   let failures = 0
@@ -81,6 +90,19 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
       warn(`${link}: the share stub is not ready (${probe.detail}); left for the next build`)
       continue
     }
+    // Read again right before sending: another run, or the owner by hand, may have recorded
+    // this delivery while we were waiting for the stub.
+    try {
+      const latest = await store.load()
+      if (latest) journal = mergeJournals(latest, journal)
+    } catch (error) {
+      warn(`the journal could not be read before sending to ${chat.chat}: ${errorText(error)}`)
+      return 1
+    }
+    if (isDelivered(journal, entry.id, channel)) {
+      log(`Already delivered meanwhile, not sent: ${entry.id} → ${channel}`)
+      continue
+    }
     let delivery: Delivery
     try {
       const messageId = await deps.send({ chat: chat.chat, text, previewUrl: link })
@@ -91,13 +113,16 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
       failures++
       continue
     }
-    // Kept in memory even if the push fails, so the next successful push carries it.
-    journal = record(journal, entry.id, channel, delivery)
+    // A message that is out but not recorded will be sent again by the next build. Stopping
+    // here keeps that to this one message.
     try {
-      await store.save(journal, `Announce ${entry.id} in ${channel}`)
+      journal = await store.save(
+        record(journal, entry.id, channel, delivery),
+        `Announce ${entry.id} in ${channel}`,
+      )
     } catch (error) {
-      warn(`the journal was not saved after sending to ${chat.chat}: ${errorText(error)}`)
-      failures++
+      warn(`sent to ${chat.chat} but the journal was not saved, stopping: ${errorText(error)}`)
+      return 1
     }
   }
   return failures ? 1 : 0

@@ -3,7 +3,7 @@ import test, { describe } from "node:test"
 import type { Config } from "./config"
 import type { FeedEntry } from "./feed"
 import { fixture } from "./fixtures/load"
-import { ANY_CHANNEL, type Journal } from "./journal"
+import { ANY_CHANNEL, record, type Journal } from "./journal"
 import { run, type Deps } from "./run"
 import type { Message } from "./telegram"
 
@@ -27,6 +27,7 @@ const fresh: FeedEntry = {
   categories: ["sanchpetblog"],
   related: [],
 }
+const both = { ...fresh, categories: ["sanchpetblog", "lytdybr"] }
 
 function harness(over: Partial<Deps> = {}, journal?: Journal) {
   const state = {
@@ -41,8 +42,8 @@ function harness(over: Partial<Deps> = {}, journal?: Journal) {
     store: {
       load: async () => state.journal,
       save: async (next, subject) => {
-        state.journal = next
         state.saves.push(subject)
+        return (state.journal = next)
       },
     },
     send: async (message) => {
@@ -141,6 +142,15 @@ describe("run", () => {
     assert.strictEqual(h.state.saves.length, 1)
   })
 
+  test("without an announcement the message is the title and the link", async () => {
+    const h = await seeded()
+    await h.go([{ ...fresh, content: undefined }])
+    assert.strictEqual(
+      h.state.sent[0].text,
+      "<b>Свежий</b>\n\nhttps://l.sanch.pet/ru/posts/svezhij",
+    )
+  })
+
   test("the journal is saved after each message, not once at the end", async () => {
     const order: string[] = []
     const h = await seeded()
@@ -149,12 +159,12 @@ describe("run", () => {
         send: async (message) => order.push(`send ${message.chat}`),
         store: {
           load: async () => h.state.journal,
-          save: async (_journal, subject) => void order.push(`save: ${subject}`),
+          save: async (journal, subject) => (order.push(`save: ${subject}`), journal),
         },
       },
       h.state.journal,
     )
-    await again.go([{ ...fresh, categories: ["sanchpetblog", "lytdybr"] }])
+    await again.go([both])
     assert.deepStrictEqual(order, [
       "send @sanchpetblog",
       "save: Announce https://sanch.pet/ru/posts/svezhij in sanchpetblog",
@@ -171,8 +181,7 @@ describe("run", () => {
         return 7
       },
     })
-    const code = await h.go([{ ...fresh, categories: ["sanchpetblog", "lytdybr"] }, ...fixture()])
-    assert.strictEqual(code, 1)
+    assert.strictEqual(await h.go([both, ...fixture()]), 1)
     assert.deepStrictEqual(Object.keys(h.state.journal!.delivered[fresh.id]), ["lytdybr"])
     assert.deepStrictEqual(h.state.saves, [
       "Announce https://sanch.pet/ru/posts/svezhij in lytdybr",
@@ -181,37 +190,98 @@ describe("run", () => {
 
     // The next build retries only the channel that failed.
     const retry = harness({}, h.state.journal)
-    assert.strictEqual(await retry.go([{ ...fresh, categories: ["sanchpetblog", "lytdybr"] }]), 0)
+    assert.strictEqual(await retry.go([both]), 0)
     assert.deepStrictEqual(
       retry.state.sent.map((m) => m.chat),
       ["@sanchpetblog"],
     )
   })
 
-  test("a journal that could not be saved is a failure, and the next save carries the record", async () => {
-    let broken = true
-    const h = await seeded()
-    const saved: Journal[] = []
-    const again = harness(
+  test("a journal that could not be saved stops the run: one message out, no more", async () => {
+    const start = await seeded()
+    const h = harness(
       {
         store: {
-          load: async () => h.state.journal,
-          save: async (next) => {
-            if (broken) {
-              broken = false
-              throw new Error("push rejected")
-            }
-            saved.push(next)
+          load: async () => start.state.journal,
+          save: async () => {
+            throw new Error("push rejected")
           },
         },
       },
-      h.state.journal,
+      start.state.journal,
     )
-    assert.strictEqual(await again.go([{ ...fresh, categories: ["sanchpetblog", "lytdybr"] }]), 1)
-    assert.deepStrictEqual(Object.keys(saved[0].delivered[fresh.id]).sort(), [
+    const third = { ...fresh, id: "https://sanch.pet/ru/posts/tretij" }
+    assert.strictEqual(await h.go([both, third]), 1)
+    assert.strictEqual(h.state.sent.length, 1)
+    assert.match(h.state.warnings[0], /journal was not saved, stopping: push rejected/)
+  })
+
+  test("what another writer added during a save is kept by the saves that follow", async () => {
+    const start = await seeded()
+    const theirs = { at: "2026-11-20T11:00:00.000Z", origin: "sent" as const, messageId: 1 }
+    let remote = start.state.journal!
+    let moved = false
+    const h = harness({
+      store: {
+        // A stale read every time: only what `save` returns can tell about the other writer.
+        load: async () => start.state.journal,
+        save: async (next) => {
+          if (!moved) {
+            moved = true
+            next = record(next, "https://sanch.pet/theirs", "lytdybr", theirs)
+          } else {
+            assert.ok(next.delivered["https://sanch.pet/theirs"], "their record was dropped")
+          }
+          return (remote = next)
+        },
+      },
+    })
+    assert.strictEqual(await h.go([both]), 0)
+    assert.deepStrictEqual(Object.keys(remote.delivered[fresh.id]).sort(), [
       "lytdybr",
       "sanchpetblog",
     ])
+    assert.deepStrictEqual(remote.delivered["https://sanch.pet/theirs"].lytdybr, theirs)
+  })
+
+  test("a delivery recorded by someone else while we waited is not sent again", async () => {
+    const start = await seeded()
+    let loads = 0
+    const elsewhere = record(start.state.journal!, fresh.id, "sanchpetblog", {
+      at: "2026-11-20T11:59:00.000Z",
+      origin: "sent",
+      messageId: 55,
+    })
+    const h = harness({
+      store: {
+        load: async () => (loads++ === 0 ? start.state.journal : elsewhere),
+        save: async (next) => next,
+      },
+    })
+    assert.strictEqual(await h.go([both]), 0)
+    assert.deepStrictEqual(
+      h.state.sent.map((m) => m.chat),
+      ["@sanchpetlytdybr"],
+    )
+    assert.ok(h.state.lines.some((line) => /Already delivered meanwhile.*sanchpetblog/.test(line)))
+    // One read to plan, one before each of the two sends.
+    assert.strictEqual(loads, 3)
+  })
+
+  test("a journal that cannot be re-read before a send stops the run without sending", async () => {
+    const start = await seeded()
+    let loads = 0
+    const h = harness({
+      store: {
+        load: async () => {
+          if (loads++) throw new Error("remote gone")
+          return start.state.journal
+        },
+        save: async (next) => next,
+      },
+    })
+    assert.strictEqual(await h.go([both]), 1)
+    assert.deepStrictEqual(h.state.sent, [])
   })
 
   test("a stub that never comes up: no message, no record, a warning, exit 0", async () => {
@@ -225,7 +295,7 @@ describe("run", () => {
 
   test("all stubs share one deadline, the configured time from the start", async () => {
     const h = await seeded()
-    await h.go([{ ...fresh, categories: ["sanchpetblog", "lytdybr"] }])
+    await h.go([both])
     const start = new Date("2026-11-20T12:00:00Z").getTime()
     assert.deepStrictEqual(h.state.waits, [start + 720_000, start + 720_000])
   })
