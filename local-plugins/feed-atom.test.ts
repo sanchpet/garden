@@ -135,12 +135,21 @@ describe("entry fields", () => {
     assert.deepStrictEqual(warnings(post({ published: null, revised: " " })), [])
   })
 
-  test("summary is announce, else description, else absent", () => {
-    const summary = (fm: Record<string, unknown>) => entry(post(fm))!.summary
-    assert.strictEqual(summary({ announce: "Анонс", description: "Описание" }), "Анонс")
-    assert.strictEqual(summary({ description: "Описание" }), "Описание")
-    assert.strictEqual(summary({}), undefined)
-    assert.strictEqual(summary({ announce: "  " }), undefined)
+  test("summary is the description, content the announcement; either, both or none", () => {
+    const parts = (fm: Record<string, unknown>) => {
+      const { summary, content } = entry(post(fm))!
+      return { summary, content }
+    }
+    assert.deepStrictEqual(parts({ announce: "Анонс", description: "Описание" }), {
+      summary: "Описание",
+      content: "Анонс",
+    })
+    assert.deepStrictEqual(parts({ description: "Описание" }), {
+      summary: "Описание",
+      content: undefined,
+    })
+    assert.deepStrictEqual(parts({ announce: "Анонс" }), { summary: undefined, content: "Анонс" })
+    assert.deepStrictEqual(parts({ announce: "  " }), { summary: undefined, content: undefined })
   })
 
   test("one category per channel", () => {
@@ -221,13 +230,15 @@ describe("rendering", () => {
     const nasty = post({
       title: "R&D <script>",
       announce: "Tom & Jerry <b>]]></b>",
+      description: "Cats & mice",
       channels: ['a"b'],
       link: "https://t.me/x/1?a=1&b=2",
     })
     const xml = renderFeed(feed([nasty]))
     assert.ok(xml.includes("<title>R&amp;D &lt;script&gt;</title>"))
+    assert.ok(xml.includes('<summary type="text">Cats &amp; mice</summary>'))
     assert.ok(
-      xml.includes('<summary type="text">Tom &amp; Jerry &lt;b&gt;]]&gt;&lt;/b&gt;</summary>'),
+      xml.includes('<content type="text">Tom &amp; Jerry &lt;b&gt;]]&gt;&lt;/b&gt;</content>'),
     )
     assert.ok(xml.includes('<category term="a&quot;b"/>'))
     assert.ok(xml.includes('<link rel="related" href="https://t.me/x/1?a=1&amp;b=2"/>'))
