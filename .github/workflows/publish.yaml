@@ -96,8 +96,10 @@ jobs:
       - id: share
         uses: actions/deploy-pages@v5
 
+      # The site is out by now: nothing in these two steps may turn the publication red.
       # Copied out with their language folders: the artifact of a single file would lose its path.
       - name: Collect the publication feeds
+        continue-on-error: true
         run: |
           for feed in public/*/feed.xml; do
             [ -f "$feed" ] || continue
@@ -108,6 +110,7 @@ jobs:
 
       - id: feeds
         if: hashFiles('feeds/*/feed.xml') != ''
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: feeds
@@ -118,7 +121,8 @@ jobs:
   # touching the site, and the bot token never meets the build.
   announce:
     needs: publish
-    if: needs.publish.outputs.feeds != ''
+    # Only from main: a manual run from another ref would bring its own script to the secret.
+    if: github.ref == 'refs/heads/main' && needs.publish.outputs.feeds != ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
@@ -141,7 +145,7 @@ jobs:
           name: feeds
           path: public
 
-      # Without the secret the script exits at once. The journal of what was announced lives
+      # Without the secret the script only keeps its journal. The journal of what was announced lives
       # on the announce-state branch, pushed with the token checkout has left in place.
       - name: Announce new texts in Telegram
         env:
