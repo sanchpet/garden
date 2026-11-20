@@ -19,6 +19,7 @@ describe("parseFeed", () => {
       id: "https://sanch.pet/ru/posts/za-sekundu",
       title: "За секунду",
       summary: "Что может успеть произойти за секунду?",
+      content: undefined,
       published: "2026-11-05T00:00:00Z",
       updated: "2026-11-05T00:00:00Z",
       categories: ["lytdybr"],
@@ -30,6 +31,7 @@ describe("parseFeed", () => {
     const entry = fixture()[1]
     assert.strictEqual(entry.title, "Мышление & <практика>")
     assert.strictEqual(entry.summary, "Что есть мышление & зачем учиться мыслить — коротко.")
+    assert.strictEqual(entry.content, "Написал про мышление & <практику>.\nВторая строка анонса.")
   })
 
   test("an entry without summary, categories or related links", () => {

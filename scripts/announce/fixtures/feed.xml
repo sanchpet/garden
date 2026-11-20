@@ -20,7 +20,9 @@
     <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/novyj-post"/>
     <published>2026-11-18T00:00:00Z</published>
     <updated>2026-11-18T00:00:00Z</updated>
-    <summary>Что есть мышление &amp; зачем учиться мыслить &#8212; коротко.</summary>
+    <summary type="text">Что есть мышление &amp; зачем учиться мыслить &#8212; коротко.</summary>
+    <content type="text">Написал про мышление &amp; &lt;практику&gt;.
+Вторая строка анонса.</content>
     <category term="sanchpetblog"/>
   </entry>
   <entry>
@@ -29,7 +31,7 @@
     <link rel="alternate" type="text/html" href="https://sanch.pet/ru/evergreen/myshlenie"/>
     <published>2026-11-10T00:00:00Z</published>
     <updated>2026-11-15T00:00:00Z</updated>
-    <summary>Что есть мышление и зачем учиться мыслить</summary>
+    <summary type="text">Что есть мышление и зачем учиться мыслить</summary>
   </entry>
   <entry>
     <title>За секунду</title>
@@ -39,7 +41,7 @@
     <link rel="enclosure" type="image/png" href="https://sanch.pet/ru/posts/za-sekundu.png"/>
     <published>2026-11-05T00:00:00Z</published>
     <updated>2026-11-05T00:00:00Z</updated>
-    <summary>Что может успеть произойти за секунду?</summary>
+    <summary type="text">Что может успеть произойти за секунду?</summary>
     <category term="lytdybr"/>
   </entry>
 </feed>

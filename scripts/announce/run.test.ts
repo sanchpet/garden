@@ -21,7 +21,8 @@ const config: Config = {
 const fresh: FeedEntry = {
   id: "https://sanch.pet/ru/posts/svezhij",
   title: "Свежий",
-  summary: "Анонс",
+  summary: "Описание",
+  content: "Анонс",
   published: "2026-11-20T00:00:00Z",
   categories: ["sanchpetblog"],
   related: [],
@@ -107,7 +108,7 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [
       {
         chat: "@sanchpetblog",
-        text: "<b>Свежий</b>\n\nАнонс\n\nhttps://l.sanch.pet/ru/posts/svezhij",
+        text: "Анонс\n\nhttps://l.sanch.pet/ru/posts/svezhij",
         previewUrl: "https://l.sanch.pet/ru/posts/svezhij",
       },
     ])
@@ -256,6 +257,6 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.saves, [])
     assert.deepStrictEqual(h.state.journal, before)
     assert.ok(h.state.lines.some((line) => line.includes("Would send to @sanchpetblog")))
-    assert.ok(h.state.lines.some((line) => line.includes("  | <b>Свежий</b>")))
+    assert.ok(h.state.lines.some((line) => line.includes("  | Анонс")))
   })
 })

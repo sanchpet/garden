@@ -4,7 +4,10 @@
 export type FeedEntry = {
   id: string
   title: string
+  // The page description; shown by feed readers, not posted.
   summary?: string
+  // The author's own announcement, posted as the message when present.
+  content?: string
   published?: string
   updated?: string
   categories: string[]
@@ -60,6 +63,7 @@ export function parseFeed(xml: string): { entries: FeedEntry[]; warnings: string
       id,
       title: element(body, "title") ?? id,
       summary: element(body, "summary"),
+      content: element(body, "content"),
       published: element(body, "published"),
       updated: element(body, "updated"),
       categories: emptyElements(body, "category").flatMap((a) => a.term?.trim() || []),

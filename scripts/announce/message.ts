@@ -16,16 +16,17 @@ export function stubUrl(id: string, shareHost: string): string {
   return url.href
 }
 
+// The author's announcement stands alone; without one the title does. The description is
+// left out either way: the preview card under the message already shows it.
 export function buildText(entry: FeedEntry, link: string): string {
-  const title = entry.title.trim()
-  let summary = entry.summary?.trim() ?? ""
-  if (summary === title) summary = ""
-  const room = LIMIT - title.length - link.length - 4
-  if (summary.length > room) summary = summary.slice(0, Math.max(room - 1, 0)).trimEnd() + "…"
-  const parts = [`<b>${escapeHtml(title)}</b>`, escapeHtml(summary), escapeHtml(link)]
-  return parts.filter(Boolean).join("\n\n")
+  const room = LIMIT - link.length - 2
+  let body = entry.content?.trim() ?? ""
+  if (body.length > room) body = body.slice(0, room - 1).trimEnd() + "…"
+  const head = body ? escapeHtml(body) : `<b>${escapeHtml(entry.title.trim().slice(0, room))}</b>`
+  return `${head}\n\n${escapeHtml(link)}`
 }
 
-export function messageUrl(chat: string, messageId: number): string | undefined {
-  return chat.startsWith("@") ? `https://t.me/${chat.slice(1)}/${messageId}` : undefined
+// Channels are configured by their public @name.
+export function messageUrl(chat: string, messageId: number): string {
+  return `https://t.me/${chat.replace(/^@/, "")}/${messageId}`
 }

@@ -84,7 +84,7 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
     try {
       const messageId = await deps.send({ chat: chat.chat, text, previewUrl: link })
       delivery = { at: stamp(), origin: "sent", url: messageUrl(chat.chat, messageId), messageId }
-      log(`Sent to ${chat.chat}: ${entry.id} (${delivery.url ?? messageId})`)
+      log(`Sent to ${chat.chat}: ${entry.id} (${delivery.url})`)
     } catch (error) {
       warn(errorText(error))
       failures++

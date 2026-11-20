@@ -36,40 +36,45 @@ describe("stubUrl", () => {
 })
 
 describe("buildText", () => {
-  test("title, summary and link", () => {
+  test("the author's announcement is the message, without the title", () => {
     assert.strictEqual(
-      buildText({ ...entry, title: "За секунду", summary: "Что может успеть произойти?" }, LINK),
-      `<b>За секунду</b>\n\nЧто может успеть произойти?\n\n${LINK}`,
+      buildText(
+        { ...entry, title: "За секунду", content: " Что может успеть произойти?\nМного. " },
+        LINK,
+      ),
+      `Что может успеть произойти?\nМного.\n\n${LINK}`,
     )
   })
 
-  test("without a summary the title stands alone", () => {
+  test("without an announcement: the title in bold and the link, the description left out", () => {
     assert.strictEqual(buildText(entry, LINK), `<b>A</b>\n\n${LINK}`)
-    assert.strictEqual(buildText({ ...entry, summary: " A " }, LINK), `<b>A</b>\n\n${LINK}`)
+    assert.strictEqual(
+      buildText({ ...entry, summary: "Description", content: "  " }, LINK),
+      `<b>A</b>\n\n${LINK}`,
+    )
   })
 
   test("escapes what HTML parse mode would read as markup", () => {
-    const text = buildText(
-      { ...entry, title: "a < b & c", summary: "<b>x</b> &amp;" },
-      LINK + "?a=1&b=2",
+    assert.strictEqual(
+      buildText({ ...entry, content: "<b>x</b> &amp; y" }, LINK + "?a=1&b=2"),
+      `&lt;b&gt;x&lt;/b&gt; &amp;amp; y\n\n${LINK}?a=1&amp;b=2`,
     )
     assert.strictEqual(
-      text,
-      `<b>a &lt; b &amp; c</b>\n\n&lt;b&gt;x&lt;/b&gt; &amp;amp;\n\n${LINK}?a=1&amp;b=2`,
+      buildText({ ...entry, title: "a < b & c" }, LINK),
+      `<b>a &lt; b &amp; c</b>\n\n${LINK}`,
     )
     assert.strictEqual(escapeHtml(`"quotes" stay`), `"quotes" stay`)
   })
 
-  test("a summary too long for one message is cut", () => {
-    const text = buildText({ ...entry, summary: "я".repeat(5000) }, LINK)
-    assert.strictEqual(text.replace(/<\/?b>/g, "").length, 4096)
+  test("an announcement too long for one message is cut", () => {
+    const text = buildText({ ...entry, content: "я".repeat(5000) }, LINK)
+    assert.strictEqual(text.length, 4096)
     assert.ok(text.endsWith(`…\n\n${LINK}`))
   })
 })
 
 describe("messageUrl", () => {
-  test("a public channel gives an address, a numeric chat does not", () => {
+  test("the address of a post in a public channel", () => {
     assert.strictEqual(messageUrl("@sanchpetblog", 362), "https://t.me/sanchpetblog/362")
-    assert.strictEqual(messageUrl("-1001234567890", 362), undefined)
   })
 })
