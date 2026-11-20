@@ -1,0 +1,11 @@
+{
+  "feeds": ["ru/feed.xml"],
+  "shareHost": "l.sanch.pet",
+  "stateBranch": "announce-state",
+  "stubTimeoutSeconds": 720,
+  "channels": {
+    "lytdybr": { "chat": "@sanchpetlytdybr" },
+    "sanchpetblog": { "chat": "@sanchpetblog" },
+    "sanchpethub": { "chat": "@sanchpethub", "unverified": true }
+  }
+}

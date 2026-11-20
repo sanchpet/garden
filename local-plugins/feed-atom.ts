@@ -15,6 +15,8 @@ export type Entry = {
   published: string
   updated: string
   summary?: string
+  // The author's own announcement of the text; a consumer posts it in place of the title.
+  content?: string
   categories: string[]
   related: string[]
 }
@@ -106,7 +108,8 @@ export function entryOf(page: Page, base: string): { entry?: Entry; warnings: st
     published,
     // A revision dated before the release is a typo, not a way to predate it.
     updated: revised && revised > published ? revised : published,
-    summary: text(fm.announce) ?? text(fm.description),
+    summary: text(fm.description),
+    content: text(fm.announce),
     categories: list(fm.channels),
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
   }
@@ -152,6 +155,7 @@ function renderEntry(entry: Entry): string {
     `<updated>${entry.updated}</updated>`,
   ]
   if (entry.summary) lines.push(`<summary type="text">${x(entry.summary)}</summary>`)
+  if (entry.content) lines.push(`<content type="text">${x(entry.content)}</content>`)
   lines.push(...entry.categories.map((term) => `<category term="${x(term)}"/>`))
   return `  <entry>\n${lines.map((line) => `    ${line}`).join("\n")}\n  </entry>\n`
 }
