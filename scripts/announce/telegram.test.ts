@@ -85,32 +85,53 @@ describe("sendMessage", () => {
     assert.ok(!`${error.message}\n${error.stack}\n${String(error.cause)}`.includes(TOKEN))
   })
 
-  test("a failure of fetch that quotes the request URL is scrubbed, and is not retried", async () => {
-    const h = harness([
-      () => {
-        const cause = new Error(
-          `connect ETIMEDOUT https://api.telegram.org/bot${TOKEN}/sendMessage`,
-        )
-        throw new TypeError("fetch failed", { cause })
-      },
-    ])
-    const error = await sendMessage(TOKEN, message, h.deps).then(
-      () => assert.fail("must reject"),
-      (e: Error) => e,
+  test("a failure of fetch reports its code only, whatever its message quotes; no retry", async () => {
+    const encoded = encodeURIComponent(TOKEN)
+    assert.notStrictEqual(encoded, TOKEN)
+    const failing = (cause: unknown) =>
+      harness([
+        () => {
+          throw new TypeError(`fetch failed for bot${TOKEN}`, { cause })
+        },
+      ])
+    const rejection = (h: ReturnType<typeof harness>) =>
+      sendMessage(TOKEN, message, h.deps).then(
+        () => assert.fail("must reject"),
+        (e: Error) => e,
+      )
+    const url = `https://api.telegram.org/bot${encoded}/sendMessage and bot${TOKEN}`
+    const coded = failing(
+      Object.assign(new Error(`connect ETIMEDOUT ${url}`), { code: "ETIMEDOUT" }),
     )
-    assert.match(
+    const error = await rejection(coded)
+    assert.strictEqual(
       error.message,
-      /no usable response \(connect ETIMEDOUT .*bot<token>\/sendMessage\)/,
+      "sendMessage to @sanchpetblog failed: no usable response (ETIMEDOUT)",
     )
-    assert.ok(!`${error.message}\n${error.stack}`.includes(TOKEN))
     assert.strictEqual(error.cause, undefined)
-    assert.strictEqual(h.calls.length, 1)
+    assert.strictEqual(coded.calls.length, 1)
+
+    for (const cause of [
+      new Error(url),
+      Object.assign(new Error("x"), { code: url }),
+      url,
+      undefined,
+    ]) {
+      const anonymous = await rejection(failing(cause))
+      assert.strictEqual(
+        anonymous.message,
+        "sendMessage to @sanchpetblog failed: no usable response (network error)",
+      )
+      const all = `${anonymous.message}\n${anonymous.stack}`
+      assert.ok(!all.includes(TOKEN) && !all.includes(encoded))
+    }
   })
 })
 
 describe("redact", () => {
   test("replaces every occurrence and tolerates an empty token", () => {
     assert.strictEqual(redact(`a ${TOKEN} b ${TOKEN}`, TOKEN), "a <token> b <token>")
+    assert.strictEqual(redact(`bot${encodeURIComponent(TOKEN)}/x`, TOKEN), "bot<token>/x")
     assert.strictEqual(redact("abc", ""), "abc")
   })
 })

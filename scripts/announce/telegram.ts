@@ -9,7 +9,18 @@ const LONGEST_WAIT_SECONDS = 60
 // The token is part of the request URL, so nothing that fetch throws is passed on as is:
 // errors are rebuilt from the fields known to be free of it, and scrubbed once more.
 export function redact(text: string, token: string): string {
-  return token ? text.split(token).join("<token>") : text
+  if (!token) return text
+  return [token, encodeURIComponent(token)].reduce(
+    (t, secret) => t.split(secret).join("<token>"),
+    text,
+  )
+}
+
+// A system error code such as ETIMEDOUT. Never the message: it may quote the request URL
+// in a form `redact` does not recognise.
+function reasonOf(error: unknown): string {
+  const code = ((error as Error)?.cause as { code?: unknown } | undefined)?.code
+  return typeof code === "string" && /^[A-Z][A-Z0-9_]*$/.test(code) ? code : "network error"
 }
 
 type Reply = {
@@ -46,8 +57,7 @@ export async function sendMessage(
       reply = (await response.json()) as Reply
     } catch (error) {
       // Not retried: the request may have reached Telegram, and a retry would post twice.
-      const cause = error instanceof Error ? ((error.cause as Error)?.message ?? error.name) : ""
-      throw fail(`no usable response (${cause || "unknown error"})`)
+      throw fail(`no usable response (${reasonOf(error)})`)
     }
     if (reply.ok && typeof reply.result?.message_id === "number") return reply.result.message_id
     const wait = reply.parameters?.retry_after
