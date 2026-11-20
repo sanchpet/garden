@@ -49,11 +49,18 @@ function emptyElements(xml: string, name: string): Record<string, string>[] {
   )
 }
 
+// Throws when the text is not a feed this reader understands: a feed that fails to parse
+// must not pass for one with nothing new in it.
 export function parseFeed(xml: string): { entries: FeedEntry[]; warnings: string[] } {
   const entries: FeedEntry[] = []
   const warnings: string[] = []
   const bare = xml.replace(/<!--[\s\S]*?-->/g, "")
-  for (const [, body] of bare.matchAll(/<entry(?:\s[^>]*)?>([\s\S]*?)<\/entry>/g)) {
+  if (!/<feed[\s>]/.test(bare)) throw new Error("not an Atom feed: no <feed> element")
+  const bodies = [...bare.matchAll(/<entry(?:\s[^>]*)?>([\s\S]*?)<\/entry>/g)]
+  const opened = bare.match(/<entry[\s>]/g)?.length ?? 0
+  if (opened !== bodies.length)
+    throw new Error(`the feed has ${opened} <entry> tags, but only ${bodies.length} could be read`)
+  for (const [, body] of bodies) {
     const id = element(body, "id")
     if (!id) {
       warnings.push(`an entry without <id> is skipped: ${element(body, "title") ?? "(untitled)"}`)

@@ -55,6 +55,26 @@ describe("parseFeed", () => {
     assert.deepStrictEqual(entries, [])
     assert.match(warnings[0], /Lost/)
   })
+
+  test("a feed without entries is a quiet day", () => {
+    assert.deepStrictEqual(parseFeed(`<feed xmlns="http://www.w3.org/2005/Atom"></feed>`), {
+      entries: [],
+      warnings: [],
+    })
+  })
+
+  test("what cannot be read is an error, not a quiet day", () => {
+    assert.throws(() => parseFeed("<html><body>502 Bad Gateway</body></html>"), /not an Atom feed/)
+    assert.throws(() => parseFeed(""), /not an Atom feed/)
+    assert.throws(
+      () => parseFeed("<feed><atom:entry><id>a</id></atom:entry><entry><id>b</id></feed>"),
+      /1 <entry> tags, but only 0 could be read/,
+    )
+    assert.throws(
+      () => parseFeed("<feed><entry><id>a</id></entry><entry><id>b</id></feed>"),
+      /2 <entry> tags, but only 1/,
+    )
+  })
 })
 
 describe("telegramPost", () => {
