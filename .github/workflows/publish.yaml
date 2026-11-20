@@ -66,8 +66,11 @@ jobs:
           {
             echo "## Private links stripped"
             grep 'garden: private link stripped' build.log | sed 's/^.*stripped: /- /' || echo "None."
+            echo "## Feed problems"
+            grep 'garden: feed problem' build.log | sed 's/^.*problem: /- /' || echo "None."
           } >> "$GITHUB_STEP_SUMMARY"
           grep 'garden: private link stripped' build.log | sed 's/^/::warning::/' || true
+          grep 'garden: feed problem' build.log | sed 's/^/::warning::/' || true
 
       # Telegram cannot reach the hub, so share links go through GitHub Pages (local-plugins/share.tsx).
       - name: Split out the share stubs
