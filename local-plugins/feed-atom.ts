@@ -5,11 +5,11 @@
 export type Page = {
   slug: string
   lang?: string
-  title?: string
   frontmatter: Record<string, unknown>
 }
 
 export type Entry = {
+  lang: string
   id: string
   title: string
   published: string
@@ -57,14 +57,18 @@ export function timestamp(value: unknown): string | undefined {
 }
 
 function text(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined
-  const trimmed = value.trim()
-  return trimmed || undefined
+  if (typeof value !== "string" && typeof value !== "number") return undefined
+  return String(value).trim() || undefined
 }
 
+// A scalar is a list of one; YAML reads a bare `2024` as a number.
 function list(value: unknown): string[] {
   const items = Array.isArray(value) ? value : [value]
-  return items.flatMap((item) => text(item) ?? [])
+  return [...new Set(items.flatMap((item) => text(item) ?? []))]
+}
+
+function isAbsent(value: unknown): boolean {
+  return value === undefined || value === null || (typeof value === "string" && !value.trim())
 }
 
 // By code unit, not by locale: the order must not depend on the build machine.
@@ -77,39 +81,52 @@ export function isPublication(page: Page): boolean {
   return typeof type === "string" && TYPES.has(type) && draft !== true && draft !== "true"
 }
 
-// undefined: the page is not a publication, or has no date to be published under.
-export function entryOf(page: Page, base: string): Entry | undefined {
+// No entry: the page is not a publication, or cannot be one as written. The warnings say what
+// in a publication's frontmatter was not usable, whether or not it cost the entry.
+export function entryOf(page: Page, base: string): { entry?: Entry; warnings: string[] } {
+  if (!isPublication(page)) return { warnings: [] }
   const fm = page.frontmatter
-  if (!isPublication(page)) return undefined
-  const published = timestamp(fm.published) ?? timestamp(fm.created)
-  if (!published) return undefined
-  return {
+  const warnings: string[] = []
+  const date = (field: string) => {
+    const value = timestamp(fm[field])
+    if (!value && !isAbsent(fm[field])) {
+      warnings.push(`${page.slug}: ${field} is not a date: ${JSON.stringify(fm[field])}`)
+    }
+    return value
+  }
+  const [ownPublished, created, revised] = ["published", "created", "revised"].map(date)
+  const published = ownPublished ?? created
+  if (!page.lang) warnings.push(`${page.slug} left out: not in a language folder`)
+  if (!published) warnings.push(`${page.slug} left out: no published or created date`)
+  if (!page.lang || !published) return { warnings }
+  const entry: Entry = {
+    lang: page.lang,
     id: pageUrl(base, page.slug),
-    title: text(page.title) ?? text(fm.title) ?? page.slug,
+    title: text(fm.title) ?? page.slug,
     published,
-    updated: timestamp(fm.revised) ?? published,
+    // A revision dated before the release is a typo, not a way to predate it.
+    updated: revised && revised > published ? revised : published,
     summary: text(fm.announce) ?? text(fm.description),
     categories: list(fm.channels),
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
   }
+  return { entry, warnings }
 }
 
 export function buildFeed(
-  pages: Page[],
+  entries: Entry[],
   lang: string,
   site: { base: string; title: string; author: string },
 ): Feed {
-  const entries = pages
-    .filter((page) => page.lang === lang)
-    .flatMap((page) => entryOf(page, site.base) ?? [])
-    .sort((a, b) => compare(b.published, a.published) || compare(a.id, b.id))
   return {
     id: `${site.base}/${lang}/feed.xml`,
     home: `${site.base}/${lang}/`,
     lang,
     title: site.title,
     author: site.author,
-    entries,
+    entries: entries
+      .filter((entry) => entry.lang === lang)
+      .sort((a, b) => compare(b.published, a.published) || compare(a.id, b.id)),
   }
 }
 
