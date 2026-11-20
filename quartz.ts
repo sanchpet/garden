@@ -13,6 +13,7 @@ import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
 import { ShareStubs } from "./local-plugins/share"
+import { PublicationFeed } from "./local-plugins/feed"
 import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
 import "./local-plugins/radar"
@@ -48,7 +49,13 @@ for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)])
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
   pageLayout.afterBody = [races, ...(pageLayout.afterBody ?? [])]
 }
-config.plugins.emitters.push(LegacyRedirects(), GardenBrand(), ShareStubs(), RacesFeed())
+config.plugins.emitters.push(
+  LegacyRedirects(),
+  GardenBrand(),
+  ShareStubs(),
+  RacesFeed(),
+  PublicationFeed(),
+)
 const dispatcher = config.plugins.emitters.findIndex((e) => e.name === "PageTypeDispatcher")
 config.plugins.emitters[dispatcher] = PageTypeDispatcher(layout)
 
