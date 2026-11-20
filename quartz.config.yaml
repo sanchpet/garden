@@ -122,7 +122,8 @@ plugins:
     enabled: true
     options:
       enableSiteMap: true
-      enableRSS: true
+      # local-plugins/feed.tsx emits the feeds: Atom per language, publications only.
+      enableRSS: false
   - source: "@quartz-community/favicon"
     enabled: false
   - source: "@quartz-community/og-image"
