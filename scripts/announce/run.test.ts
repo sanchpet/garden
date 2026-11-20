@@ -67,39 +67,53 @@ function harness(over: Partial<Deps> = {}, journal?: Journal) {
   return { state, go }
 }
 
+// A harness whose journal already holds the fixture feed, as after the first build.
 async function seeded(over: Partial<Deps> = {}) {
-  const h = harness(over)
-  await h.go(fixture())
-  h.state.saves.length = 0
-  return h
+  const first = harness()
+  await first.go(fixture())
+  return harness(over, first.state.journal)
 }
 
 describe("run", () => {
-  test("without a token nothing is read, written or sent", async () => {
-    const untouchable = () => assert.fail("the journal must not be touched")
-    const h = harness({ store: { load: untouchable, save: untouchable } })
-    assert.strictEqual(await h.go([fresh], { token: "" }), 0)
-    assert.strictEqual(await h.go([fresh], { token: undefined }), 0)
-    assert.deepStrictEqual(h.state.sent, [])
-    assert.match(h.state.lines[0], /TELEGRAM_BOT_TOKEN is not set/)
-  })
-
-  test("no journal: everything in the feed is recorded as delivered and nothing is sent", async () => {
-    const h = harness()
-    assert.strictEqual(await h.go(fixture()), 0)
-    assert.deepStrictEqual(h.state.sent, [])
-    assert.deepStrictEqual(h.state.saves, ["Seed the journal with 4 entries"])
-    assert.strictEqual(Object.keys(h.state.journal!.delivered).length, 4)
-    assert.ok(
-      Object.values(h.state.journal!.delivered).every((r) => r[ANY_CHANNEL].origin === "seeded"),
-    )
-  })
+  for (const token of ["t", "", undefined]) {
+    test(`no journal, token ${JSON.stringify(token)}: the feed is recorded as delivered, nothing sent`, async () => {
+      const h = harness()
+      assert.strictEqual(await h.go(fixture(), { token }), 0)
+      assert.deepStrictEqual(h.state.sent, [])
+      assert.deepStrictEqual(h.state.saves, ["Seed the journal with 4 entries"])
+      assert.strictEqual(Object.keys(h.state.journal!.delivered).length, 4)
+      assert.ok(
+        Object.values(h.state.journal!.delivered).every((r) => r[ANY_CHANNEL].origin === "seeded"),
+      )
+    })
+  }
 
   test("an empty journal is seeded too", async () => {
     const h = harness({}, { version: 1, delivered: {} })
     await h.go(fixture())
     assert.deepStrictEqual(h.state.sent, [])
     assert.strictEqual(h.state.saves.length, 1)
+  })
+
+  test("a journal but no token: a notice, nothing sent, the journal untouched", async () => {
+    const h = await seeded()
+    const before = structuredClone(h.state.journal)
+    assert.strictEqual(await h.go([fresh, ...fixture()], { token: "" }), 0)
+    assert.strictEqual(await h.go([fresh, ...fixture()], { token: undefined }), 0)
+    assert.deepStrictEqual(h.state.sent, [])
+    assert.deepStrictEqual(h.state.saves, [])
+    assert.deepStrictEqual(h.state.journal, before)
+    assert.match(h.state.lines[0], /TELEGRAM_BOT_TOKEN is not set/)
+  })
+
+  test("a text published between the seed and the secret is announced once the secret is there", async () => {
+    const h = await seeded()
+    await h.go([fresh, ...fixture()], { token: "" })
+    assert.strictEqual(await h.go([fresh, ...fixture()]), 0)
+    assert.deepStrictEqual(
+      h.state.sent.map((m) => m.chat),
+      ["@sanchpetblog"],
+    )
   })
 
   test("the run after seeding announces only what is new, and the one after that nothing", async () => {

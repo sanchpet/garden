@@ -25,15 +25,11 @@ const errorText = (error: unknown) => (error instanceof Error ? error.message : 
 export async function run(entries: FeedEntry[], options: Options, deps: Deps): Promise<number> {
   const { config, dryRun } = options
   const { log, warn, store } = deps
-  // Without the secret the job is inert: no journal is created, so the first run with a token
-  // still seeds instead of announcing whatever was published in between.
-  if (!options.token) {
-    log("TELEGRAM_BOT_TOKEN is not set: nothing announced, the journal is not touched.")
-    return 0
-  }
   const tag = dryRun ? "[dry run] " : ""
   const stamp = () => deps.now().toISOString()
 
+  // Seeding does not wait for the token: the journal then marks the day the announcer was
+  // switched on, and a text published before the secret arrives is still announced after it.
   const existing = await store.load()
   if (!existing || isEmpty(existing)) {
     const seeded = seed(entries, stamp())
@@ -43,6 +39,11 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
     if (dryRun) log(serializeJournal(seeded).trimEnd())
     else if (entries.length)
       await store.save(seeded, `Seed the journal with ${entries.length} entries`)
+    return 0
+  }
+
+  if (!options.token) {
+    log("TELEGRAM_BOT_TOKEN is not set: nothing announced, the journal is not touched.")
     return 0
   }
 

@@ -55,14 +55,15 @@ const git: Git = (args, input) =>
 async function main(): Promise<number> {
   const config = loadConfig(values.config)
   const entries: FeedEntry[] = []
-  // Read only once a token is there: without one the job must stay inert whatever the build made.
-  if (token) {
-    const files = values.feed ?? config.feeds.map((feed) => path.join(values.out, feed))
-    for (const file of files) {
-      const feed = parseFeed(fs.readFileSync(file, "utf8"))
-      feed.warnings.forEach(warn)
-      entries.push(...feed.entries)
+  for (const file of values.feed ?? config.feeds.map((feed) => path.join(values.out, feed))) {
+    let feed: ReturnType<typeof parseFeed>
+    try {
+      feed = parseFeed(fs.readFileSync(file, "utf8"))
+    } catch (error) {
+      throw new Error(`${file}: ${error instanceof Error ? error.message : String(error)}`)
     }
+    feed.warnings.forEach(warn)
+    entries.push(...feed.entries)
   }
   return run(
     entries,
@@ -84,7 +85,8 @@ async function main(): Promise<number> {
 main().then(
   (code) => process.exit(code),
   (error) => {
-    console.error(redact(`error: ${error instanceof Error ? error.message : String(error)}`, token))
+    const text = redact(error instanceof Error ? error.message : String(error), token)
+    console.error(inActions ? `::error::${text}` : `error: ${text}`)
     process.exit(1)
   },
 )
