@@ -2,7 +2,6 @@ import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import type { FullSlug } from "../quartz/util/path"
 import { LANGUAGES, languageOf } from "./bilingual"
-import { coverOf } from "./cover"
 import { buildFeed, entryOf, isPublication, renderFeed, type Page } from "./feed-atom"
 
 export const FEED_SKIPPED_MARK = "garden: publication left out of the feed"
@@ -24,7 +23,6 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
         slug: file.data.slug!,
         lang: languageOf(file.data.slug),
         title: typeof frontmatter.title === "string" ? frontmatter.title : undefined,
-        cover: coverOf(file.data),
         frontmatter,
       }
       pages.push(page)

@@ -6,7 +6,6 @@ export type Page = {
   slug: string
   lang?: string
   title?: string
-  cover?: string
   frontmatter: Record<string, unknown>
 }
 
@@ -18,7 +17,6 @@ export type Entry = {
   summary?: string
   categories: string[]
   related: string[]
-  enclosure?: { href: string; type?: string }
 }
 
 export type Feed = {
@@ -33,15 +31,6 @@ export type Feed = {
 const TYPES = new Set(["post", "evergreen"])
 // Atom requires feed-level `updated`; an empty feed gets a fixed one rather than the build time.
 const EPOCH = "1970-01-01T00:00:00Z"
-const IMAGE_TYPES: Record<string, string> = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp",
-  gif: "image/gif",
-  svg: "image/svg+xml",
-  avif: "image/avif",
-}
 
 export function pageUrl(base: string, slug: string): string {
   return `${base}/${encodeURI(slug.replace(/(^|\/)index$/, "$1"))}`
@@ -94,7 +83,6 @@ export function entryOf(page: Page, base: string): Entry | undefined {
   if (!isPublication(page)) return undefined
   const published = timestamp(fm.published) ?? timestamp(fm.created)
   if (!published) return undefined
-  const cover = page.cover
   return {
     id: pageUrl(base, page.slug),
     title: text(page.title) ?? text(fm.title) ?? page.slug,
@@ -103,12 +91,6 @@ export function entryOf(page: Page, base: string): Entry | undefined {
     summary: text(fm.announce) ?? text(fm.description),
     categories: list(fm.channels),
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
-    enclosure: cover
-      ? {
-          href: `${base}/${encodeURI(cover)}`,
-          type: IMAGE_TYPES[cover.split(".").pop()!.toLowerCase()],
-        }
-      : undefined,
   }
 }
 
@@ -149,12 +131,9 @@ function renderEntry(entry: Entry): string {
     `<id>${x(entry.id)}</id>`,
     `<link rel="alternate" type="text/html" href="${x(entry.id)}"/>`,
     ...entry.related.map((href) => `<link rel="related" href="${x(href)}"/>`),
+    `<published>${entry.published}</published>`,
+    `<updated>${entry.updated}</updated>`,
   ]
-  if (entry.enclosure) {
-    const type = entry.enclosure.type ? ` type="${x(entry.enclosure.type)}"` : ""
-    lines.push(`<link rel="enclosure"${type} href="${x(entry.enclosure.href)}"/>`)
-  }
-  lines.push(`<published>${entry.published}</published>`, `<updated>${entry.updated}</updated>`)
   if (entry.summary) lines.push(`<summary type="text">${x(entry.summary)}</summary>`)
   lines.push(...entry.categories.map((term) => `<category term="${x(term)}"/>`))
   return `  <entry>\n${lines.map((line) => `    ${line}`).join("\n")}\n  </entry>\n`

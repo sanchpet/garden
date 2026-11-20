@@ -18,7 +18,7 @@ const post = page(
     published: "2026-11-15",
     link: "https://t.me/sanchpetlytdybr/335",
   },
-  { title: "За секунду", cover: "media/za-sekundu-cover.jpg" },
+  { title: "За секунду" },
 )
 const evergreen = page(
   "ru/evergreen/myshlenie",
@@ -122,14 +122,6 @@ describe("entry fields", () => {
     assert.deepStrictEqual(related(undefined), [])
     assert.deepStrictEqual(related("[[a-note]]"), [])
   })
-
-  test("a cover becomes an enclosure", () => {
-    assert.deepStrictEqual(entryOf(post, BASE)!.enclosure, {
-      href: "https://sanch.pet/media/za-sekundu-cover.jpg",
-      type: "image/jpeg",
-    })
-    assert.strictEqual(entryOf(evergreen, BASE)!.enclosure, undefined)
-  })
 })
 
 describe("timestamp", () => {
@@ -215,7 +207,6 @@ describe("rendering", () => {
     <id>https://sanch.pet/ru/posts/za-sekundu</id>
     <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/za-sekundu"/>
     <link rel="related" href="https://t.me/sanchpetlytdybr/335"/>
-    <link rel="enclosure" type="image/jpeg" href="https://sanch.pet/media/za-sekundu-cover.jpg"/>
     <published>2026-11-15T00:00:00Z</published>
     <updated>2026-11-15T00:00:00Z</updated>
     <category term="lytdybr"/>
