@@ -20,6 +20,8 @@
   "include": [
     "quartz/**/*.ts",
     "quartz/**/*.tsx",
+    "local-plugins/**/*.ts",
+    "local-plugins/**/*.tsx",
     "scripts/**/*.ts",
     "*.ts",
     "*.tsx",

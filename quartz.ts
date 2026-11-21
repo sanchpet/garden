@@ -18,6 +18,12 @@ import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
 import "./local-plugins/radar"
 import { RaceCalendar, RacesFeed } from "./local-plugins/races"
+import {
+  ContentProblems,
+  FrontmatterLinks,
+  SourceList,
+  withoutSourceTexts,
+} from "./local-plugins/sources"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -29,6 +35,7 @@ config.plugins.transformers.push(
   InlineDrawings(),
   PageLanguage(),
   GardenFrontmatter(),
+  FrontmatterLinks(),
   LanguageLinks(),
   StripPrivateLinks(),
   FootnoteLinks(),
@@ -43,11 +50,23 @@ const header = [HomeLogo(), LanguageSwitch(), GardenStyles(), BookcaseScript(), 
 const noteHeader = NoteHeader()
 const cover = NoteCover()
 const races = RaceCalendar()
+const sources = SourceList()
+let wrapped = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
-  pageLayout.afterBody = [races, ...(pageLayout.afterBody ?? [])]
+  pageLayout.afterBody = [races, sources, ...(pageLayout.afterBody ?? [])]
+  pageLayout.right = pageLayout.right?.map((component) => {
+    if (component.name !== "Backlinks") return component
+    wrapped++
+    return withoutSourceTexts(component)
+  })
+}
+if (wrapped === 0) {
+  throw new Error(
+    "garden: no Backlinks component in any layout to wrap; a source card would list its texts twice",
+  )
 }
 config.plugins.emitters.push(
   LegacyRedirects(),
@@ -55,6 +74,7 @@ config.plugins.emitters.push(
   ShareStubs(),
   RacesFeed(),
   PublicationFeed(),
+  ContentProblems(),
 )
 const dispatcher = config.plugins.emitters.findIndex((e) => e.name === "PageTypeDispatcher")
 config.plugins.emitters[dispatcher] = PageTypeDispatcher(layout)

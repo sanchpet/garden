@@ -2,6 +2,8 @@
 // the clock, git or the file system: unchanged texts must give a byte-identical feed, since
 // consumers treat a changed entry as an event.
 
+import { isText } from "./kinds"
+
 export type Page = {
   slug: string
   lang?: string
@@ -30,7 +32,6 @@ export type Feed = {
   entries: Entry[]
 }
 
-const TYPES = new Set(["post", "evergreen"])
 // Atom requires feed-level `updated`; an empty feed gets a fixed one rather than the build time.
 const EPOCH = "1970-01-01T00:00:00Z"
 
@@ -80,7 +81,7 @@ function compare(a: string, b: string): number {
 
 export function isPublication(page: Page): boolean {
   const { type, draft } = page.frontmatter
-  return typeof type === "string" && TYPES.has(type) && draft !== true && draft !== "true"
+  return isText(type) && draft !== true && draft !== "true"
 }
 
 // No entry: the page is not a publication, or cannot be one as written. The warnings say what

@@ -5,25 +5,15 @@ import type { QuartzEmitterPlugin, QuartzTransformerPlugin } from "../quartz/plu
 import { write } from "../quartz/plugins/emitters/helpers"
 import { FilePath, FullSlug, resolveRelative, simplifySlug } from "../quartz/util/path"
 import { publishedSlugs } from "./garden"
+import { LANGUAGES, inLanguage, languageOf, relinked, type Language } from "./languages"
 // @ts-ignore
 import script from "./language-switch.inline"
 
-// The texts live in one top-level folder per language; a translation sits at the same path in the other one.
-export const LANGUAGES = ["ru", "en"] as const
-type Language = (typeof LANGUAGES)[number]
+export { LANGUAGES, languageOf }
 
 const LABELS: Record<Language, { short: string; name: string; missing: string }> = {
   ru: { short: "RU", name: "Русский", missing: "Русской версии пока нет" },
   en: { short: "EN", name: "English", missing: "No English version yet" },
-}
-
-export function languageOf(slug: string | undefined): Language | undefined {
-  const root = slug?.split("/")[0]
-  return LANGUAGES.find((lang) => lang === root)
-}
-
-function inLanguage(slug: string, lang: Language): FullSlug {
-  return `${lang}${slug.slice(slug.indexOf("/"))}` as FullSlug
 }
 
 // The page language comes from its folder, so the texts need no extra frontmatter.
@@ -75,7 +65,7 @@ export const LanguageLinks: QuartzTransformerPlugin = () => ({
           node.properties["data-slug"] = resolved
           node.properties.href = resolveRelative(from, resolved) + (anchor ? `#${anchor}` : "")
           const [stale, fresh] = [simplifySlug(target as FullSlug), simplifySlug(resolved)]
-          file.data.links = file.data.links?.map((link) => (link === stale ? fresh : link))
+          file.data.links = relinked(file.data.links, stale, fresh)
         })
       },
     ]
