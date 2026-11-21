@@ -510,6 +510,14 @@
       "description": "The shared form of the language note and the footnote tooltip.",
       "html": "<div class=\"ds-popover\"><strong>No English version yet</strong><span>This note exists only in Russian.</span></div>",
       "css": ".ds-popover{max-width:24rem;padding:.6rem .8rem;border:1px solid var(--lightgray,#E3D9C4);border-radius:6px;background:var(--light,#FAF5E9);box-shadow:0 4px 16px rgba(0,0,0,.15);color:var(--darkgray,#33302B);font-size:.85rem;line-height:1.5}.ds-popover strong{display:block;color:var(--dark,#1B1A1C)}.ds-popover strong+span{display:block;margin-top:.3rem}"
+    },
+    {
+      "name": "Stream row",
+      "kind": "list",
+      "refersTo": "stream",
+      "description": "One event of the garden: the day by hand, what happened in muted text, the page as a link; red only for what is done.",
+      "html": "<ol class=\"ds-stream\"><li><span class=\"ds-stream-day\">19 Nov</span><span><span class=\"ds-stream-verb\"><svg viewBox=\"0 0 18 16\" aria-hidden=\"true\"><path d=\"M2.2 8.6 C3.9 9.7 5.4 11.9 6.6 13.9 C8.3 9.4 11.6 4.9 15.9 2.1\"/></svg>finished reading</span><a href=\"#\">Misbehaving</a>, Richard Thaler</span></li><li><span class=\"ds-stream-day\">15 Nov</span><span><span class=\"ds-stream-verb\">post</span><a class=\"ds-stream-text\" href=\"#\">In a Second</a></span></li></ol>",
+      "css": ".ds-stream{list-style:none;margin:0;padding:0;font-family:Literata,serif;color:#33302B}.ds-stream li{display:grid;grid-template-columns:4.6rem 1fr;column-gap:1.1rem;align-items:baseline;padding:.42rem 0}.ds-stream-day{font-family:Caveat,cursive;font-size:1.15rem;font-weight:700;color:#6B6459}.ds-stream-verb{margin-right:.55rem;font-size:.85rem;color:#6B6459}.ds-stream-verb svg{width:.95rem;height:.85rem;margin-right:.3rem;fill:none;stroke:#EC0E16;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.ds-stream a{color:#1E3959;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.18em;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent)}.ds-stream a:hover{text-decoration-color:currentColor}.ds-stream-text{font-weight:600}"
     }
   ],
   "narrative": {

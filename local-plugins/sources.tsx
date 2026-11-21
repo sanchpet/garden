@@ -25,13 +25,16 @@ const UI = {
     locale: "ru-RU",
     sources: "Источники",
     texts: "Тексты по источнику",
-    kinds: { post: "пост", evergreen: "вечнозелёная заметка" } as Record<string, string>,
+    kinds: { post: "пост", evergreen: "вечнозелёная заметка", note: "заметка" } as Record<
+      string,
+      string
+    >,
   },
   en: {
     locale: "en-US",
     sources: "Sources",
     texts: "Texts from this source",
-    kinds: { post: "post", evergreen: "evergreen note" } as Record<string, string>,
+    kinds: { post: "post", evergreen: "evergreen note", note: "note" } as Record<string, string>,
   },
 }
 

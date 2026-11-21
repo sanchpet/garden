@@ -1,9 +1,9 @@
 // The content kinds of the garden and their species; a note names its species in frontmatter `type`.
 export const KINDS = {
-  text: ["post", "evergreen"],
+  text: ["post", "evergreen", "note"],
   source: ["book", "course", "guide", "platform"],
   assessed: ["tool"],
-  module: ["races"],
+  module: ["races", "stream"],
 } as const
 
 export type Kind = keyof typeof KINDS

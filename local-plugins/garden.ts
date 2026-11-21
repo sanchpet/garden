@@ -7,6 +7,8 @@ import type { QuartzTransformerPlugin } from "../quartz/plugins/types"
 import type { BuildCtx } from "../quartz/util/ctx"
 import { FilePath, slugifyFilePath } from "../quartz/util/path"
 import { frontmatterOf, isDraft } from "./frontmatter"
+import { languageOf } from "./languages"
+import { dayOf, formatDay } from "./stream-events"
 
 // Keyed by the file list, which a rebuild under --serve replaces on the same context.
 const pages = new WeakMap<object, Map<string, Record<string, unknown>>>()
@@ -56,6 +58,11 @@ export const GardenFrontmatter: QuartzTransformerPlugin = () => ({
       () => (_tree, file) => {
         const fm = file.data.frontmatter as Record<string, unknown> | undefined
         if (!fm) return
+        // A note has no title of its own: its page is headed by its day.
+        if (fm.type === "note" && fm.title === file.stem) {
+          const day = dayOf(fm.published ?? fm.created)
+          if (day) fm.title = formatDay(day, languageOf(file.data.slug) ?? "ru", "long")
+        }
         const aliases = fm.aliases
         if (fm.title === file.stem && Array.isArray(aliases) && aliases.length > 0) {
           fm.title = String(aliases[0])
