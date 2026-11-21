@@ -1,6 +1,6 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { parseFeed, telegramPost } from "./feed"
+import { KIND_SCHEME, parseFeed, telegramPost } from "./feed"
 import { fixture } from "./fixtures/load"
 
 describe("parseFeed", () => {
@@ -24,6 +24,7 @@ describe("parseFeed", () => {
       updated: "2026-11-05T00:00:00Z",
       categories: ["lytdybr"],
       related: ["https://t.me/sanchpetlytdybr/334"],
+      kind: undefined,
     })
   })
 
@@ -86,5 +87,24 @@ describe("telegramPost", () => {
       telegramPost({ ...unknown, related: ["https://example.com/t.me/1", "not a url"] }),
       undefined,
     )
+  })
+})
+
+describe("the species of an entry", () => {
+  const xml = (categories: string) =>
+    `<feed><entry><id>https://sanch.pet/ru/notes/n</id>${categories}</entry></feed>`
+
+  test("is read from the category with the kind scheme and is not a channel", () => {
+    const [entry] = parseFeed(
+      xml(`<category term="lytdybr"/><category scheme="${KIND_SCHEME}" term="note"/>`),
+    ).entries
+    assert.deepStrictEqual(entry.categories, ["lytdybr"])
+    assert.strictEqual(entry.kind, "note")
+  })
+
+  test("a category of another scheme is neither a channel nor the species", () => {
+    const [entry] = parseFeed(xml(`<category scheme="https://example.org/x" term="note"/>`)).entries
+    assert.deepStrictEqual(entry.categories, [])
+    assert.strictEqual(entry.kind, undefined)
   })
 })

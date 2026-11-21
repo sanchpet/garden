@@ -73,6 +73,36 @@ describe("buildText", () => {
   })
 })
 
+describe("a note", () => {
+  const note = {
+    ...entry,
+    id: "https://sanch.pet/ru/notes/2026-11-21-0910",
+    kind: "note",
+    content: "Туман <такой>, что города не видно.",
+  }
+
+  test("is posted whole, with the way to its page as a phrase and no bare address", () => {
+    assert.strictEqual(
+      buildText(note, LINK),
+      'Туман &lt;такой&gt;, что города не видно.\n\n<a href="https://sanch.pet/ru/notes/2026-11-21-0910">Прочесть заметку на сайте</a>',
+    )
+  })
+
+  test("an English note is signed in English", () => {
+    assert.match(
+      buildText({ ...note, id: "https://sanch.pet/en/notes/n" }, LINK),
+      /<a href="https:\/\/sanch\.pet\/en\/notes\/n">Read the note on the site<\/a>$/,
+    )
+  })
+
+  test("a long note is cut to fit with its closing phrase", () => {
+    const text = buildText({ ...note, content: "я".repeat(5000) }, LINK)
+    const visible = text.replace(/<[^>]+>/g, "")
+    assert.ok(visible.length <= 4096)
+    assert.match(text, /…\n\n<a href=/)
+  })
+})
+
 describe("messageUrl", () => {
   test("the address of a post in a public channel", () => {
     assert.strictEqual(messageUrl("@sanchpetblog", 362), "https://t.me/sanchpetblog/362")

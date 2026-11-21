@@ -1,7 +1,8 @@
 export type Fetch = typeof fetch
 export type Sleep = (ms: number) => Promise<void>
 
-export type Message = { chat: string; text: string; previewUrl: string }
+// Without `previewUrl` the message goes out with no link preview at all.
+export type Message = { chat: string; text: string; previewUrl?: string }
 
 const RETRIES = 3
 const LONGEST_WAIT_SECONDS = 60
@@ -49,7 +50,9 @@ export async function sendMessage(
           chat_id: message.chat,
           text: message.text,
           parse_mode: "HTML",
-          link_preview_options: { url: message.previewUrl },
+          link_preview_options: message.previewUrl
+            ? { url: message.previewUrl }
+            : { is_disabled: true },
         }),
         signal: AbortSignal.timeout(30_000),
       })

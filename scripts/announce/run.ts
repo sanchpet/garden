@@ -8,7 +8,7 @@ import {
   serializeJournal,
   type Delivery,
 } from "./journal"
-import { buildText, messageUrl, stubUrl } from "./message"
+import { buildText, isNote, messageUrl, stubUrl } from "./message"
 import { plan, seed } from "./plan"
 import type { Store } from "./store"
 import type { Probe } from "./stub"
@@ -76,7 +76,11 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
       warn(`${entry.id}: ${errorText(error)}, not announced`)
       continue
     }
-    const probe = await deps.waitForStub(link, deadline)
+    // A note is sent without a preview, so it does not wait for its stub.
+    const note = isNote(entry)
+    const probe = note
+      ? { ready: true, detail: "not needed, no preview" }
+      : await deps.waitForStub(link, deadline)
     if (chat.unverified)
       warn(`${channel}: the chat ${chat.chat} is marked unverified in the config`)
     const text = buildText(entry, link)
@@ -105,7 +109,11 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
     }
     let delivery: Delivery
     try {
-      const messageId = await deps.send({ chat: chat.chat, text, previewUrl: link })
+      const messageId = await deps.send({
+        chat: chat.chat,
+        text,
+        previewUrl: note ? undefined : link,
+      })
       delivery = { at: stamp(), origin: "sent", url: messageUrl(chat.chat, messageId), messageId }
       log(`Sent to ${chat.chat}: ${entry.id} (${delivery.url})`)
     } catch (error) {

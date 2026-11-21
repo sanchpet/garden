@@ -16,14 +16,28 @@ export function stubUrl(id: string, shareHost: string): string {
   return url.href
 }
 
+// A note is posted whole, so a preview card would only repeat it: it goes out without one,
+// and the way to its page is a phrase at the end instead of a bare address.
+export function isNote(entry: FeedEntry): boolean {
+  return entry.kind === "note"
+}
+
+const READ_ON_SITE = { ru: "Прочесть заметку на сайте", en: "Read the note on the site" }
+
+function noteTail(entry: FeedEntry): { html: string; length: number } {
+  const label = new URL(entry.id).pathname.startsWith("/en/") ? READ_ON_SITE.en : READ_ON_SITE.ru
+  return { html: `<a href="${escapeHtml(entry.id)}">${label}</a>`, length: label.length }
+}
+
 // The author's announcement stands alone; without one the title does. The description is
 // left out either way: the preview card under the message already shows it.
 export function buildText(entry: FeedEntry, link: string): string {
-  const room = LIMIT - link.length - 2
+  const tail = isNote(entry) ? noteTail(entry) : { html: escapeHtml(link), length: link.length }
+  const room = LIMIT - tail.length - 2
   let body = entry.content?.trim() ?? ""
   if (body.length > room) body = body.slice(0, room - 1).trimEnd() + "…"
   const head = body ? escapeHtml(body) : `<b>${escapeHtml(entry.title.trim().slice(0, room))}</b>`
-  return `${head}\n\n${escapeHtml(link)}`
+  return `${head}\n\n${tail.html}`
 }
 
 // Channels are configured by their public @name.
