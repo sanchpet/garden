@@ -21,7 +21,7 @@ jobs:
       cancel-in-progress: false
     environment:
       name: github-pages
-      url: ${{ steps.share.outputs.page_url }}
+      url: ${{ steps.share_again.outputs.page_url || steps.share.outputs.page_url }}
     outputs:
       feeds: ${{ steps.feeds.outputs.artifact-id }}
     steps:
@@ -98,7 +98,17 @@ jobs:
         with:
           path: share
 
+      # deploy-pages lists the run's artifacts right after the upload and at times gets none,
+      # though the artifact is there: the listing lags. One more try after a pause.
       - id: share
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      - if: steps.share.outcome == 'failure'
+        run: sleep 30
+
+      - id: share_again
+        if: steps.share.outcome == 'failure'
         uses: actions/deploy-pages@v5
 
       # The site is out by now: nothing in these two steps may turn the publication red.
