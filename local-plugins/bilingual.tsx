@@ -65,7 +65,8 @@ export const LanguageLinks: QuartzTransformerPlugin = () => ({
           node.properties["data-slug"] = resolved
           node.properties.href = resolveRelative(from, resolved) + (anchor ? `#${anchor}` : "")
           const [stale, fresh] = [simplifySlug(target as FullSlug), simplifySlug(resolved)]
-          file.data.links = file.data.links?.map((link) => (link === stale ? fresh : link))
+          const links = file.data.links?.map((link) => (link === stale ? fresh : link))
+          file.data.links = links && [...new Set(links)]
         })
       },
     ]
