@@ -12,7 +12,12 @@ export type FeedEntry = {
   updated?: string
   categories: string[]
   related: string[]
+  // The species of the text, from the category that carries KIND_SCHEME.
+  kind?: string
 }
+
+// The same value as in local-plugins/feed-atom.ts, which writes it.
+export const KIND_SCHEME = "https://sanch.pet/ns/kind"
 
 const NAMED: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" }
 
@@ -66,6 +71,7 @@ export function parseFeed(xml: string): { entries: FeedEntry[]; warnings: string
       warnings.push(`an entry without <id> is skipped: ${element(body, "title") ?? "(untitled)"}`)
       continue
     }
+    const categories = emptyElements(body, "category")
     entries.push({
       id,
       title: element(body, "title") ?? id,
@@ -73,7 +79,8 @@ export function parseFeed(xml: string): { entries: FeedEntry[]; warnings: string
       content: element(body, "content"),
       published: element(body, "published"),
       updated: element(body, "updated"),
-      categories: emptyElements(body, "category").flatMap((a) => a.term?.trim() || []),
+      categories: categories.flatMap((a) => (a.scheme ? [] : a.term?.trim() || [])),
+      kind: categories.find((a) => a.scheme === KIND_SCHEME)?.term?.trim() || undefined,
       related: emptyElements(body, "link").flatMap((a) =>
         a.rel === "related" && a.href ? a.href : [],
       ),

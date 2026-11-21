@@ -23,6 +23,8 @@ export type Entry = {
   content?: string
   categories: string[]
   related: string[]
+  // The species of the text (`post`, `evergreen`, `note`): a consumer may treat them differently.
+  kind: string
 }
 
 export type Feed = {
@@ -33,6 +35,9 @@ export type Feed = {
   author: string
   entries: Entry[]
 }
+
+// Marks the category that names an entry's species; the ones without a scheme are channels.
+export const KIND_SCHEME = "https://sanch.pet/ns/kind"
 
 // Atom requires feed-level `updated`; an empty feed gets a fixed one rather than the build time.
 const EPOCH = "1970-01-01T00:00:00Z"
@@ -126,6 +131,7 @@ export function entryOf(page: Page, base: string): { entry?: Entry; warnings: st
     content: text(fm.announce) ?? note,
     categories: list(fm.channels),
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
+    kind: String(fm.type),
   }
   return { entry, warnings }
 }
@@ -171,6 +177,7 @@ function renderEntry(entry: Entry): string {
   if (entry.summary) lines.push(`<summary type="text">${x(entry.summary)}</summary>`)
   if (entry.content) lines.push(`<content type="text">${x(entry.content)}</content>`)
   lines.push(...entry.categories.map((term) => `<category term="${x(term)}"/>`))
+  lines.push(`<category scheme="${KIND_SCHEME}" term="${x(entry.kind)}"/>`)
   return `  <entry>\n${lines.map((line) => `    ${line}`).join("\n")}\n  </entry>\n`
 }
 

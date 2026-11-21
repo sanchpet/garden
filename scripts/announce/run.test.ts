@@ -117,6 +117,26 @@ describe("run", () => {
     )
   })
 
+  test("a note goes out without a preview and does not wait for its stub", async () => {
+    const note: FeedEntry = {
+      id: "https://sanch.pet/ru/notes/n",
+      title: "Туман",
+      content: "Туман.",
+      categories: ["sanchpetblog"],
+      related: [],
+      kind: "note",
+    }
+    const h = await seeded({ waitForStub: async () => ({ ready: false, detail: "HTTP 404" }) })
+    assert.strictEqual(await h.go([note, ...fixture()]), 0)
+    assert.deepStrictEqual(h.state.sent, [
+      {
+        chat: "@sanchpetblog",
+        text: 'Туман.\n\n<a href="https://sanch.pet/ru/notes/n">Прочесть заметку на сайте</a>',
+        previewUrl: undefined,
+      },
+    ])
+  })
+
   test("the run after seeding announces only what is new, and the one after that nothing", async () => {
     const h = await seeded()
     assert.strictEqual(await h.go([fresh, ...fixture()]), 0)
