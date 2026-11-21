@@ -51,13 +51,21 @@ const noteHeader = NoteHeader()
 const cover = NoteCover()
 const races = RaceCalendar()
 const sources = SourceList()
+let wrapped = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
   pageLayout.afterBody = [races, sources, ...(pageLayout.afterBody ?? [])]
-  pageLayout.right = pageLayout.right?.map((component) =>
-    component.name === "Backlinks" ? withoutSourceTexts(component) : component,
+  pageLayout.right = pageLayout.right?.map((component) => {
+    if (component.name !== "Backlinks") return component
+    wrapped++
+    return withoutSourceTexts(component)
+  })
+}
+if (wrapped === 0) {
+  throw new Error(
+    "garden: no Backlinks component in any layout to wrap; a source card would list its texts twice",
   )
 }
 config.plugins.emitters.push(
