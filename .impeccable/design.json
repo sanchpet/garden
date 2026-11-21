@@ -1,0 +1,622 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-21T13:01:08Z",
+  "title": "Design System: sanch.pet",
+  "extensions": {
+    "colorMeta": {
+      "marker-red": {
+        "role": "primary",
+        "displayName": "Marker Red",
+        "canonical": "oklch(59.6% 0.239 28)",
+        "tonalRamp": [
+          "oklch(15% 0.135 28)",
+          "oklch(26% 0.165 28)",
+          "oklch(38% 0.195 28)",
+          "oklch(49% 0.224 28)",
+          "oklch(61% 0.224 28)",
+          "oklch(72% 0.195 28)",
+          "oklch(84% 0.165 28)",
+          "oklch(95% 0.135 28)"
+        ]
+      },
+      "marker-shadow": {
+        "role": "primary",
+        "displayName": "Marker Shadow",
+        "canonical": "oklch(48.2% 0.197 27)",
+        "tonalRamp": [
+          "oklch(15% 0.111 27)",
+          "oklch(26% 0.135 27)",
+          "oklch(38% 0.160 27)",
+          "oklch(49% 0.184 27)",
+          "oklch(61% 0.184 27)",
+          "oklch(72% 0.160 27)",
+          "oklch(84% 0.135 27)",
+          "oklch(95% 0.111 27)"
+        ]
+      },
+      "contour-burgundy": {
+        "role": "primary",
+        "displayName": "Contour Burgundy",
+        "canonical": "oklch(30.9% 0.118 23)",
+        "tonalRamp": [
+          "oklch(15% 0.066 23)",
+          "oklch(26% 0.081 23)",
+          "oklch(38% 0.096 23)",
+          "oklch(49% 0.111 23)",
+          "oklch(61% 0.111 23)",
+          "oklch(72% 0.096 23)",
+          "oklch(84% 0.081 23)",
+          "oklch(95% 0.066 23)"
+        ]
+      },
+      "steel-blue": {
+        "role": "secondary",
+        "displayName": "Steel Blue",
+        "canonical": "oklch(34.0% 0.066 254)",
+        "tonalRamp": [
+          "oklch(15% 0.037 254)",
+          "oklch(26% 0.045 254)",
+          "oklch(38% 0.053 254)",
+          "oklch(49% 0.062 254)",
+          "oklch(61% 0.062 254)",
+          "oklch(72% 0.053 254)",
+          "oklch(84% 0.045 254)",
+          "oklch(95% 0.037 254)"
+        ]
+      },
+      "paper-cream": {
+        "role": "neutral",
+        "displayName": "Paper Cream",
+        "canonical": "oklch(94.6% 0.023 82)",
+        "tonalRamp": [
+          "oklch(15% 0.013 82)",
+          "oklch(26% 0.016 82)",
+          "oklch(38% 0.019 82)",
+          "oklch(49% 0.022 82)",
+          "oklch(61% 0.022 82)",
+          "oklch(72% 0.019 82)",
+          "oklch(84% 0.016 82)",
+          "oklch(95% 0.013 82)"
+        ]
+      },
+      "page-edge": {
+        "role": "neutral",
+        "displayName": "Page Edge",
+        "canonical": "oklch(92.7% 0.026 85)",
+        "tonalRamp": [
+          "oklch(15% 0.015 85)",
+          "oklch(26% 0.018 85)",
+          "oklch(38% 0.021 85)",
+          "oklch(49% 0.024 85)",
+          "oklch(61% 0.024 85)",
+          "oklch(72% 0.021 85)",
+          "oklch(84% 0.018 85)",
+          "oklch(95% 0.015 85)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(22.0% 0.004 308)",
+        "tonalRamp": [
+          "oklch(15% 0.002 308)",
+          "oklch(26% 0.003 308)",
+          "oklch(38% 0.003 308)",
+          "oklch(49% 0.004 308)",
+          "oklch(61% 0.004 308)",
+          "oklch(72% 0.003 308)",
+          "oklch(84% 0.003 308)",
+          "oklch(95% 0.002 308)"
+        ]
+      },
+      "ink-on-paper": {
+        "role": "neutral",
+        "displayName": "Ink on Paper",
+        "canonical": "oklch(28.9% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "note-on-paper": {
+        "role": "neutral",
+        "displayName": "Note on Paper",
+        "canonical": "oklch(50.6% 0.019 79)",
+        "tonalRamp": [
+          "oklch(15% 0.011 79)",
+          "oklch(26% 0.013 79)",
+          "oklch(38% 0.016 79)",
+          "oklch(49% 0.018 79)",
+          "oklch(61% 0.018 79)",
+          "oklch(72% 0.016 79)",
+          "oklch(84% 0.013 79)",
+          "oklch(95% 0.011 79)"
+        ]
+      },
+      "cover-forest": {
+        "role": "tertiary",
+        "displayName": "Cover Forest",
+        "canonical": "oklch(44.1% 0.056 173)",
+        "tonalRamp": [
+          "oklch(15% 0.031 173)",
+          "oklch(26% 0.038 173)",
+          "oklch(38% 0.045 173)",
+          "oklch(49% 0.052 173)",
+          "oklch(61% 0.052 173)",
+          "oklch(72% 0.045 173)",
+          "oklch(84% 0.038 173)",
+          "oklch(95% 0.031 173)"
+        ]
+      },
+      "cover-brick": {
+        "role": "tertiary",
+        "displayName": "Cover Brick",
+        "canonical": "oklch(56.8% 0.135 36)",
+        "tonalRamp": [
+          "oklch(15% 0.076 36)",
+          "oklch(26% 0.093 36)",
+          "oklch(38% 0.110 36)",
+          "oklch(49% 0.127 36)",
+          "oklch(61% 0.127 36)",
+          "oklch(72% 0.110 36)",
+          "oklch(84% 0.093 36)",
+          "oklch(95% 0.076 36)"
+        ]
+      },
+      "cover-ochre": {
+        "role": "tertiary",
+        "displayName": "Cover Ochre",
+        "canonical": "oklch(75.1% 0.130 80)",
+        "tonalRamp": [
+          "oklch(15% 0.073 80)",
+          "oklch(26% 0.089 80)",
+          "oklch(38% 0.105 80)",
+          "oklch(49% 0.121 80)",
+          "oklch(61% 0.121 80)",
+          "oklch(72% 0.105 80)",
+          "oklch(84% 0.089 80)",
+          "oklch(95% 0.073 80)"
+        ]
+      },
+      "cover-plum": {
+        "role": "tertiary",
+        "displayName": "Cover Plum",
+        "canonical": "oklch(40.1% 0.072 324)",
+        "tonalRamp": [
+          "oklch(15% 0.041 324)",
+          "oklch(26% 0.050 324)",
+          "oklch(38% 0.059 324)",
+          "oklch(49% 0.067 324)",
+          "oklch(61% 0.067 324)",
+          "oklch(72% 0.059 324)",
+          "oklch(84% 0.050 324)",
+          "oklch(95% 0.041 324)"
+        ]
+      },
+      "cover-sage": {
+        "role": "tertiary",
+        "displayName": "Cover Sage",
+        "canonical": "oklch(69.5% 0.038 179)",
+        "tonalRamp": [
+          "oklch(15% 0.022 179)",
+          "oklch(26% 0.026 179)",
+          "oklch(38% 0.031 179)",
+          "oklch(49% 0.036 179)",
+          "oklch(61% 0.036 179)",
+          "oklch(72% 0.031 179)",
+          "oklch(84% 0.026 179)",
+          "oklch(95% 0.022 179)"
+        ]
+      },
+      "cover-slate": {
+        "role": "tertiary",
+        "displayName": "Cover Slate",
+        "canonical": "oklch(39.7% 0.058 240)",
+        "tonalRamp": [
+          "oklch(15% 0.032 240)",
+          "oklch(26% 0.040 240)",
+          "oklch(38% 0.047 240)",
+          "oklch(49% 0.054 240)",
+          "oklch(61% 0.054 240)",
+          "oklch(72% 0.047 240)",
+          "oklch(84% 0.040 240)",
+          "oklch(95% 0.032 240)"
+        ]
+      },
+      "cover-wine": {
+        "role": "tertiary",
+        "displayName": "Cover Wine",
+        "canonical": "oklch(44.5% 0.126 18)",
+        "tonalRamp": [
+          "oklch(15% 0.071 18)",
+          "oklch(26% 0.087 18)",
+          "oklch(38% 0.102 18)",
+          "oklch(49% 0.118 18)",
+          "oklch(61% 0.118 18)",
+          "oklch(72% 0.102 18)",
+          "oklch(84% 0.087 18)",
+          "oklch(95% 0.071 18)"
+        ]
+      },
+      "band-paper": {
+        "role": "neutral",
+        "displayName": "Band Paper",
+        "canonical": "oklch(93.9% 0.026 85)",
+        "tonalRamp": [
+          "oklch(15% 0.015 85)",
+          "oklch(26% 0.018 85)",
+          "oklch(38% 0.021 85)",
+          "oklch(49% 0.024 85)",
+          "oklch(61% 0.024 85)",
+          "oklch(72% 0.021 85)",
+          "oklch(84% 0.018 85)",
+          "oklch(95% 0.015 85)"
+        ]
+      },
+      "band-sticker": {
+        "role": "tertiary",
+        "displayName": "Band Sticker",
+        "canonical": "oklch(81.1% 0.166 85)",
+        "tonalRamp": [
+          "oklch(15% 0.093 85)",
+          "oklch(26% 0.114 85)",
+          "oklch(38% 0.135 85)",
+          "oklch(49% 0.155 85)",
+          "oklch(61% 0.155 85)",
+          "oklch(72% 0.135 85)",
+          "oklch(84% 0.114 85)",
+          "oklch(95% 0.093 85)"
+        ]
+      },
+      "inherited-ground": {
+        "role": "neutral",
+        "displayName": "Inherited Ground",
+        "canonical": "oklch(98.1% 0.002 17)",
+        "tonalRamp": [
+          "oklch(15% 0.001 17)",
+          "oklch(26% 0.001 17)",
+          "oklch(38% 0.002 17)",
+          "oklch(49% 0.002 17)",
+          "oklch(61% 0.002 17)",
+          "oklch(72% 0.002 17)",
+          "oklch(84% 0.001 17)",
+          "oklch(95% 0.001 17)"
+        ]
+      },
+      "inherited-rule": {
+        "role": "neutral",
+        "displayName": "Inherited Rule",
+        "canonical": "oklch(92.2% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "inherited-muted": {
+        "role": "neutral",
+        "displayName": "Inherited Muted",
+        "canonical": "oklch(78.3% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "inherited-text": {
+        "role": "neutral",
+        "displayName": "Inherited Text",
+        "canonical": "oklch(42.4% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "inherited-strong": {
+        "role": "neutral",
+        "displayName": "Inherited Strong",
+        "canonical": "oklch(28.9% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "inherited-link": {
+        "role": "neutral",
+        "displayName": "Inherited Link",
+        "canonical": "oklch(39.7% 0.058 240)",
+        "tonalRamp": [
+          "oklch(15% 0.032 240)",
+          "oklch(26% 0.040 240)",
+          "oklch(38% 0.047 240)",
+          "oklch(49% 0.054 240)",
+          "oklch(61% 0.054 240)",
+          "oklch(72% 0.047 240)",
+          "oklch(84% 0.040 240)",
+          "oklch(95% 0.032 240)"
+        ]
+      },
+      "inherited-link-hover": {
+        "role": "neutral",
+        "displayName": "Inherited Link Hover",
+        "canonical": "oklch(69.5% 0.038 179)",
+        "tonalRamp": [
+          "oklch(15% 0.022 179)",
+          "oklch(26% 0.026 179)",
+          "oklch(38% 0.031 179)",
+          "oklch(49% 0.036 179)",
+          "oklch(61% 0.036 179)",
+          "oklch(72% 0.031 179)",
+          "oklch(84% 0.026 179)",
+          "oklch(95% 0.022 179)"
+        ]
+      },
+      "inherited-ground-dark": {
+        "role": "neutral",
+        "displayName": "Inherited Ground Dark",
+        "canonical": "oklch(20.1% 0.004 286)",
+        "tonalRamp": [
+          "oklch(15% 0.002 286)",
+          "oklch(26% 0.003 286)",
+          "oklch(38% 0.003 286)",
+          "oklch(49% 0.004 286)",
+          "oklch(61% 0.004 286)",
+          "oklch(72% 0.003 286)",
+          "oklch(84% 0.003 286)",
+          "oklch(95% 0.002 286)"
+        ]
+      },
+      "inherited-rule-dark": {
+        "role": "neutral",
+        "displayName": "Inherited Rule Dark",
+        "canonical": "oklch(33.7% 0.007 326)",
+        "tonalRamp": [
+          "oklch(15% 0.004 326)",
+          "oklch(26% 0.005 326)",
+          "oklch(38% 0.005 326)",
+          "oklch(49% 0.006 326)",
+          "oklch(61% 0.006 326)",
+          "oklch(72% 0.005 326)",
+          "oklch(84% 0.005 326)",
+          "oklch(95% 0.004 326)"
+        ]
+      },
+      "inherited-muted-dark": {
+        "role": "neutral",
+        "displayName": "Inherited Muted Dark",
+        "canonical": "oklch(50.3% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "inherited-text-dark": {
+        "role": "neutral",
+        "displayName": "Inherited Text Dark",
+        "canonical": "oklch(87.0% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "inherited-strong-dark": {
+        "role": "neutral",
+        "displayName": "Inherited Strong Dark",
+        "canonical": "oklch(94.0% 0.001 286)",
+        "tonalRamp": [
+          "oklch(15% 0.001 286)",
+          "oklch(26% 0.001 286)",
+          "oklch(38% 0.001 286)",
+          "oklch(49% 0.001 286)",
+          "oklch(61% 0.001 286)",
+          "oklch(72% 0.001 286)",
+          "oklch(84% 0.001 286)",
+          "oklch(95% 0.001 286)"
+        ]
+      },
+      "inherited-link-dark": {
+        "role": "neutral",
+        "displayName": "Inherited Link Dark",
+        "canonical": "oklch(66.2% 0.042 238)",
+        "tonalRamp": [
+          "oklch(15% 0.024 238)",
+          "oklch(26% 0.029 238)",
+          "oklch(38% 0.034 238)",
+          "oklch(49% 0.040 238)",
+          "oklch(61% 0.040 238)",
+          "oklch(72% 0.034 238)",
+          "oklch(84% 0.029 238)",
+          "oklch(95% 0.024 238)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "hand": {
+        "displayName": "Hand",
+        "purpose": "Anything written on a drawn object."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The note's own title."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings in the column."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field names in the note header."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Inline and block code."
+      }
+    },
+    "shadows": [
+      {
+        "name": "popover",
+        "value": "0 4px 16px rgba(0, 0, 0, 0.15)",
+        "purpose": "Under the language note."
+      },
+      {
+        "name": "tooltip",
+        "value": "0 6px 24px rgba(0, 0, 0, 0.15)",
+        "purpose": "Under a footnote tooltip."
+      }
+    ],
+    "motion": [
+      {
+        "name": "straighten",
+        "value": "transform 0.15s ease-out",
+        "purpose": "A paper object straightens when pointed at."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity 0.12s ease",
+        "purpose": "A popover appears."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "800px"
+      },
+      {
+        "name": "desktop",
+        "value": "1200px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bib",
+      "kind": "card",
+      "refersTo": "bib",
+      "description": "A picked race as a paper bib; the number turns marker red once registered.",
+      "html": "<a class=\"ds-bib\" href=\"#\"><span class=\"ds-bib-date\">12 April</span><span class=\"ds-bib-number\">21</span><span class=\"ds-bib-unit\">km</span><span class=\"ds-bib-name\">Spring Half</span><span class=\"ds-bib-status\">registered</span></a>",
+      "css": ".ds-bib{display:inline-grid;grid-template-columns:auto 1fr;align-items:baseline;column-gap:.4rem;padding:.9rem 1.1rem .8rem;border:2px solid #4e4e4e;border-radius:3px 5px 4px 6px;background:radial-gradient(circle at .55rem .55rem,#b8b8b8 0 2px,transparent 2.5px),radial-gradient(circle at calc(100% - .55rem) .55rem,#b8b8b8 0 2px,transparent 2.5px),radial-gradient(circle at .55rem calc(100% - .55rem),#b8b8b8 0 2px,transparent 2.5px),radial-gradient(circle at calc(100% - .55rem) calc(100% - .55rem),#b8b8b8 0 2px,transparent 2.5px),#F5ECDC;color:#2b2b2b;text-decoration:none;transform:rotate(-.8deg);transition:transform .15s ease-out}.ds-bib:hover,.ds-bib:focus-visible{transform:rotate(0) scale(1.02)}.ds-bib>span{grid-column:1/-1}.ds-bib-date{font-size:.8rem;color:#6b6459}.ds-bib>.ds-bib-number{grid-column:1;font-family:Caveat,cursive;font-size:4.2rem;font-weight:700;line-height:.95;color:#EC0E16}.ds-bib>.ds-bib-unit{grid-column:2;font-family:Caveat,cursive;font-size:1.4rem}.ds-bib-name{font-family:Caveat,cursive;font-size:1.6rem;font-weight:700;line-height:1.1}.ds-bib>.ds-bib-status{justify-self:start;margin-top:.45rem;padding:0 .5rem;border:1.5px solid currentColor;border-radius:999px;font-size:.75rem;color:#EC0E16}"
+    },
+    {
+      "name": "Note fields",
+      "kind": "custom",
+      "description": "The note's fields under its title: a small uppercase label over each value.",
+      "html": "<dl class=\"ds-meta\"><div><dt>Kind</dt><dd>evergreen</dd></div><div><dt>Revised</dt><dd>21 Nov 2026</dd></div></dl>",
+      "css": ".ds-meta{display:flex;flex-wrap:wrap;gap:.5rem 2.5rem;margin:0;font-size:.9rem;color:var(--darkgray,#4e4e4e)}.ds-meta dt{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray,#b8b8b8)}.ds-meta dd{margin:.2rem 0 0}"
+    },
+    {
+      "name": "Tag",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "An outlined tag with no fill.",
+      "html": "<a class=\"ds-tag\" href=\"#\">thinking</a>",
+      "css": ".ds-tag{padding:0 .3rem;border:1px solid var(--lightgray,#e5e5e5);border-radius:3px;font-size:.85rem;font-weight:600;color:var(--secondary,#284b63);text-decoration:none}.ds-tag:hover,.ds-tag:focus-visible{color:var(--tertiary,#84a59d)}"
+    },
+    {
+      "name": "Language switch",
+      "kind": "nav",
+      "refersTo": "language-option-active",
+      "description": "Two options at the top right; the current language is filled.",
+      "html": "<nav class=\"ds-lang\"><span class=\"ds-lang-active\">RU</span><a href=\"#\">EN</a></nav>",
+      "css": ".ds-lang{display:flex;gap:.25rem;font-size:.85rem}.ds-lang>*{padding:.1rem .45rem;border-radius:4px;text-decoration:none}.ds-lang-active{color:var(--light,#faf8f8);background:var(--secondary,#284b63)}.ds-lang a{color:var(--darkgray,#4e4e4e)}.ds-lang a:hover,.ds-lang a:focus-visible{color:var(--secondary,#284b63)}"
+    },
+    {
+      "name": "Popover",
+      "kind": "custom",
+      "refersTo": "popover",
+      "description": "The shared form of the language note and the footnote tooltip.",
+      "html": "<div class=\"ds-popover\"><strong>No English version yet</strong><span>This note exists only in Russian.</span></div>",
+      "css": ".ds-popover{max-width:24rem;padding:.6rem .8rem;border:1px solid var(--lightgray,#e5e5e5);border-radius:6px;background:var(--light,#faf8f8);box-shadow:0 4px 16px rgba(0,0,0,.15);color:var(--darkgray,#4e4e4e);font-size:.85rem;line-height:1.5}.ds-popover strong{display:block;color:var(--dark,#2b2b2b)}.ds-popover strong+span{display:block;margin-top:.3rem}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Engineer's Study, Drawn in a Workbook",
+    "overview": "\n**Creative North Star: \"The Engineer's Study, Drawn in a Workbook\"**\n\nThe site is a workbook: printed text in a calm column, and next to it things drawn by hand. What is drawn is the furniture of a study. The library is a bookcase with nightstands beside it, the tech radar is an instrument with a round scope and a knob, the race calendar is a row of paper bibs pinned by their corners. Each is drawn the way an engineer sketches: a projection that is actually constructed, a contour, a label in handwriting. A drawing here explains or holds content; none is decoration.\n\nTwo states are recorded in this file. Today the hand lives only inside the drawn modules and inlined drawings, and everything else (header, navigation, headings, the reading column) is the stock Quartz theme. The direction is that the hand enters the frame too: section openers, the header, navigation. The reading column stays typeset in both states.\n\n- Text is typeset, objects are drawn. A module is an object from the study before it is a widget.\n- Pencil for structure, marker for what carries meaning.\n- Handwriting (Caveat) for anything written on a drawn object.\n- Flat page. Depth comes from drawn projection, never from shadows on the page.\n- The hand is reproducible: strokes are generated from a seed and baked into paths.",
+    "keyCharacteristics": [
+      "Text is typeset, objects are drawn. A module is an object from the study before it is a widget.",
+      "Pencil for structure, marker for what carries meaning.",
+      "Handwriting (Caveat) for anything written on a drawn object.",
+      "Flat page. Depth comes from drawn projection, never from shadows on the page.",
+      "The hand is reproducible: strokes are generated from a seed and baked into paths."
+    ],
+    "rules": [
+      {
+        "name": "The Pencil Follows the Theme Rule",
+        "body": "Pencil strokes use the page's text colour and sit on the page's ground. Marker and paper keep their own colours in light and dark.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Means Done Rule",
+        "body": "Marker red is spent on commitment and completion, plus the mark itself. It is not an accent for links, buttons or headings.",
+        "section": "colors"
+      },
+      {
+        "name": "The Written-On Rule",
+        "body": "Caveat appears where something is written on a drawn object or, in the direction above, on the frame. Running text is never set in it.",
+        "section": "typography"
+      },
+      {
+        "name": "The Drawn Depth Rule",
+        "body": "A module shows depth by construction and hatching. A box-shadow on a card or a panel is not part of this system.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** start a new module by naming the object from the study it is, then draw that object.",
+      "**Do** draw structure in pencil (the theme's text colour) and what carries meaning in marker with a darker contour.",
+      "**Do** generate strokes from a seed and bake them into paths, as `bookcase.tsx` and `brand/src/gen_icon.py` do.",
+      "**Do** keep content reachable without the drawing: a list under the radar, the picks under the calendar.",
+      "**Do** give every moving drawn part a `prefers-reduced-motion` override, as the four drawn modules do."
+    ],
+    "donts": [
+      "**Don't** set running text in Caveat.",
+      "**Don't** put a box-shadow on a card or a panel; shadows belong to popovers and to a book pulled from the case.",
+      "**Don't** use marker red as a general accent.",
+      "**Don't** recolour a paper or marker object for the dark theme; only pencil follows the theme.",
+      "**Don't** build on the `inherited-*` colours or the three default fonts as if they were the garden's own; they are due to be replaced."
+    ]
+  }
+}
