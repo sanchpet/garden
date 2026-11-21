@@ -2,6 +2,7 @@ import test, { describe } from "node:test"
 import assert from "node:assert"
 import {
   buildSources,
+  contentProblems,
   linkTargets,
   parseSources,
   referenceParts,
@@ -198,8 +199,8 @@ describe("the bibliography of a text", () => {
       },
     ])
     assert.deepStrictEqual(problems, [
-      "ru/posts/a: source [[draft-card]] is not a published source card, shown as text",
-      "ru/posts/a: source [[za-sekundu]] is not a published source card, shown as text",
+      'ru/posts/a: source "draft-card" is not a published source card, shown as text',
+      'ru/posts/a: source "za-sekundu" is not a published source card, shown as text',
     ])
   })
 
@@ -207,8 +208,8 @@ describe("the bibliography of a text", () => {
     const { references: refs, problems } = buildSources([post(["[[gone]]", "[[#only-heading]]"])])
     assert.strictEqual(refs.get("ru/posts/a"), undefined)
     assert.deepStrictEqual(problems, [
-      "ru/posts/a: source [[gone]] is not a published source card, left out: it has no label",
-      "ru/posts/a: source [[]] is not a published source card, left out: it has no label",
+      'ru/posts/a: source "gone" is not a published source card, left out: it has no label',
+      'ru/posts/a: source "" is not a published source card, left out: it has no label',
     ])
   })
 
@@ -397,5 +398,58 @@ describe("the texts of a source card", () => {
       texts([...pages].reverse(), "ru").map((text) => text.slug),
       order,
     )
+  })
+})
+
+describe("the problems a build reports", () => {
+  test("a bare name that fits two cards takes the first and names them all", () => {
+    const twin = page("ru/courses/misbehaving", { type: "course", title: "The course" })
+    const { references: refs, problems } = buildSources([
+      misbehaving,
+      twin,
+      post(["[[misbehaving]]", "[[library/misbehaving]]"]),
+      post(undefined, "en/posts/a"),
+    ])
+    assert.deepStrictEqual(
+      refs.get("ru/posts/a")?.map((ref) => ref.slug),
+      ["ru/courses/misbehaving", "ru/library/misbehaving"],
+    )
+    assert.deepStrictEqual(problems, [
+      'ru/posts/a: source "misbehaving" names several cards (ru/courses/misbehaving, ru/library/misbehaving), the first is taken: a folder in the link tells them apart',
+    ])
+  })
+
+  test("a card in each language is not an ambiguity", () => {
+    const en = page("en/library/misbehaving", { type: "book", title: "Misbehaving (en)" })
+    assert.deepStrictEqual(buildSources([misbehaving, en, post(["[[misbehaving]]"])]).problems, [])
+  })
+
+  test("an unknown type comes first, then the sources, each on its page", () => {
+    assert.deepStrictEqual(
+      contentProblems([
+        post(["[[gone|Gone]]"]),
+        page("ru/posts/odd", { type: "essay" }),
+        page("ru/posts/number", { type: 42 }),
+        page("ru/posts/list", { type: ["post"] }),
+        page("ru/index", {}),
+        misbehaving,
+      ]),
+      [
+        'ru/posts/odd: unknown type "essay"',
+        "ru/posts/number: unknown type 42",
+        'ru/posts/list: unknown type ["post"]',
+        'ru/posts/a: source "gone" is not a published source card, shown as text',
+      ],
+    )
+  })
+
+  test("no text of the author can start a line of the log", () => {
+    const problems = contentProblems([
+      page("ru/posts/odd", { type: "x\n::error::injected" }),
+      post(["[[gone\n::error::injected|L]]", "[[other\r::warning::x]]"]),
+    ])
+    assert.strictEqual(problems.length, 3)
+    for (const problem of problems) assert.ok(!/[\r\n]/.test(problem), problem)
+    assert.strictEqual(problems[0], 'ru/posts/odd: unknown type "x\\n::error::injected"')
   })
 })

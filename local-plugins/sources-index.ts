@@ -3,7 +3,7 @@
 // Quartz or the file system.
 
 import { timestamp } from "./feed-atom"
-import { isSource, isText } from "./kinds"
+import { isSource, isText, isUnknownType } from "./kinds"
 import { languageOf, twinsOf } from "./languages"
 
 export type Page = { slug: string; frontmatter: Record<string, unknown> }
@@ -63,26 +63,33 @@ export function linkTargets(value: unknown): string[] {
 }
 
 // A link names a page by its file name, with or without folders in front. The stock resolver
-// gives up when the name is not unique among slugs and aliases; this one prefers the page in
-// the reader's language and then the shortest path.
-export function resolveLink(
+// gives up when the name is not unique among slugs and aliases; here the pages in the reader's
+// language come first, or all of them when it has none, the shortest path leading.
+export function matchLink(
   target: string,
   lang: string | undefined,
   slugs: Iterable<string>,
-): string | undefined {
+): string[] {
   const name = target
     .split("#")[0]
     .trim()
     .replace(/^\.?\//, "")
     .replace(/\.md$/, "")
-  if (!name || /^[a-z][a-z0-9+.-]*:/i.test(name)) return undefined
+  if (!name) return []
   const names = [name, `${name}/index`]
   const matches = [...slugs].filter((slug) =>
     names.some((n) => slug === n || slug.endsWith(`/${n}`)),
   )
   const own = matches.filter((slug) => languageOf(slug) === lang)
-  const pick = (list: string[]) => [...list].sort((a, b) => a.length - b.length || compare(a, b))[0]
-  return pick(own) ?? pick(matches)
+  return (own.length ? own : matches).sort((a, b) => a.length - b.length || compare(a, b))
+}
+
+export function resolveLink(
+  target: string,
+  lang: string | undefined,
+  slugs: Iterable<string>,
+): string | undefined {
+  return matchLink(target, lang, slugs)[0]
 }
 
 // A property as a reader would see it: every name of a list, a wikilink by its label or name.
@@ -154,17 +161,22 @@ export function buildSources(pages: Page[], normalise = (target: string) => targ
       if ("text" in item) {
         ref = { title: item.text }
       } else {
-        const slug = item.target && resolveLink(normalise(item.target), lang, cards)
-        if (slug) {
-          ref = referenceTo(bySlug.get(slug)!)
+        const matches = item.target ? matchLink(normalise(item.target), lang, cards) : []
+        // A user's text in a log line stays quoted on one line: a runner reads `::` as a command.
+        const source = `${page.slug}: source ${JSON.stringify(item.target)}`
+        if (matches.length > 0) {
+          ref = referenceTo(bySlug.get(matches[0])!)
+          if (matches.length > 1 && !inherited) {
+            problems.add(
+              `${source} names several cards (${matches.join(", ")}), the first is taken: a folder in the link tells them apart`,
+            )
+          }
         } else {
           if (item.label) ref = { title: item.label }
           // The owner of the list reports it once; the translation would only repeat it.
           if (!inherited) {
             const fate = item.label ? "shown as text" : "left out: it has no label"
-            problems.add(
-              `${page.slug}: source [[${item.target}]] is not a published source card, ${fate}`,
-            )
+            problems.add(`${source} is not a published source card, ${fate}`)
           }
         }
       }
@@ -199,4 +211,12 @@ export function textsFor(listings: Listing[], lang: string | undefined): Listing
   return [...pairs.values()].sort(
     (a, b) => compare(b.published ?? "", a.published ?? "") || compare(a.slug, b.slug),
   )
+}
+
+// What the build log says about the content: a `type` outside the registry, then the sources.
+export function contentProblems(pages: Page[], normalise?: (target: string) => string): string[] {
+  const types = pages.flatMap(({ slug, frontmatter: { type } }) =>
+    isUnknownType(type) ? [`${slug}: unknown type ${JSON.stringify(type)}`] : [],
+  )
+  return [...types, ...buildSources(pages, normalise).problems]
 }

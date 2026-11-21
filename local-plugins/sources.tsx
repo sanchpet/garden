@@ -4,10 +4,10 @@ import type { QuartzPluginData } from "../quartz/plugins/vfile"
 import type { BuildCtx } from "../quartz/util/ctx"
 import { FilePath, FullSlug, resolveRelative, slugifyFilePath } from "../quartz/util/path"
 import { publishedPages, publishedSlugs } from "./garden"
-import { unknownType } from "./kinds"
 import { languageOf } from "./languages"
 import {
   buildSources,
+  contentProblems,
   linkTargets,
   referenceParts,
   resolveLink,
@@ -102,11 +102,7 @@ export const ContentProblems: QuartzEmitterPlugin = () => ({
   name: "ContentProblems",
   async emit(_ctx, content) {
     const pages = pagesOf(content.map(([, file]) => file.data))
-    for (const { slug, frontmatter } of pages) {
-      const type = unknownType(frontmatter.type)
-      if (type) console.warn(`${CONTENT_PROBLEM_MARK}: ${slug}: unknown type "${type}"`)
-    }
-    for (const problem of buildSources(pages, slugTarget).problems) {
+    for (const problem of contentProblems(pages, slugTarget)) {
       console.warn(`${CONTENT_PROBLEM_MARK}: ${problem}`)
     }
     return []

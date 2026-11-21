@@ -7,7 +7,14 @@ import { h } from "preact"
 import { render } from "preact-render-to-string"
 import type { QuartzComponent, QuartzComponentProps } from "../quartz/components/types"
 import type { BuildCtx } from "../quartz/util/ctx"
-import { FrontmatterLinks, SourceList, withoutSourceTexts } from "./sources"
+import type { ProcessedContent } from "../quartz/plugins/vfile"
+import {
+  CONTENT_PROBLEM_MARK,
+  ContentProblems,
+  FrontmatterLinks,
+  SourceList,
+  withoutSourceTexts,
+} from "./sources"
 
 const file = (slug: string, frontmatter: Record<string, unknown>, links: string[] = []) => ({
   slug,
@@ -173,5 +180,24 @@ describe("frontmatter links on their way to the content index", () => {
 
   test("a translation without its own list gets the cards of its twin", () => {
     assert.deepStrictEqual(linksOf("en/posts/a", { type: "post" }), ["ru/library/misbehaving"])
+  })
+})
+
+describe("the content problems in the build log", () => {
+  test("every unknown type and every source problem is a marked line", async (t) => {
+    const lines: string[] = []
+    t.mock.method(console, "warn", (line: string) => lines.push(line))
+    const odd = file("ru/posts/odd", { type: "x\n::error::injected" })
+    const content = [...allFiles, odd].map((data) => [undefined, { data }])
+    const emitted = await ContentProblems().emit(
+      {} as BuildCtx,
+      content as unknown as ProcessedContent[],
+      {} as never,
+    )
+    assert.deepStrictEqual(emitted, [])
+    assert.deepStrictEqual(lines, [
+      `${CONTENT_PROBLEM_MARK}: ru/posts/odd: unknown type "x\\n::error::injected"`,
+      `${CONTENT_PROBLEM_MARK}: ru/posts/a: source "gone" is not a published source card, shown as text`,
+    ])
   })
 })

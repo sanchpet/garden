@@ -17,7 +17,9 @@ export function kindOf(type: unknown): Kind | undefined {
 export const isText = (type: unknown) => kindOf(type) === "text"
 export const isSource = (type: unknown) => kindOf(type) === "source"
 
-// Indexes, hubs and the home note carry no type; a type the registry lacks is a typo or a new species.
-export function unknownType(type: unknown): string | undefined {
-  return typeof type === "string" && type.trim() && !kindOf(type) ? type : undefined
+// Indexes, hubs and the home note carry no type; anything else the registry lacks is a typo,
+// a new species or a value that is not a word at all.
+export function isUnknownType(type: unknown): boolean {
+  const absent = type === undefined || type === null || (typeof type === "string" && !type.trim())
+  return !absent && !kindOf(type)
 }

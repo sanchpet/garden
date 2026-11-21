@@ -1,6 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { isSource, isText, kindOf, unknownType } from "./kinds"
+import { isSource, isText, isUnknownType, kindOf } from "./kinds"
 
 describe("kinds registry", () => {
   test("every species belongs to its kind", () => {
@@ -27,14 +27,15 @@ describe("kinds registry", () => {
 })
 
 describe("unknown types", () => {
-  test("a non-empty string absent from the registry is reported as written", () => {
-    assert.strictEqual(unknownType("source"), "source")
-    assert.strictEqual(unknownType("Book"), "Book")
+  test("any value that is not a registered species is unknown, whatever its YAML type", () => {
+    for (const type of ["source", "Book", " post", 42, 0, false, ["post"], [], { a: 1 }]) {
+      assert.strictEqual(isUnknownType(type), true, JSON.stringify(type))
+    }
   })
 
   test("registered species and pages without a type are silent", () => {
-    for (const type of ["post", "platform", "races", undefined, null, "", "  ", 7, ["x"]]) {
-      assert.strictEqual(unknownType(type), undefined)
+    for (const type of ["post", "platform", "races", undefined, null, "", "  "]) {
+      assert.strictEqual(isUnknownType(type), false, JSON.stringify(type))
     }
   })
 })
