@@ -2,6 +2,7 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import { Date as DateTag } from "../quartz/components/Date"
 import { FullSlug, resolveRelative, slugTag } from "../quartz/util/path"
 import { plain, statusLabel } from "./bookcase"
+import type { Species } from "./kinds"
 import { RING, day, ringOf } from "./radar"
 
 const LABELS = {
@@ -48,11 +49,12 @@ export const NoteHeader = (() => {
     const fm = (fileData.frontmatter ?? {}) as Record<string, unknown>
     const text = (fileData as { text?: string }).text
     const classes = Array.isArray(fm.cssclasses) ? fm.cssclasses : []
-    const book = fm.type === "book"
-    const course = fm.type === "course"
-    const tool = fm.type === "tool"
+    const is = (species: Species) => fm.type === species
+    const book = is("book")
+    const course = is("course")
+    const tool = is("tool")
     // The race calendar (`type: races`) is drawn under the note, which may have no text of its own.
-    const calendar = fm.type === "races"
+    const calendar = is("races")
     if ((!text && !book && !course && !tool && !calendar) || classes.includes("home")) return null
 
     const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
