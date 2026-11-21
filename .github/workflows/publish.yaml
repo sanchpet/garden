@@ -63,7 +63,9 @@ jobs:
           set -o pipefail
           npx quartz build -d content -o public 2>&1 | tee build.log
 
+      # With `shell: bash` a pipeline fails when its grep finds nothing, and «None.» is printed.
       - name: Report what the build stripped or could not use
+        shell: bash
         run: |
           {
             echo "## Private links stripped"

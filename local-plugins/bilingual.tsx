@@ -5,7 +5,7 @@ import type { QuartzEmitterPlugin, QuartzTransformerPlugin } from "../quartz/plu
 import { write } from "../quartz/plugins/emitters/helpers"
 import { FilePath, FullSlug, resolveRelative, simplifySlug } from "../quartz/util/path"
 import { publishedSlugs } from "./garden"
-import { LANGUAGES, inLanguage, languageOf, type Language } from "./languages"
+import { LANGUAGES, inLanguage, languageOf, relinked, type Language } from "./languages"
 // @ts-ignore
 import script from "./language-switch.inline"
 
@@ -65,8 +65,7 @@ export const LanguageLinks: QuartzTransformerPlugin = () => ({
           node.properties["data-slug"] = resolved
           node.properties.href = resolveRelative(from, resolved) + (anchor ? `#${anchor}` : "")
           const [stale, fresh] = [simplifySlug(target as FullSlug), simplifySlug(resolved)]
-          const links = file.data.links?.map((link) => (link === stale ? fresh : link))
-          file.data.links = links && [...new Set(links)]
+          file.data.links = relinked(file.data.links, stale, fresh)
         })
       },
     ]

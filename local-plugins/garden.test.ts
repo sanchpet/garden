@@ -4,7 +4,10 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import type { BuildCtx } from "../quartz/util/ctx"
-import { publishedPages, publishedSlugs } from "./garden"
+import { PRIVATE_LINK_MARK, publishedPages, publishedSlugs } from "./garden"
+import { relinked } from "./languages"
+import { FEED_PROBLEM_MARK } from "./feed"
+import { CONTENT_PROBLEM_MARK } from "./sources"
 
 describe("what will exist on the site", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-published-"))
@@ -47,5 +50,26 @@ describe("what will exist on the site", () => {
     assert.deepStrictEqual(pages.get("ru/plain"), { type: "post" })
     assert.deepStrictEqual(pages.get("ru/broken"), {})
     assert.ok(!pages.has("media/cover.jpg") && !pages.has("ru/draft"))
+  })
+})
+
+describe("links after a move to the reader's language", () => {
+  test("the moved link is renamed and a page is listed once", () => {
+    assert.deepStrictEqual(relinked(["a", "x", "b"], "x", "y"), ["a", "y", "b"])
+    assert.deepStrictEqual(relinked(["ru/x", "x", "b"], "x", "ru/x"), ["ru/x", "b"])
+    assert.strictEqual(relinked(undefined, "x", "y"), undefined)
+  })
+})
+
+describe("the marks publish.yaml looks for in the build log", () => {
+  const workflow = fs.readFileSync(
+    path.join(import.meta.dirname, "..", ".github", "workflows", "publish.yaml"),
+    "utf8",
+  )
+
+  test("each mark is listed in the summary and raised as a warning", () => {
+    for (const mark of [PRIVATE_LINK_MARK, FEED_PROBLEM_MARK, CONTENT_PROBLEM_MARK]) {
+      assert.strictEqual(workflow.split(`grep '${mark}' build.log`).length - 1, 2, mark)
+    }
   })
 })

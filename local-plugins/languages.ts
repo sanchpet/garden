@@ -11,6 +11,15 @@ export function inLanguage<Slug extends string>(slug: Slug, lang: Language): Slu
   return `${lang}${slug.slice(slug.indexOf("/"))}` as Slug
 }
 
+// A note's links after one of them moved to another page, which the note may link to already.
+export function relinked<Slug extends string>(
+  links: Slug[] | undefined,
+  stale: Slug,
+  fresh: Slug,
+): Slug[] | undefined {
+  return links && [...new Set(links.map((link) => (link === stale ? fresh : link)))]
+}
+
 // The same page in the other languages, whether or not it exists.
 export function twinsOf(slug: string): string[] {
   const own = languageOf(slug)
