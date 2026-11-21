@@ -23,30 +23,37 @@ configuration:
     fontOrigin: googleFonts
     cdnCaching: true
     typography:
-      header: Schibsted Grotesk
-      body: Source Sans Pro
+      header:
+        name: Literata
+        weights: [600, 700]
+      body:
+        name: Literata
+        weights: [400, 600]
+        includeItalic: true
       code: IBM Plex Mono
+    # Paper and graphite (DESIGN.md): the page is workbook paper, pencil is the text colour.
+    # `gray` is read as text, so it clears 4.5:1 on `light` in both modes.
     colors:
       lightMode:
-        light: "#faf8f8"
-        lightgray: "#e5e5e5"
-        gray: "#b8b8b8"
-        darkgray: "#4e4e4e"
-        dark: "#2b2b2b"
-        secondary: "#284b63"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#fff23688"
+        light: "#FAF5E9"
+        lightgray: "#E3D9C4"
+        gray: "#6B6459"
+        darkgray: "#33302B"
+        dark: "#1B1A1C"
+        secondary: "#1E3959"
+        tertiary: "#8C2F39"
+        highlight: rgba(30, 57, 89, 0.08)
+        textHighlight: "#F2B70566"
       darkMode:
-        light: "#161618"
-        lightgray: "#393639"
-        gray: "#646464"
-        darkgray: "#d4d4d4"
-        dark: "#ebebec"
-        secondary: "#7b97aa"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#b3aa0288"
+        light: "#1F1E1B"
+        lightgray: "#3B3832"
+        gray: "#A39B8C"
+        darkgray: "#DAD3C5"
+        dark: "#F5ECDC"
+        secondary: "#9DBADB"
+        tertiary: "#E0B25A"
+        highlight: rgba(157, 186, 219, 0.12)
+        textHighlight: "#F2B70555"
 plugins:
   - source: "@quartz-community/created-modified-date"
     enabled: true
@@ -107,6 +114,21 @@ plugins:
     order: 92
   - source: "@quartz-community/quartz-fonts"
     enabled: true
+    # This plugin, not theme.typography, is what sets the font variables.
+    options:
+      fontOrigin: googleFonts
+      useThemeFonts: false
+      header:
+        name: Literata
+        weights: [600, 700]
+      body:
+        name: Literata
+        weights: [400, 600]
+        includeItalic: true
+      code:
+        name: IBM Plex Mono
+        weights: [400, 600]
+      interface: '"Literata", serif'
   - source: "@quartz-themes/core"
     enabled: false
     options:
