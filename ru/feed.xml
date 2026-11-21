@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ru">
+  <title>sanchpet</title>
+  <id>https://sanch.pet/ru/feed.xml</id>
+  <link rel="self" type="application/atom+xml" href="https://sanch.pet/ru/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://sanch.pet/ru/"/>
+  <updated>2026-11-21T16:17:00Z</updated>
+  <author>
+    <name>sanchpet</name>
+  </author>
+  <entry>
+    <title>Сижу, ковыряю сайтец. Пытаюсь сделать умную штуку - включить на сайте ленту…</title>
+    <id>https://sanch.pet/ru/notes/2026-11-21-2004</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/notes/2026-11-21-2004"/>
+    <published>2026-11-21T16:17:00Z</published>
+    <updated>2026-11-21T16:17:00Z</updated>
+    <content type="text">Сижу, ковыряю сайтец. Пытаюсь сделать умную штуку - включить на сайте ленту Atom (современный аналог RSS), на которую можно подписаться и получать обновления с сайта.
+
+А еще настраиваю пайплайн, который при сборке сайта будет рассылать новые записи в мои телеграм-каналы самостоятельно. Не барское это дело - копировать, ну либо токены тратить.
+
+Обычный вечер выходного дня. Приятно провести его за инженерными побрякушками.</content>
+    <category term="lytdybr"/>
+    <category scheme="https://sanch.pet/ns/kind" term="note"/>
+  </entry>
+  <entry>
+    <title>За секунду</title>
+    <id>https://sanch.pet/ru/posts/za-sekundu</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/za-sekundu"/>
+    <link rel="related" href="https://t.me/sanchpetlytdybr/335"/>
+    <published>2026-11-15T00:00:00Z</published>
+    <updated>2026-11-15T00:00:00Z</updated>
+    <category term="lytdybr"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+  </entry>
+  <entry>
+    <title>Мышление</title>
+    <id>https://sanch.pet/ru/evergreen/myshlenie</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/evergreen/myshlenie"/>
+    <published>2026-10-26T00:00:00Z</published>
+    <updated>2026-11-02T00:00:00Z</updated>
+    <summary type="text">Что есть мышление и зачем учиться мыслить</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+  </entry>
+</feed>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <title>sanchpet</title>
+  <id>https://sanch.pet/en/feed.xml</id>
+  <link rel="self" type="application/atom+xml" href="https://sanch.pet/en/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://sanch.pet/en/"/>
+  <updated>2026-11-02T00:00:00Z</updated>
+  <author>
+    <name>sanchpet</name>
+  </author>
+  <entry>
+    <title>Thinking</title>
+    <id>https://sanch.pet/en/evergreen/myshlenie</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/en/evergreen/myshlenie"/>
+    <published>2026-10-26T00:00:00Z</published>
+    <updated>2026-11-02T00:00:00Z</updated>
+    <summary type="text">What thinking is and why learn to think</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+  </entry>
+</feed>
