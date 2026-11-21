@@ -7,6 +7,14 @@
         "origin": "seeded"
       }
     },
+    "https://sanch.pet/ru/notes/2026-11-21-2004": {
+      "lytdybr": {
+        "at": "2026-11-21T16:18:58.948Z",
+        "origin": "sent",
+        "url": "https://t.me/sanchpetlytdybr/336",
+        "messageId": 336
+      }
+    },
     "https://sanch.pet/ru/posts/za-sekundu": {
       "*": {
         "at": "2026-11-20T17:46:53.559Z",
