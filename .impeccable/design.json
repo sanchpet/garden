@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-21T13:01:08Z",
+  "generatedAt": "2026-11-21T13:31:12Z",
   "title": "Design System: sanch.pet",
   "extensions": {
     "colorMeta": {
@@ -274,199 +274,139 @@
           "oklch(95% 0.093 85)"
         ]
       },
-      "inherited-ground": {
+      "page-paper": {
         "role": "neutral",
-        "displayName": "Inherited Ground",
-        "canonical": "oklch(98.1% 0.002 17)",
+        "displayName": "Page Paper",
+        "canonical": "oklch(97.1% 0.017 88)",
         "tonalRamp": [
-          "oklch(15% 0.001 17)",
-          "oklch(26% 0.001 17)",
-          "oklch(38% 0.002 17)",
-          "oklch(49% 0.002 17)",
-          "oklch(61% 0.002 17)",
-          "oklch(72% 0.002 17)",
-          "oklch(84% 0.001 17)",
-          "oklch(95% 0.001 17)"
+          "oklch(15% 0.009 88)",
+          "oklch(26% 0.012 88)",
+          "oklch(38% 0.014 88)",
+          "oklch(49% 0.016 88)",
+          "oklch(61% 0.016 88)",
+          "oklch(72% 0.014 88)",
+          "oklch(84% 0.012 88)",
+          "oklch(95% 0.009 88)"
         ]
       },
-      "inherited-rule": {
+      "paper-rule": {
         "role": "neutral",
-        "displayName": "Inherited Rule",
-        "canonical": "oklch(92.2% 0.000 90)",
+        "displayName": "Paper Rule",
+        "canonical": "oklch(88.8% 0.030 86)",
         "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(26% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(49% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(72% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
+          "oklch(15% 0.017 86)",
+          "oklch(26% 0.021 86)",
+          "oklch(38% 0.025 86)",
+          "oklch(49% 0.028 86)",
+          "oklch(61% 0.028 86)",
+          "oklch(72% 0.025 86)",
+          "oklch(84% 0.021 86)",
+          "oklch(95% 0.017 86)"
         ]
       },
-      "inherited-muted": {
+      "ink-text": {
         "role": "neutral",
-        "displayName": "Inherited Muted",
-        "canonical": "oklch(78.3% 0.000 90)",
+        "displayName": "Ink Text",
+        "canonical": "oklch(31.1% 0.010 81)",
         "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(26% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(49% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(72% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
+          "oklch(15% 0.005 81)",
+          "oklch(26% 0.007 81)",
+          "oklch(38% 0.008 81)",
+          "oklch(49% 0.009 81)",
+          "oklch(61% 0.009 81)",
+          "oklch(72% 0.008 81)",
+          "oklch(84% 0.007 81)",
+          "oklch(95% 0.005 81)"
         ]
       },
-      "inherited-text": {
+      "graphite": {
         "role": "neutral",
-        "displayName": "Inherited Text",
-        "canonical": "oklch(42.4% 0.000 90)",
+        "displayName": "Graphite",
+        "canonical": "oklch(23.5% 0.006 92)",
         "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(26% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(49% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(72% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
+          "oklch(15% 0.003 92)",
+          "oklch(26% 0.004 92)",
+          "oklch(38% 0.005 92)",
+          "oklch(49% 0.005 92)",
+          "oklch(61% 0.005 92)",
+          "oklch(72% 0.005 92)",
+          "oklch(84% 0.004 92)",
+          "oklch(95% 0.003 92)"
         ]
       },
-      "inherited-strong": {
+      "graphite-rule": {
         "role": "neutral",
-        "displayName": "Inherited Strong",
-        "canonical": "oklch(28.9% 0.000 90)",
+        "displayName": "Graphite Rule",
+        "canonical": "oklch(34.2% 0.011 85)",
         "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(26% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(49% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(72% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
+          "oklch(15% 0.006 85)",
+          "oklch(26% 0.008 85)",
+          "oklch(38% 0.009 85)",
+          "oklch(49% 0.010 85)",
+          "oklch(61% 0.010 85)",
+          "oklch(72% 0.009 85)",
+          "oklch(84% 0.008 85)",
+          "oklch(95% 0.006 85)"
         ]
       },
-      "inherited-link": {
+      "chalk-note": {
         "role": "neutral",
-        "displayName": "Inherited Link",
-        "canonical": "oklch(39.7% 0.058 240)",
+        "displayName": "Chalk Note",
+        "canonical": "oklch(69.2% 0.023 83)",
         "tonalRamp": [
-          "oklch(15% 0.032 240)",
-          "oklch(26% 0.040 240)",
-          "oklch(38% 0.047 240)",
-          "oklch(49% 0.054 240)",
-          "oklch(61% 0.054 240)",
-          "oklch(72% 0.047 240)",
-          "oklch(84% 0.040 240)",
-          "oklch(95% 0.032 240)"
+          "oklch(15% 0.013 83)",
+          "oklch(26% 0.016 83)",
+          "oklch(38% 0.019 83)",
+          "oklch(49% 0.022 83)",
+          "oklch(61% 0.022 83)",
+          "oklch(72% 0.019 83)",
+          "oklch(84% 0.016 83)",
+          "oklch(95% 0.013 83)"
         ]
       },
-      "inherited-link-hover": {
+      "chalk-text": {
         "role": "neutral",
-        "displayName": "Inherited Link Hover",
-        "canonical": "oklch(69.5% 0.038 179)",
+        "displayName": "Chalk Text",
+        "canonical": "oklch(86.9% 0.020 85)",
         "tonalRamp": [
-          "oklch(15% 0.022 179)",
-          "oklch(26% 0.026 179)",
-          "oklch(38% 0.031 179)",
-          "oklch(49% 0.036 179)",
-          "oklch(61% 0.036 179)",
-          "oklch(72% 0.031 179)",
-          "oklch(84% 0.026 179)",
-          "oklch(95% 0.022 179)"
+          "oklch(15% 0.012 85)",
+          "oklch(26% 0.014 85)",
+          "oklch(38% 0.017 85)",
+          "oklch(49% 0.019 85)",
+          "oklch(61% 0.019 85)",
+          "oklch(72% 0.017 85)",
+          "oklch(84% 0.014 85)",
+          "oklch(95% 0.012 85)"
         ]
       },
-      "inherited-ground-dark": {
-        "role": "neutral",
-        "displayName": "Inherited Ground Dark",
-        "canonical": "oklch(20.1% 0.004 286)",
+      "link-on-graphite": {
+        "role": "secondary",
+        "displayName": "Link On Graphite",
+        "canonical": "oklch(77.9% 0.057 252)",
         "tonalRamp": [
-          "oklch(15% 0.002 286)",
-          "oklch(26% 0.003 286)",
-          "oklch(38% 0.003 286)",
-          "oklch(49% 0.004 286)",
-          "oklch(61% 0.004 286)",
-          "oklch(72% 0.003 286)",
-          "oklch(84% 0.003 286)",
-          "oklch(95% 0.002 286)"
+          "oklch(15% 0.032 252)",
+          "oklch(26% 0.039 252)",
+          "oklch(38% 0.046 252)",
+          "oklch(49% 0.053 252)",
+          "oklch(61% 0.053 252)",
+          "oklch(72% 0.046 252)",
+          "oklch(84% 0.039 252)",
+          "oklch(95% 0.032 252)"
         ]
       },
-      "inherited-rule-dark": {
-        "role": "neutral",
-        "displayName": "Inherited Rule Dark",
-        "canonical": "oklch(33.7% 0.007 326)",
+      "hover-on-graphite": {
+        "role": "tertiary",
+        "displayName": "Hover On Graphite",
+        "canonical": "oklch(78.8% 0.119 82)",
         "tonalRamp": [
-          "oklch(15% 0.004 326)",
-          "oklch(26% 0.005 326)",
-          "oklch(38% 0.005 326)",
-          "oklch(49% 0.006 326)",
-          "oklch(61% 0.006 326)",
-          "oklch(72% 0.005 326)",
-          "oklch(84% 0.005 326)",
-          "oklch(95% 0.004 326)"
-        ]
-      },
-      "inherited-muted-dark": {
-        "role": "neutral",
-        "displayName": "Inherited Muted Dark",
-        "canonical": "oklch(50.3% 0.000 90)",
-        "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(26% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(49% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(72% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
-        ]
-      },
-      "inherited-text-dark": {
-        "role": "neutral",
-        "displayName": "Inherited Text Dark",
-        "canonical": "oklch(87.0% 0.000 90)",
-        "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(26% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(49% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(72% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
-        ]
-      },
-      "inherited-strong-dark": {
-        "role": "neutral",
-        "displayName": "Inherited Strong Dark",
-        "canonical": "oklch(94.0% 0.001 286)",
-        "tonalRamp": [
-          "oklch(15% 0.001 286)",
-          "oklch(26% 0.001 286)",
-          "oklch(38% 0.001 286)",
-          "oklch(49% 0.001 286)",
-          "oklch(61% 0.001 286)",
-          "oklch(72% 0.001 286)",
-          "oklch(84% 0.001 286)",
-          "oklch(95% 0.001 286)"
-        ]
-      },
-      "inherited-link-dark": {
-        "role": "neutral",
-        "displayName": "Inherited Link Dark",
-        "canonical": "oklch(66.2% 0.042 238)",
-        "tonalRamp": [
-          "oklch(15% 0.024 238)",
-          "oklch(26% 0.029 238)",
-          "oklch(38% 0.034 238)",
-          "oklch(49% 0.040 238)",
-          "oklch(61% 0.040 238)",
-          "oklch(72% 0.034 238)",
-          "oklch(84% 0.029 238)",
-          "oklch(95% 0.024 238)"
+          "oklch(15% 0.067 82)",
+          "oklch(26% 0.082 82)",
+          "oklch(38% 0.096 82)",
+          "oklch(49% 0.111 82)",
+          "oklch(61% 0.111 82)",
+          "oklch(72% 0.096 82)",
+          "oklch(84% 0.082 82)",
+          "oklch(95% 0.067 82)"
         ]
       }
     },
@@ -477,7 +417,7 @@
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "The note's own title."
+        "purpose": "The note's own title, underlined in pencil."
       },
       "title": {
         "displayName": "Title",
@@ -489,7 +429,7 @@
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Field names in the note header."
+        "purpose": "Names of the note's fields, written by hand."
       },
       "code": {
         "displayName": "Code",
@@ -538,14 +478,14 @@
       "refersTo": "bib",
       "description": "A picked race as a paper bib; the number turns marker red once registered.",
       "html": "<a class=\"ds-bib\" href=\"#\"><span class=\"ds-bib-date\">12 April</span><span class=\"ds-bib-number\">21</span><span class=\"ds-bib-unit\">km</span><span class=\"ds-bib-name\">Spring Half</span><span class=\"ds-bib-status\">registered</span></a>",
-      "css": ".ds-bib{display:inline-grid;grid-template-columns:auto 1fr;align-items:baseline;column-gap:.4rem;padding:.9rem 1.1rem .8rem;border:2px solid #4e4e4e;border-radius:3px 5px 4px 6px;background:radial-gradient(circle at .55rem .55rem,#b8b8b8 0 2px,transparent 2.5px),radial-gradient(circle at calc(100% - .55rem) .55rem,#b8b8b8 0 2px,transparent 2.5px),radial-gradient(circle at .55rem calc(100% - .55rem),#b8b8b8 0 2px,transparent 2.5px),radial-gradient(circle at calc(100% - .55rem) calc(100% - .55rem),#b8b8b8 0 2px,transparent 2.5px),#F5ECDC;color:#2b2b2b;text-decoration:none;transform:rotate(-.8deg);transition:transform .15s ease-out}.ds-bib:hover,.ds-bib:focus-visible{transform:rotate(0) scale(1.02)}.ds-bib>span{grid-column:1/-1}.ds-bib-date{font-size:.8rem;color:#6b6459}.ds-bib>.ds-bib-number{grid-column:1;font-family:Caveat,cursive;font-size:4.2rem;font-weight:700;line-height:.95;color:#EC0E16}.ds-bib>.ds-bib-unit{grid-column:2;font-family:Caveat,cursive;font-size:1.4rem}.ds-bib-name{font-family:Caveat,cursive;font-size:1.6rem;font-weight:700;line-height:1.1}.ds-bib>.ds-bib-status{justify-self:start;margin-top:.45rem;padding:0 .5rem;border:1.5px solid currentColor;border-radius:999px;font-size:.75rem;color:#EC0E16}"
+      "css": ".ds-bib{display:inline-grid;grid-template-columns:auto 1fr;align-items:baseline;column-gap:.4rem;padding:.9rem 1.1rem .8rem;border:2px solid #33302B;border-radius:3px 5px 4px 6px;background:radial-gradient(circle at .55rem .55rem,#6B6459 0 2px,transparent 2.5px),radial-gradient(circle at calc(100% - .55rem) .55rem,#6B6459 0 2px,transparent 2.5px),radial-gradient(circle at .55rem calc(100% - .55rem),#6B6459 0 2px,transparent 2.5px),radial-gradient(circle at calc(100% - .55rem) calc(100% - .55rem),#6B6459 0 2px,transparent 2.5px),#F5ECDC;color:#2b2b2b;text-decoration:none;transform:rotate(-.8deg);transition:transform .15s ease-out}.ds-bib:hover,.ds-bib:focus-visible{transform:rotate(0) scale(1.02)}.ds-bib>span{grid-column:1/-1}.ds-bib-date{font-size:.8rem;color:#6b6459}.ds-bib>.ds-bib-number{grid-column:1;font-family:Caveat,cursive;font-size:4.2rem;font-weight:700;line-height:.95;color:#EC0E16}.ds-bib>.ds-bib-unit{grid-column:2;font-family:Caveat,cursive;font-size:1.4rem}.ds-bib-name{font-family:Caveat,cursive;font-size:1.6rem;font-weight:700;line-height:1.1}.ds-bib>.ds-bib-status{justify-self:start;margin-top:.45rem;padding:0 .5rem;border:1.5px solid currentColor;border-radius:999px;font-size:.75rem;color:#EC0E16}"
     },
     {
       "name": "Note fields",
       "kind": "custom",
-      "description": "The note's fields under its title: a small uppercase label over each value.",
+      "description": "The note's fields under its title: a handwritten label over each value.",
       "html": "<dl class=\"ds-meta\"><div><dt>Kind</dt><dd>evergreen</dd></div><div><dt>Revised</dt><dd>21 Nov 2026</dd></div></dl>",
-      "css": ".ds-meta{display:flex;flex-wrap:wrap;gap:.5rem 2.5rem;margin:0;font-size:.9rem;color:var(--darkgray,#4e4e4e)}.ds-meta dt{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gray,#b8b8b8)}.ds-meta dd{margin:.2rem 0 0}"
+      "css": ".ds-meta{display:flex;flex-wrap:wrap;gap:.5rem 2.5rem;margin:0;font-size:.9rem;color:var(--darkgray,#33302B)}.ds-meta dt{font-family:Caveat,cursive;font-weight:700;font-size:1.15rem;line-height:1;color:var(--gray,#6B6459)}.ds-meta dd{margin:.2rem 0 0}"
     },
     {
       "name": "Tag",
@@ -553,7 +493,7 @@
       "refersTo": "tag",
       "description": "An outlined tag with no fill.",
       "html": "<a class=\"ds-tag\" href=\"#\">thinking</a>",
-      "css": ".ds-tag{padding:0 .3rem;border:1px solid var(--lightgray,#e5e5e5);border-radius:3px;font-size:.85rem;font-weight:600;color:var(--secondary,#284b63);text-decoration:none}.ds-tag:hover,.ds-tag:focus-visible{color:var(--tertiary,#84a59d)}"
+      "css": ".ds-tag{padding:0 .3rem;border:1px solid var(--lightgray,#E3D9C4);border-radius:3px;font-size:.85rem;font-weight:600;font-family:Literata,serif;color:var(--secondary,#1E3959);text-decoration:none}.ds-tag:hover,.ds-tag:focus-visible{color:var(--tertiary,#8C2F39)}"
     },
     {
       "name": "Language switch",
@@ -561,7 +501,7 @@
       "refersTo": "language-option-active",
       "description": "Two options at the top right; the current language is filled.",
       "html": "<nav class=\"ds-lang\"><span class=\"ds-lang-active\">RU</span><a href=\"#\">EN</a></nav>",
-      "css": ".ds-lang{display:flex;gap:.25rem;font-size:.85rem}.ds-lang>*{padding:.1rem .45rem;border-radius:4px;text-decoration:none}.ds-lang-active{color:var(--light,#faf8f8);background:var(--secondary,#284b63)}.ds-lang a{color:var(--darkgray,#4e4e4e)}.ds-lang a:hover,.ds-lang a:focus-visible{color:var(--secondary,#284b63)}"
+      "css": ".ds-lang{display:flex;gap:.25rem;font-size:.85rem}.ds-lang>*{padding:.1rem .45rem;border-radius:4px;text-decoration:none}.ds-lang-active{color:var(--light,#FAF5E9);background:var(--secondary,#1E3959)}.ds-lang a{color:var(--darkgray,#33302B)}.ds-lang a:hover,.ds-lang a:focus-visible{color:var(--secondary,#1E3959)}"
     },
     {
       "name": "Popover",
@@ -569,12 +509,12 @@
       "refersTo": "popover",
       "description": "The shared form of the language note and the footnote tooltip.",
       "html": "<div class=\"ds-popover\"><strong>No English version yet</strong><span>This note exists only in Russian.</span></div>",
-      "css": ".ds-popover{max-width:24rem;padding:.6rem .8rem;border:1px solid var(--lightgray,#e5e5e5);border-radius:6px;background:var(--light,#faf8f8);box-shadow:0 4px 16px rgba(0,0,0,.15);color:var(--darkgray,#4e4e4e);font-size:.85rem;line-height:1.5}.ds-popover strong{display:block;color:var(--dark,#2b2b2b)}.ds-popover strong+span{display:block;margin-top:.3rem}"
+      "css": ".ds-popover{max-width:24rem;padding:.6rem .8rem;border:1px solid var(--lightgray,#E3D9C4);border-radius:6px;background:var(--light,#FAF5E9);box-shadow:0 4px 16px rgba(0,0,0,.15);color:var(--darkgray,#33302B);font-size:.85rem;line-height:1.5}.ds-popover strong{display:block;color:var(--dark,#1B1A1C)}.ds-popover strong+span{display:block;margin-top:.3rem}"
     }
   ],
   "narrative": {
     "northStar": "The Engineer's Study, Drawn in a Workbook",
-    "overview": "\n**Creative North Star: \"The Engineer's Study, Drawn in a Workbook\"**\n\nThe site is a workbook: printed text in a calm column, and next to it things drawn by hand. What is drawn is the furniture of a study. The library is a bookcase with nightstands beside it, the tech radar is an instrument with a round scope and a knob, the race calendar is a row of paper bibs pinned by their corners. Each is drawn the way an engineer sketches: a projection that is actually constructed, a contour, a label in handwriting. A drawing here explains or holds content; none is decoration.\n\nTwo states are recorded in this file. Today the hand lives only inside the drawn modules and inlined drawings, and everything else (header, navigation, headings, the reading column) is the stock Quartz theme. The direction is that the hand enters the frame too: section openers, the header, navigation. The reading column stays typeset in both states.\n\n- Text is typeset, objects are drawn. A module is an object from the study before it is a widget.\n- Pencil for structure, marker for what carries meaning.\n- Handwriting (Caveat) for anything written on a drawn object.\n- Flat page. Depth comes from drawn projection, never from shadows on the page.\n- The hand is reproducible: strokes are generated from a seed and baked into paths.",
+    "overview": "\n**Creative North Star: \"The Engineer's Study, Drawn in a Workbook\"**\n\nThe site is a workbook: printed text in a calm column, and next to it things drawn by hand. What is drawn is the furniture of a study. The library is a bookcase with nightstands beside it, the tech radar is an instrument with a round scope and a knob, the race calendar is a row of paper bibs pinned by their corners. Each is drawn the way an engineer sketches: a projection that is actually constructed, a contour, a label in handwriting. A drawing here explains or holds content; none is decoration.\n\nThe page is paper in the light theme and graphite in the dark one. The text is set in a book serif. The hand reaches the frame as the owner's marginal notes: pencil rules and underlines in place of straight lines, and the labels of blocks written in handwriting. Headings and running text stay typeset.\n\n- Text is typeset, objects are drawn. A module is an object from the study before it is a widget.\n- Pencil for structure, marker for what carries meaning.\n- Handwriting (Caveat) for anything written on a drawn object.\n- Flat page. Depth comes from drawn projection, never from shadows on the page.\n- The hand is reproducible: strokes are generated from a seed and baked into paths.",
     "keyCharacteristics": [
       "Text is typeset, objects are drawn. A module is an object from the study before it is a widget.",
       "Pencil for structure, marker for what carries meaning.",
@@ -594,8 +534,13 @@
         "section": "colors"
       },
       {
+        "name": "The Highlighter Rule",
+        "body": "Selected text and a marked passage are washed in the price sticker's yellow, as a highlighter would.",
+        "section": "colors"
+      },
+      {
         "name": "The Written-On Rule",
-        "body": "Caveat appears where something is written on a drawn object or, in the direction above, on the frame. Running text is never set in it.",
+        "body": "Caveat appears where something is written on a drawn object and where the owner labelled a block in the margin. Headings of the text and running text are never set in it.",
         "section": "typography"
       },
       {
@@ -616,7 +561,7 @@
       "**Don't** put a box-shadow on a card or a panel; shadows belong to popovers and to a book pulled from the case.",
       "**Don't** use marker red as a general accent.",
       "**Don't** recolour a paper or marker object for the dark theme; only pencil follows the theme.",
-      "**Don't** build on the `inherited-*` colours or the three default fonts as if they were the garden's own; they are due to be replaced."
+      "**Don't** draw a straight rule in the frame where a pencil stroke belongs, or set a block's label in the text face."
     ]
   }
 }
