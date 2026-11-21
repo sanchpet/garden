@@ -1,12 +1,9 @@
-import fs from "node:fs"
-import path from "node:path"
-import { parse } from "yaml"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import type { QuartzEmitterPlugin, QuartzTransformerPlugin } from "../quartz/plugins/types"
 import type { QuartzPluginData } from "../quartz/plugins/vfile"
 import type { BuildCtx } from "../quartz/util/ctx"
 import { FilePath, FullSlug, resolveRelative, slugifyFilePath } from "../quartz/util/path"
-import { publishedSlugs } from "./garden"
+import { publishedPages, publishedSlugs } from "./garden"
 import { unknownType } from "./kinds"
 import { languageOf } from "./languages"
 import {
@@ -46,23 +43,13 @@ function slugTarget(target: string): string {
 
 // The relation is needed twice: while a page is parsed, to give it its links, when only the
 // files on disk can tell what the other pages are; and when pages are rendered, from their data.
-const onDisk = new WeakMap<object, Sources>()
+const onDisk = new WeakMap<BuildCtx, Sources>()
 function sourcesOnDisk(ctx: BuildCtx): Sources {
-  let sources = onDisk.get(ctx.allFiles)
+  let sources = onDisk.get(ctx)
   if (!sources) {
-    const published = publishedSlugs(ctx)
-    const pages = ctx.allFiles.flatMap((fp): Page[] => {
-      const slug = slugifyFilePath(fp)
-      if (!fp.endsWith(".md") || !published.has(slug)) return []
-      const text = fs.readFileSync(path.join(ctx.argv.directory, fp), "utf8")
-      const yaml = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text)?.[1]
-      const frontmatter = yaml ? parse(yaml) : undefined
-      return [
-        { slug, frontmatter: frontmatter && typeof frontmatter === "object" ? frontmatter : {} },
-      ]
-    })
+    const pages = [...publishedPages(ctx)].map(([slug, frontmatter]) => ({ slug, frontmatter }))
     sources = buildSources(pages, slugTarget)
-    onDisk.set(ctx.allFiles, sources)
+    onDisk.set(ctx, sources)
   }
   return sources
 }
