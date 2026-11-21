@@ -8,22 +8,26 @@ import type { BuildCtx } from "../quartz/util/ctx"
 import { FilePath, slugifyFilePath } from "../quartz/util/path"
 import { frontmatterOf, isDraft } from "./frontmatter"
 
-const pages = new WeakMap<BuildCtx, Map<string, Record<string, unknown>>>()
-const published = new WeakMap<BuildCtx, Set<string>>()
+// Keyed by the file list, which a rebuild under --serve replaces on the same context.
+const pages = new WeakMap<object, Map<string, Record<string, unknown>>>()
+const published = new WeakMap<object, Set<string>>()
 
 // The notes that will exist on the site, with their frontmatter as written. Read from disk:
 // a page being parsed cannot see the others, and drafts are filtered out only after that.
+// A note whose frontmatter cannot be read here counts as unpublished: it may be a draft, and
+// a link stripped in error is the safe mistake.
 export function publishedPages(ctx: BuildCtx): Map<string, Record<string, unknown>> {
-  let notes = pages.get(ctx)
+  let notes = pages.get(ctx.allFiles)
   if (!notes) {
     notes = new Map()
     for (const fp of ctx.allFiles) {
       if (!fp.endsWith(".md")) continue
       const text = fs.readFileSync(path.join(ctx.argv.directory, fp), "utf8")
       const frontmatter = frontmatterOf(text)
-      if (!isDraft(frontmatter)) notes.set(slugifyFilePath(fp as FilePath), frontmatter)
+      if (frontmatter && !isDraft(frontmatter))
+        notes.set(slugifyFilePath(fp as FilePath), frontmatter)
     }
-    pages.set(ctx, notes)
+    pages.set(ctx.allFiles, notes)
   }
   return notes
 }
@@ -31,14 +35,14 @@ export function publishedPages(ctx: BuildCtx): Map<string, Record<string, unknow
 // Pages and files that will exist on the site. ctx.allSlugs is not that: it also holds every
 // frontmatter alias as a slug, and drafts.
 export function publishedSlugs(ctx: BuildCtx): Set<string> {
-  let slugs = published.get(ctx)
+  let slugs = published.get(ctx.allFiles)
   if (!slugs) {
     const files = ctx.allFiles.filter((fp) => !fp.endsWith(".md"))
     slugs = new Set([
       ...files.map((fp) => slugifyFilePath(fp as FilePath)),
       ...publishedPages(ctx).keys(),
     ])
-    published.set(ctx, slugs)
+    published.set(ctx.allFiles, slugs)
   }
   return slugs
 }
