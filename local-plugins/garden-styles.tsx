@@ -110,6 +110,166 @@ article:has(.bases-page) + .page-listing {
 ) {
   display: none;
 }
+
+/* The hand in the frame (DESIGN.md): pencil strokes for rules and underlines, handwriting for
+   the labels of blocks. The strokes are seeded and baked, like the ones in the drawn modules;
+   as masks they take the text colour, so pencil follows the theme.
+   Component CSS sits in a cascade layer and the core's base rules do not, so an unlayered
+   rule wins whatever the selector; the important flag is what reverses that here. */
+:root {
+  --pencil-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 6' preserveAspectRatio='none'%3E%3Cpath d='M0.0 2.91 Q33.3 2.48 66.7 3.11 Q100.0 2.90 133.3 3.76 Q166.7 3.32 200.0 2.94 Q233.3 3.27 266.7 3.01 Q300.0 3.22 333.3 3.16 Q366.7 2.66 400.0 2.43 Q433.3 2.95 466.7 3.02 Q500.0 3.52 533.3 3.23 Q566.7 3.40 600.0 3.53' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --pencil-underline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 6' preserveAspectRatio='none'%3E%3Cpath d='M0.0 3.85 Q13.3 3.51 26.7 3.90 Q40.0 3.84 53.3 3.78 Q66.7 3.21 80.0 2.17 Q93.3 1.67 106.7 3.18 Q120.0 3.44 133.3 2.85 Q146.7 2.75 160.0 3.06 Q173.3 3.08 186.7 2.26 Q200.0 2.54 213.3 2.38 Q226.7 2.21 240.0 2.89' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --pencil-side: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 300' preserveAspectRatio='none'%3E%3Cpath d='M3.33 0.0 Q3.53 16.7 2.26 33.3 Q2.37 50.0 3.21 66.7 Q2.98 83.3 3.62 100.0 Q3.48 116.7 3.60 133.3 Q3.86 150.0 3.03 166.7 Q2.97 183.3 3.24 200.0 Q3.73 216.7 2.76 233.3 Q3.27 250.0 3.05 266.7 Q3.42 283.3 2.29 300.0' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  scrollbar-color: var(--gray) transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, #F2B705 55%, transparent) !important;
+  color: inherit !important;
+}
+:focus-visible {
+  outline: 2px solid var(--secondary) !important;
+  outline-offset: 2px !important;
+  border-radius: 3px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600 !important;
+  text-wrap: balance !important;
+}
+
+hr {
+  height: 6px !important;
+  border: 0 !important;
+  background: var(--darkgray) !important;
+  opacity: 0.6 !important;
+  -webkit-mask: var(--pencil-rule) center / 100% 100% no-repeat !important;
+  mask: var(--pencil-rule) center / 100% 100% no-repeat !important;
+}
+
+/* The note's title is underlined by hand. */
+.page-header .article-title {
+  width: fit-content !important;
+  max-width: 100% !important;
+}
+.page-header .article-title::after {
+  content: "" !important;
+  display: block !important;
+  height: 6px !important;
+  margin-top: 0.15rem !important;
+  background: var(--darkgray) !important;
+  opacity: 0.7 !important;
+  -webkit-mask: var(--pencil-underline) center / 100% 100% no-repeat !important;
+  mask: var(--pencil-underline) center / 100% 100% no-repeat !important;
+}
+
+/* A quotation is marked by a pencil line down the margin. */
+article blockquote {
+  position: relative !important;
+  border-left: 0 !important;
+  padding-left: 1.25rem !important;
+}
+article blockquote::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0.15rem auto 0.15rem 0 !important;
+  width: 6px !important;
+  background: var(--darkgray) !important;
+  opacity: 0.7 !important;
+  -webkit-mask: var(--pencil-side) center / 100% 100% no-repeat !important;
+  mask: var(--pencil-side) center / 100% 100% no-repeat !important;
+}
+
+/* Labels of blocks are written by hand: the right column's blocks, the lists under the text,
+   the names of the note's fields. */
+.sidebar :is(.graph, .backlinks) > h3,
+.sidebar .toc .toc-header h3,
+.sources h2,
+.note-header .note-meta dt {
+  font-family: "Caveat", cursive !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--dark) !important;
+}
+.sidebar :is(.graph, .backlinks) > h3,
+.sidebar .toc .toc-header h3 {
+  font-size: 1.45rem !important;
+  line-height: 1.1 !important;
+}
+.sources h2 {
+  font-size: 1.7rem !important;
+}
+.note-header .note-meta dt {
+  font-size: 1.15rem !important;
+  line-height: 1 !important;
+  color: var(--gray) !important;
+}
+
+/* A link in the text is underlined in pen; the stock wash behind internal links is dropped. */
+article a,
+article a.internal {
+  background: none !important;
+  padding: 0 !important;
+  font-weight: 400 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 0.18em !important;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent) !important;
+}
+article a:hover {
+  text-decoration-color: currentColor !important;
+}
+article a.internal.tag-link,
+article a:has(> img),
+article .garden-drawing a {
+  text-decoration: none !important;
+}
+
+/* The contents list: an entry out of view is muted text, not faded text, so it stays legible. */
+.sidebar .toc .toc-content li > a {
+  font-weight: 400 !important;
+  color: var(--gray) !important;
+  opacity: 1 !important;
+}
+.sidebar .toc .toc-content li > a.in-view {
+  color: var(--dark) !important;
+}
+.sidebar .backlinks a {
+  font-weight: 400 !important;
+}
+
+/* The serif reads at a larger size than the grotesque it replaced, and it shortens the line. */
+article {
+  font-size: 1.125rem !important;
+}
+article p,
+article li {
+  line-height: 1.65 !important;
+}
+
+/* Headings step up from the larger body: 1.125 → 1.3 → 1.6 → 2.2rem. */
+.page-header .article-title {
+  font-size: 2.2rem !important;
+}
+article h2 {
+  font-size: 1.6rem !important;
+}
+article h3 {
+  font-size: 1.3rem !important;
+}
+article :is(h4, h5, h6) {
+  font-size: 1.125rem !important;
+}
+
+::placeholder {
+  color: var(--gray) !important;
+  opacity: 1 !important;
+}
+/* A language the note does not exist in is dimmed, and still readable. */
+.language-switch a.missing {
+  opacity: 0.7 !important;
+}
 `
   return Styles
 }) satisfies QuartzComponentConstructor
