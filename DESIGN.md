@@ -189,6 +189,10 @@ A plain list under the text with a 1.2rem heading; an entry's secondary part (ki
 
 A hand drawing from the texts repository, inlined as SVG so that its labels are page text and its shapes can be links. A linked shape thickens its stroke to 4 on hover and focus, and its label underlines.
 
+### Post cover
+
+A dated post may carry a cover image. Covers are black and white, with grain. Nothing on the site enforces this yet; it holds by the choice of images.
+
 ### Bookcase
 
 The library as one case in pencil with books in marker. Read books stand on the shelves, a shelf run per group. Books not yet begun lie in stacks on nightstands beside the case, still in their paper band; the ones being read lie on top. A book can be pulled out to show its card.
