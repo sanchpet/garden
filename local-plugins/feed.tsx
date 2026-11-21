@@ -2,7 +2,7 @@ import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import type { FullSlug } from "../quartz/util/path"
 import { LANGUAGES, languageOf } from "./languages"
-import { buildFeed, entryOf, renderFeed, type Entry } from "./feed-atom"
+import { blocksText, buildFeed, entryOf, renderFeed, type Entry } from "./feed-atom"
 
 // publish.yaml greps the build log for this to report what the feed could not take as written.
 export const FEED_PROBLEM_MARK = "garden: feed problem"
@@ -17,12 +17,13 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
     const { baseUrl, pageTitle } = ctx.cfg.configuration
     const site = { base: `https://${baseUrl}`, title: pageTitle, author: pageTitle }
     const entries: Entry[] = []
-    for (const [, file] of content) {
+    for (const [tree, file] of content) {
       // Notes only: tag and folder listings are virtual pages with no source file.
       if (!file.data.filePath?.endsWith(".md")) continue
       const slug = file.data.slug!
       const frontmatter = (file.data.frontmatter ?? {}) as Record<string, unknown>
-      const text = (file.data as { text?: string }).text
+      // Only a note is posted as its own text, and there its paragraphs must survive.
+      const text = frontmatter.type === "note" ? blocksText(tree) : undefined
       const { entry, warnings } = entryOf(
         { slug, lang: languageOf(slug), frontmatter, text },
         site.base,

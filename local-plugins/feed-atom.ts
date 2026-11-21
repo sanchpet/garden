@@ -8,7 +8,7 @@ export type Page = {
   slug: string
   lang?: string
   frontmatter: Record<string, unknown>
-  // The page's text without markup; a note has no other title.
+  // The page's text without markup, paragraphs apart; a note has no other title.
   text?: string
 }
 
@@ -93,6 +93,59 @@ export function excerpt(body: string, limit = 80): string {
   const cut = line.slice(0, limit)
   const space = cut.lastIndexOf(" ")
   return (space > limit / 2 ? cut.slice(0, space) : cut).replace(/[\s.,;:!?…—–-]+$/, "") + "…"
+}
+
+type Node = { type: string; tagName?: string; value?: string; children?: Node[] }
+
+const BLOCKS = new Set([
+  "p",
+  "blockquote",
+  "pre",
+  "ul",
+  "ol",
+  "table",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+])
+
+function inline(node: Node): string {
+  // A newline in the markup is a space to the reader; only a break element ends the line.
+  if (node.type === "text") return (node.value ?? "").replace(/\s+/g, " ")
+  if (node.tagName === "br") return "\n"
+  return (node.children ?? []).map(inline).join("")
+}
+
+// A rendered body as plain text that keeps its shape: a blank line between paragraphs, a
+// line break where the author broke the line, a list item on a line of its own.
+export function blocksText(root: Node): string {
+  const blocks: string[] = []
+  const walk = (node: Node) => {
+    if (node.tagName === "ul" || node.tagName === "ol") {
+      const items = (node.children ?? []).filter((child) => child.tagName === "li")
+      blocks.push(items.map((item) => `— ${inline(item).trim()}`).join("\n"))
+    } else if (node.tagName && BLOCKS.has(node.tagName)) {
+      blocks.push(inline(node))
+    } else if (node.children) {
+      node.children.forEach(walk)
+    } else if (node.type === "text") {
+      blocks.push(node.value ?? "")
+    }
+  }
+  walk(root)
+  return blocks
+    .map((block) =>
+      block
+        .split("\n")
+        .map((line) => line.replace(/[ \t]+/g, " ").trim())
+        .join("\n")
+        .trim(),
+    )
+    .filter(Boolean)
+    .join("\n\n")
 }
 
 export function isPublication(page: Page): boolean {

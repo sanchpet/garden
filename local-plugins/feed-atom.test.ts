@@ -1,6 +1,14 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { buildFeed, entryOf, escapeXml, renderFeed, timestamp, type Page } from "./feed-atom"
+import {
+  blocksText,
+  buildFeed,
+  entryOf,
+  escapeXml,
+  renderFeed,
+  timestamp,
+  type Page,
+} from "./feed-atom"
 
 const BASE = "https://sanch.pet"
 const SITE = { base: BASE, title: "sanchpet", author: "sanchpet" }
@@ -345,5 +353,35 @@ describe("the species of an entry", () => {
       xml,
       /<category term="lytdybr"\/>\n\s*<category scheme="https:\/\/sanch\.pet\/ns\/kind" term="post"\/>/,
     )
+  })
+})
+
+describe("blocksText", () => {
+  const el = (tagName: string, ...children: unknown[]) => ({
+    type: "element",
+    tagName,
+    children: children.map((c) => (typeof c === "string" ? { type: "text", value: c } : c)),
+  })
+  const root = (...children: unknown[]) => ({ type: "root", children }) as never
+
+  test("paragraphs stand apart, a line break stays a line break", () => {
+    const body = root(
+      el("p", "Сижу, ковыряю ", el("a", "сайтец"), "."),
+      { type: "text", value: "\n" },
+      el("p", "Первая строка", el("br"), "\nвторая строка"),
+    )
+    assert.strictEqual(blocksText(body), "Сижу, ковыряю сайтец.\n\nПервая строка\nвторая строка")
+  })
+
+  test("a list is one block, an item per line; a quotation keeps its paragraphs", () => {
+    const body = root(
+      el("ul", el("li", "раз"), el("li", el("p", "два"))),
+      el("blockquote", el("p", "цитата")),
+    )
+    assert.strictEqual(blocksText(body), "— раз\n— два\n\nцитата")
+  })
+
+  test("a wrapper around the blocks does not glue them", () => {
+    assert.strictEqual(blocksText(root(el("div", el("p", "а"), el("p", "б")))), "а\n\nб")
   })
 })
