@@ -1,7 +1,7 @@
 import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import type { FullSlug } from "../quartz/util/path"
-import { LANGUAGES, languageOf } from "./bilingual"
+import { LANGUAGES, languageOf } from "./languages"
 import { buildFeed, entryOf, renderFeed, type Entry } from "./feed-atom"
 
 // publish.yaml greps the build log for this to report what the feed could not take as written.
