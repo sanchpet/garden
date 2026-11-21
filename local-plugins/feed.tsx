@@ -8,7 +8,8 @@ import { buildFeed, entryOf, renderFeed, type Entry } from "./feed-atom"
 export const FEED_PROBLEM_MARK = "garden: feed problem"
 
 // What the site publishes, as a contract for readers and for the poster in publish.yaml:
-// one Atom feed per language, holding posts and evergreen texts only. An entry's id is the
+// one Atom feed per language, holding texts only (posts, evergreen texts, notes), not the
+// catalogue events of the stream. An entry's id is the
 // text's address, so a new edition of a text moves `updated` and makes no new entry.
 export const PublicationFeed: QuartzEmitterPlugin = () => ({
   name: "PublicationFeed",
@@ -21,7 +22,11 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
       if (!file.data.filePath?.endsWith(".md")) continue
       const slug = file.data.slug!
       const frontmatter = (file.data.frontmatter ?? {}) as Record<string, unknown>
-      const { entry, warnings } = entryOf({ slug, lang: languageOf(slug), frontmatter }, site.base)
+      const text = (file.data as { text?: string }).text
+      const { entry, warnings } = entryOf(
+        { slug, lang: languageOf(slug), frontmatter, text },
+        site.base,
+      )
       for (const warning of warnings) console.warn(`${FEED_PROBLEM_MARK}: ${warning}`)
       if (entry) entries.push(entry)
     }

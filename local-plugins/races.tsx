@@ -226,6 +226,22 @@ function linkOf(race: Race): string {
   return race.registration?.url || race.sources[0]?.url || "#"
 }
 
+// For the stream: the owner's races marked as run.
+export function ranRaces(
+  lang: Lang,
+): { name: string; start_date: string; href: string; place: string }[] {
+  const feed = loadFeed()
+  if (!feed) return []
+  return feed.events
+    .filter((race) => race.picks?.some((p) => p.person === feed.owner && p.status === "done"))
+    .map((race) => ({
+      name: race.name,
+      start_date: race.start_date,
+      href: linkOf(race),
+      place: placeOf(race, feed, lang),
+    }))
+}
+
 function Bib({ race, feed, lang, ui }: { race: Race; feed: Feed; lang: Lang; ui: RacesUi }) {
   const pick = race.picks!.find((p) => p.person === feed.owner)!
   const longest = race.distances[race.distances.length - 1]

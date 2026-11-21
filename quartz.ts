@@ -18,6 +18,7 @@ import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
 import "./local-plugins/radar"
 import { RaceCalendar, RacesFeed } from "./local-plugins/races"
+import { Stream, StreamLink } from "./local-plugins/stream"
 import {
   ContentProblems,
   FrontmatterLinks,
@@ -46,17 +47,25 @@ config.plugins.transformers.push(
 // has to go into a fresh layout and a dispatcher rebuilt from it. Per-page-type layouts
 // are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
-const header = [HomeLogo(), LanguageSwitch(), GardenStyles(), BookcaseScript(), FootnoteTooltip()]
+const header = [
+  HomeLogo(),
+  StreamLink(),
+  LanguageSwitch(),
+  GardenStyles(),
+  BookcaseScript(),
+  FootnoteTooltip(),
+]
 const noteHeader = NoteHeader()
 const cover = NoteCover()
 const races = RaceCalendar()
 const sources = SourceList()
+const stream = Stream()
 let wrapped = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
-  pageLayout.afterBody = [races, sources, ...(pageLayout.afterBody ?? [])]
+  pageLayout.afterBody = [races, stream, sources, ...(pageLayout.afterBody ?? [])]
   pageLayout.right = pageLayout.right?.map((component) => {
     if (component.name !== "Backlinks") return component
     wrapped++

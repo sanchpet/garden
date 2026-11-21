@@ -55,7 +55,12 @@ export const NoteHeader = (() => {
     const tool = is("tool")
     // The race calendar (`type: races`) is drawn under the note, which may have no text of its own.
     const calendar = is("races")
-    if ((!text && !book && !course && !tool && !calendar) || classes.includes("home")) return null
+    // So is the stream, and a list of one species of it.
+    const stream = is("stream")
+    // A note is headed by its day; an edit date and a reading time say nothing about two lines.
+    const note = is("note")
+    if ((!text && !book && !course && !tool && !calendar && !stream) || classes.includes("home"))
+      return null
 
     const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
     const l = LABELS[lang]
@@ -125,7 +130,7 @@ export const NoteHeader = (() => {
               </dd>
             </div>
           )}
-          {modified && !calendar && (
+          {modified && !calendar && !stream && !note && (
             <div>
               <dt>{l.modified}</dt>
               <dd>
@@ -133,7 +138,7 @@ export const NoteHeader = (() => {
               </dd>
             </div>
           )}
-          {minutes > 0 && (
+          {minutes > 0 && !note && (
             <div>
               <dt>{l.reading}</dt>
               <dd>
