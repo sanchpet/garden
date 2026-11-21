@@ -300,3 +300,38 @@ describe("rendering", () => {
     assert.strictEqual(render([zaSekundu, myshlenie]), render([myshlenie, zaSekundu]))
   })
 })
+
+describe("a note", () => {
+  const note = (fm: Record<string, unknown>, text?: string): Page => ({
+    slug: "ru/notes/2026-11-21-1830",
+    lang: "ru",
+    frontmatter: { type: "note", published: "2026-11-21T18:30+04:00", ...fm },
+    text,
+  })
+
+  test("is an entry titled by its first words, with its text as the announcement", () => {
+    const body = "Пробежал 12 км по Черепашьему озеру. Туман такой, что города не видно. ".repeat(2)
+    const made = entry(note({ channels: ["lytdybr"] }, body))!
+    assert.strictEqual(
+      made.title,
+      "Пробежал 12 км по Черепашьему озеру. Туман такой, что города не видно. Пробежал…",
+    )
+    assert.strictEqual(made.content, body.trim())
+    assert.strictEqual(made.published, "2026-11-21T14:30:00Z")
+    assert.deepStrictEqual(made.categories, ["lytdybr"])
+  })
+
+  test("keeps an announcement written for it", () => {
+    assert.strictEqual(entry(note({ announce: "Коротко." }, "Длинно."))!.content, "Коротко.")
+  })
+
+  test("without text falls back to its title", () => {
+    const made = entry(note({ title: "21 ноября 2026" }))!
+    assert.strictEqual(made.title, "21 ноября 2026")
+    assert.strictEqual(made.content, undefined)
+  })
+
+  test("a post does not take its text for an announcement", () => {
+    assert.strictEqual(entry({ ...post({}), text: "Текст поста." })!.content, undefined)
+  })
+})

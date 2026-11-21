@@ -8,6 +8,8 @@ export type Page = {
   slug: string
   lang?: string
   frontmatter: Record<string, unknown>
+  // The page's text without markup; a note has no other title.
+  text?: string
 }
 
 export type Entry = {
@@ -79,6 +81,15 @@ function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0
 }
 
+// The first words of a note, for the places that need a title: the feed, the browser tab.
+export function excerpt(body: string, limit = 80): string {
+  const line = body.replace(/\s+/g, " ").trim()
+  if (line.length <= limit) return line
+  const cut = line.slice(0, limit)
+  const space = cut.lastIndexOf(" ")
+  return (space > limit / 2 ? cut.slice(0, space) : cut).replace(/[\s.,;:!?…—–-]+$/, "") + "…"
+}
+
 export function isPublication(page: Page): boolean {
   const { type, draft } = page.frontmatter
   return isText(type) && draft !== true && draft !== "true"
@@ -102,15 +113,17 @@ export function entryOf(page: Page, base: string): { entry?: Entry; warnings: st
   if (!page.lang) warnings.push(`${page.slug} left out: not in a language folder`)
   if (!published) warnings.push(`${page.slug} left out: no published or created date`)
   if (!page.lang || !published) return { warnings }
+  // A note has no title and needs no announcement written for it: it is one.
+  const note = fm.type === "note" ? text(page.text) : undefined
   const entry: Entry = {
     lang: page.lang,
     id: pageUrl(base, page.slug),
-    title: text(fm.title) ?? page.slug,
+    title: (note && excerpt(note)) ?? text(fm.title) ?? page.slug,
     published,
     // A revision dated before the release is a typo, not a way to predate it.
     updated: revised && revised > published ? revised : published,
     summary: text(fm.description),
-    content: text(fm.announce),
+    content: text(fm.announce) ?? note,
     categories: list(fm.channels),
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
   }

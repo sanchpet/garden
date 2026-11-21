@@ -142,7 +142,7 @@ One palette for the page and for what is drawn on it: paper and ink, steel blue 
 - **Headline** (600, 2.2rem): the note's own title, underlined in pencil.
 - **Title** (600; h2 1.6rem, h3 1.3rem, h4 and below 1.125rem): section headings in the column.
 - **Body** (400, 1.125rem, line-height 1.65): running text. The annotation under a title is body italic.
-- **Label** (Caveat 700, 1.15rem): the names of the note's fields. The labels of the right column's blocks are Caveat at 1.45rem, the heading of the sources list at 1.7rem.
+- **Label** (Caveat 700, 1.15rem): the names of the note's fields and the days of the stream. The labels of the right column's blocks are Caveat at 1.45rem, the heading of the sources list at 1.7rem.
 - **Hand on objects** (Caveat 700): a bib number at 4.2rem, a bib name at 1.6rem, a module's drawn heading at 1.7rem, labels inside drawings at their drawn size.
 
 ### Named Rules
@@ -192,6 +192,10 @@ Language note and footnote tooltip share one form: page ground, 1px rule, 6px ra
 ### Sources and texts list
 
 A plain list under the text with a 1.2rem heading; an entry's secondary part (kind, date) follows in 0.85rem muted text. No drawing.
+
+### Stream
+
+A dated list of what happened in the garden, and the same list narrowed to one kind of page (the posts page). Years are labelled by hand, each label followed by a pencil rule. A row is a day written by hand in the margin column (4.6rem), then what happened in 0.85rem muted text, then the page's name as a link; a day is written once for the rows that share it. A text's name is set at 600, a catalogue card's at 400, and cards entered on one day share one row. A note has no name: its day is its link and its text stands in the row at body size. A finished book and a race that was run carry the marker's tick, the only red in the list. Below 560px the day stands above its row. The header's handwritten word leads here from every page.
 
 ### Drawing
 
