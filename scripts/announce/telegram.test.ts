@@ -36,6 +36,12 @@ describe("sendMessage", () => {
     })
   })
 
+  test("a message without a preview address asks for no preview", async () => {
+    const h = harness([() => reply(200, { ok: true, result: { message_id: 1 } })])
+    await sendMessage(TOKEN, { chat: "@sanchpetlytdybr", text: "A" }, h.deps)
+    assert.deepStrictEqual(h.calls[0].body.link_preview_options, { is_disabled: true })
+  })
+
   test("waits as long as a 429 asks, then sends", async () => {
     const flood = () =>
       reply(429, {

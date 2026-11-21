@@ -265,6 +265,7 @@ describe("rendering", () => {
     <published>2026-11-15T00:00:00Z</published>
     <updated>2026-11-15T00:00:00Z</updated>
     <category term="lytdybr"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
   </entry>
   <entry>
     <title>Мышление</title>
@@ -273,6 +274,7 @@ describe("rendering", () => {
     <published>2026-10-26T00:00:00Z</published>
     <updated>2026-11-02T00:00:00Z</updated>
     <summary type="text">Что есть</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
   </entry>
 </feed>
 `,
@@ -333,5 +335,15 @@ describe("a note", () => {
 
   test("a post does not take its text for an announcement", () => {
     assert.strictEqual(entry({ ...post({}), text: "Текст поста." })!.content, undefined)
+  })
+})
+
+describe("the species of an entry", () => {
+  test("is a category of its own scheme, after the channels", () => {
+    const xml = renderFeed(feed([zaSekundu]))
+    assert.match(
+      xml,
+      /<category term="lytdybr"\/>\n\s*<category scheme="https:\/\/sanch\.pet\/ns\/kind" term="post"\/>/,
+    )
   })
 })
