@@ -181,6 +181,47 @@ describe("frontmatter links on their way to the content index", () => {
   test("a translation without its own list gets the cards of its twin", () => {
     assert.deepStrictEqual(linksOf("en/posts/a", { type: "post" }), ["ru/library/misbehaving"])
   })
+
+  test("a card on the site whose frontmatter is unreadable here is no card, and is reported", async (t) => {
+    write("ru/library/toml.md", "type: book")
+    fs.writeFileSync(path.join(dir, "ru/library/toml.md"), '---toml\ntype = "book"\n---\n')
+    const tctx = { argv: { directory: dir }, allFiles: ["ru/library/toml.md", "ru/posts/a.md"] }
+    const files = [
+      {
+        ...file("ru/library/toml", { type: "book", title: "Toml" }),
+        filePath: "x/ru/library/toml.md",
+      },
+      {
+        ...file("ru/posts/a", { type: "post", sources: ["[[toml|T]]"] }),
+        filePath: "x/ru/posts/a.md",
+      },
+    ]
+    const props = {
+      fileData: files[1],
+      allFiles: files,
+      ctx: tctx,
+    } as unknown as QuartzComponentProps
+    assert.ok(render(h(SourceList(), props)).includes("<li>T</li>"))
+    const lines: string[] = []
+    t.mock.method(console, "warn", (line: string) => lines.push(line))
+    const content = files.map((data) => [undefined, { data }]) as unknown as ProcessedContent[]
+    await ContentProblems().emit(tctx as unknown as BuildCtx, content, {} as never)
+    assert.deepStrictEqual(lines, [
+      `${CONTENT_PROBLEM_MARK}: ru/library/toml: frontmatter not readable as YAML, links to the page are stripped`,
+      `${CONTENT_PROBLEM_MARK}: ru/posts/a: source "toml" is not a published source card, shown as text`,
+    ])
+  })
+
+  test("a rebuild with a new file list forgets the card that is gone", () => {
+    const rebuilt = ctx as { allFiles: string[] }
+    const before = rebuilt.allFiles
+    rebuilt.allFiles = before.filter((fp) => fp !== "ru/library/misbehaving.md")
+    const [again] = FrontmatterLinks().markdownPlugins!(ctx) as [() => Function]
+    const vfile = { data: { slug: "en/posts/a", frontmatter: { type: "post" } } }
+    again()(undefined, vfile)
+    rebuilt.allFiles = before
+    assert.deepStrictEqual((vfile.data as { frontmatterLinks?: string[] }).frontmatterLinks, [])
+  })
 })
 
 describe("the content problems in the build log", () => {

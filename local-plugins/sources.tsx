@@ -43,30 +43,36 @@ function slugTarget(target: string): string {
 
 // The relation is needed twice: while a page is parsed, to give it its links, when only the
 // files on disk can tell what the other pages are; and when pages are rendered, from their data.
-const onDisk = new WeakMap<BuildCtx, Sources>()
+const onDisk = new WeakMap<object, Sources>()
 function sourcesOnDisk(ctx: BuildCtx): Sources {
-  let sources = onDisk.get(ctx)
+  let sources = onDisk.get(ctx.allFiles)
   if (!sources) {
     const pages = [...publishedPages(ctx)].map(([slug, frontmatter]) => ({ slug, frontmatter }))
     sources = buildSources(pages, slugTarget)
-    onDisk.set(ctx, sources)
+    onDisk.set(ctx.allFiles, sources)
   }
   return sources
 }
 
-function pagesOf(files: QuartzPluginData[]): Page[] {
+// A note on the site whose frontmatter publishedPages could not read: links to it are
+// stripped, so it takes no part in the relation either.
+function unreadable(file: QuartzPluginData, ctx: BuildCtx): boolean {
+  return !!file.filePath?.endsWith(".md") && !publishedSlugs(ctx).has(file.slug!)
+}
+
+function pagesOf(files: QuartzPluginData[], ctx: BuildCtx): Page[] {
   return files.flatMap((file) =>
-    file.slug
+    file.slug && !unreadable(file, ctx)
       ? [{ slug: file.slug, frontmatter: (file.frontmatter ?? {}) as Page["frontmatter"] }]
       : [],
   )
 }
 
 const rendered = new WeakMap<object, Sources>()
-function sourcesOf(allFiles: QuartzPluginData[]): Sources {
+function sourcesOf(allFiles: QuartzPluginData[], ctx: BuildCtx): Sources {
   let sources = rendered.get(allFiles)
   if (!sources) {
-    sources = buildSources(pagesOf(allFiles), slugTarget)
+    sources = buildSources(pagesOf(allFiles, ctx), slugTarget)
     rendered.set(allFiles, sources)
   }
   return sources
@@ -100,9 +106,14 @@ export const FrontmatterLinks: QuartzTransformerPlugin = () => ({
 
 export const ContentProblems: QuartzEmitterPlugin = () => ({
   name: "ContentProblems",
-  async emit(_ctx, content) {
-    const pages = pagesOf(content.map(([, file]) => file.data))
-    for (const problem of contentProblems(pages, slugTarget)) {
+  async emit(ctx, content) {
+    const files = content.map(([, file]) => file.data)
+    const unread = files
+      .filter((file) => unreadable(file, ctx))
+      .map(
+        (file) => `${file.slug}: frontmatter not readable as YAML, links to the page are stripped`,
+      )
+    for (const problem of [...unread, ...contentProblems(pagesOf(files, ctx), slugTarget)]) {
       console.warn(`${CONTENT_PROBLEM_MARK}: ${problem}`)
     }
     return []
@@ -111,12 +122,12 @@ export const ContentProblems: QuartzEmitterPlugin = () => ({
 
 // Under a text: its bibliography. Under a source card: the texts that name it.
 export const SourceList = (() => {
-  const List: QuartzComponent = ({ fileData, allFiles }) => {
+  const List: QuartzComponent = ({ fileData, allFiles, ctx }) => {
     const slug = fileData.slug
     if (!slug) return null
     const lang = languageOf(slug) === "en" ? "en" : "ru"
     const ui = UI[lang]
-    const sources = sourcesOf(allFiles)
+    const sources = sourcesOf(allFiles, ctx)
     const references = sources.references.get(slug) ?? []
     const texts = textsFor(sources.texts.get(slug) ?? [], lang)
     const href = (target: string) => resolveRelative(slug, target as FullSlug)
@@ -207,7 +218,7 @@ export const SourceList = (() => {
 // The stock Backlinks block would repeat on a source card the texts its typed section shows.
 export function withoutSourceTexts(Stock: QuartzComponent): QuartzComponent {
   const Backlinks: QuartzComponent = (props) => {
-    const listed = sourcesOf(props.allFiles).texts.get(props.fileData.slug ?? "")
+    const listed = sourcesOf(props.allFiles, props.ctx).texts.get(props.fileData.slug ?? "")
     if (!listed) return <Stock {...props} />
     const shown = new Set(listed.map((text) => text.slug))
     return <Stock {...props} allFiles={props.allFiles.filter((file) => !shown.has(file.slug!))} />
