@@ -11,3 +11,7 @@ run src/gen_avatar.py out
 uv run -q --with fonttools --with brotli pyftsubset "fonts/Caveat[wght].ttf" \
   --unicodes="U+0020-007E,U+00A0-00FF,U+0400-045F,U+2010-2026,U+00AB,U+00BB" \
   --flavor=woff2 --output-file=out/caveat.woff2
+# The hand of the annotations: Neucha, printed letters, cut down the same way.
+uv run -q --with fonttools --with brotli pyftsubset "fonts/Neucha.ttf" \
+  --unicodes="U+0020-007E,U+00A0-00FF,U+0400-045F,U+2010-2026,U+00AB,U+00BB" \
+  --flavor=woff2 --output-file=out/neucha.woff2
