@@ -167,6 +167,13 @@ plugins:
       priority: 50
   - source: "@quartz-community/graph"
     enabled: true
+    # The graph opens zoomed in (local-plugins/garden-styles.tsx); at that zoom the plugin would
+    # show every name faintly, one over another. Lowered so a name shows on hover only.
+    options:
+      localGraph:
+        opacityScale: 0.5
+      globalGraph:
+        opacityScale: 0.6
     layout:
       position: right
       priority: 10
