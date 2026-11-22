@@ -8,11 +8,11 @@ import {
   serializeJournal,
   type Delivery,
 } from "./journal"
-import { buildText, isNote, messageUrl, pageUrl } from "./message"
+import { buildText, CAPTION_LIMIT, isNote, messageUrl, pageUrl } from "./message"
 import { plan, seed } from "./plan"
 import type { Store } from "./store"
 import type { Probe } from "./page"
-import type { Message } from "./telegram"
+import { Rejected, type Message } from "./telegram"
 
 export type Deps = {
   store: Store
@@ -76,16 +76,26 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
       warn(`${entry.id}: ${errorText(error)}, not announced`)
       continue
     }
-    // A note is sent without a preview, so it does not wait for its page.
+    // A note is sent without a preview, so it does not wait for its page; a note with a picture
+    // waits for the picture, which Telegram fetches from the site.
     const note = isNote(entry)
-    const probe = note
-      ? { ready: true, detail: "not needed, no preview" }
-      : await deps.waitForPage(link, deadline)
+    const picture = note ? entry.image : undefined
+    const probe =
+      note && !picture
+        ? { ready: true, detail: "not needed, no preview" }
+        : await deps.waitForPage(picture ?? link, deadline)
     if (chat.unverified)
       warn(`${channel}: the chat ${chat.chat} is marked unverified in the config`)
     const text = buildText(entry, link)
+    // A picture above the text when the note is too long to be a photo's caption.
+    const message: Message = !picture
+      ? { chat: chat.chat, text, previewUrl: note ? undefined : link }
+      : buildText(entry, link, CAPTION_LIMIT) === text
+        ? { chat: chat.chat, text, photoUrl: picture }
+        : { chat: chat.chat, text, previewUrl: picture, previewAbove: true }
     if (dryRun) {
-      log(`[dry run] Would send to ${chat.chat} (${channel}); page: ${probe.detail}`)
+      const how = message.photoUrl ? "a photo" : message.previewAbove ? "a picture above" : "text"
+      log(`[dry run] Would send to ${chat.chat} (${channel}) as ${how}; page: ${probe.detail}`)
       log(text.replace(/^/gm, "  | "))
       log(`[dry run] Would journal: ${entry.id} → ${channel}`)
       continue
@@ -109,10 +119,15 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
     }
     let delivery: Delivery
     try {
-      const messageId = await deps.send({
-        chat: chat.chat,
-        text,
-        previewUrl: note ? undefined : link,
+      const messageId = await deps.send(message).catch((error) => {
+        if (!(message.photoUrl && error instanceof Rejected)) throw error
+        warn(`${errorText(error)}; sending the picture above the text instead`)
+        return deps.send({
+          chat: chat.chat,
+          text,
+          previewUrl: message.photoUrl,
+          previewAbove: true,
+        })
       })
       delivery = { at: stamp(), origin: "sent", url: messageUrl(chat.chat, messageId), messageId }
       log(`Sent to ${chat.chat}: ${entry.id} (${delivery.url})`)
