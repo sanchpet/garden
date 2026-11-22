@@ -7,12 +7,10 @@ export function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
-// Share stubs mirror the site's paths on another host (local-plugins/share.tsx): Telegram's
-// servers cannot reach the site itself, so a link to it would get no preview.
-export function stubUrl(id: string, shareHost: string): string {
+// The link of a message is the page's own address; an id that is not one cannot be announced.
+export function pageUrl(id: string): string {
   const url = new URL(id)
   if (url.protocol !== "https:") throw new Error(`not an https URL: ${id}`)
-  url.host = shareHost
   return url.href
 }
 

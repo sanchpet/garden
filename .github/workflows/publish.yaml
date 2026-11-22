@@ -9,19 +9,14 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # Per job, not per workflow: an announcement waiting for Pages must not queue the next publication.
+    # Per job, not per workflow: an announcement waiting for the site must not queue the next publication.
     concurrency:
       group: publish
       cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.share_again.outputs.page_url || steps.share.outputs.page_url }}
     outputs:
       feeds: ${{ steps.feeds.outputs.artifact-id }}
     steps:
@@ -79,10 +74,6 @@ jobs:
           grep 'garden: feed problem' build.log | sed 's/^/::warning::/' || true
           grep 'garden: content problem' build.log | sed 's/^/::warning::/' || true
 
-      # Telegram cannot reach the hub, so share links go through GitHub Pages (local-plugins/share.tsx).
-      - name: Split out the share stubs
-        run: mv public/.share share
-
       # The cluster serves this branch through git-sync, so a single commit keeps its clone small.
       - name: Push to the public branch
         working-directory: public
@@ -93,23 +84,6 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -q -m "Build from garden ${GITHUB_SHA::7}, garden-texts ${texts}"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" public
-
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: share
-
-      # deploy-pages lists the run's artifacts right after the upload and at times gets none,
-      # though the artifact is there: the listing lags. One more try after a pause.
-      - id: share
-        continue-on-error: true
-        uses: actions/deploy-pages@v5
-
-      - if: steps.share.outcome == 'failure'
-        run: sleep 30
-
-      - id: share_again
-        if: steps.share.outcome == 'failure'
-        uses: actions/deploy-pages@v5
 
       # The site is out by now: nothing in these two steps may turn the publication red.
       # Copied out with their language folders: the artifact of a single file would lose its path.

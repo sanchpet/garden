@@ -30,7 +30,7 @@ function runner(store: Store) {
   const deps: Deps = {
     store,
     send: async (message) => sent.push(message.chat),
-    waitForStub: async () => ({ ready: true, detail: "stubbed" }),
+    waitForPage: async () => ({ ready: true, detail: "stubbed" }),
     now: () => new Date("2026-11-20T12:00:00Z"),
     log: () => {},
     warn: (line) => void warnings.push(line),
@@ -91,13 +91,13 @@ describe("run over the git store", () => {
     assert.strictEqual(box.remote(["rev-list", "--count", BRANCH]).trim(), "4")
   })
 
-  test("a delivery pushed by another run while this one waits for the stub is not repeated", async (t) => {
+  test("a delivery pushed by another run while this one waits for the page is not repeated", async (t) => {
     const box = await seededRemote(t)
     const other = gitStore(box.clone("second"), "origin", BRANCH)
     const r = runner(gitStore(box.first, "origin", BRANCH))
     let first = true
     // The other run announces the same text in the blog channel during our first wait.
-    r.deps.waitForStub = async () => {
+    r.deps.waitForPage = async () => {
       if (first) {
         first = false
         const base = (await other.load()) as Journal

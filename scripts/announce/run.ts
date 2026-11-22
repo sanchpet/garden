@@ -8,17 +8,17 @@ import {
   serializeJournal,
   type Delivery,
 } from "./journal"
-import { buildText, isNote, messageUrl, stubUrl } from "./message"
+import { buildText, isNote, messageUrl, pageUrl } from "./message"
 import { plan, seed } from "./plan"
 import type { Store } from "./store"
-import type { Probe } from "./stub"
+import type { Probe } from "./page"
 import type { Message } from "./telegram"
 
 export type Deps = {
   store: Store
   send(message: Message): Promise<number>
-  // Resolves once the stub is ready or the deadline (epoch ms) has passed.
-  waitForStub(url: string, deadline: number): Promise<Probe>
+  // Resolves once the page is up or the deadline (epoch ms) has passed.
+  waitForPage(url: string, deadline: number): Promise<Probe>
   now(): Date
   log(line: string): void
   warn(line: string): void
@@ -66,36 +66,36 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
   if (!planned.sends.length) log(`${tag}Nothing new to announce.`)
 
   let failures = 0
-  // One budget for the whole run: all stubs come from the same Pages deployment.
-  const deadline = deps.now().getTime() + (dryRun ? 0 : config.stubTimeoutSeconds * 1000)
+  // One budget for the whole run: all pages come with the same build.
+  const deadline = deps.now().getTime() + (dryRun ? 0 : config.pageTimeoutSeconds * 1000)
   for (const { entry, channel, chat } of planned.sends) {
     let link: string
     try {
-      link = stubUrl(entry.id, config.shareHost)
+      link = pageUrl(entry.id)
     } catch (error) {
       warn(`${entry.id}: ${errorText(error)}, not announced`)
       continue
     }
-    // A note is sent without a preview, so it does not wait for its stub.
+    // A note is sent without a preview, so it does not wait for its page.
     const note = isNote(entry)
     const probe = note
       ? { ready: true, detail: "not needed, no preview" }
-      : await deps.waitForStub(link, deadline)
+      : await deps.waitForPage(link, deadline)
     if (chat.unverified)
       warn(`${channel}: the chat ${chat.chat} is marked unverified in the config`)
     const text = buildText(entry, link)
     if (dryRun) {
-      log(`[dry run] Would send to ${chat.chat} (${channel}); share stub: ${probe.detail}`)
+      log(`[dry run] Would send to ${chat.chat} (${channel}); page: ${probe.detail}`)
       log(text.replace(/^/gm, "  | "))
       log(`[dry run] Would journal: ${entry.id} → ${channel}`)
       continue
     }
     if (!probe.ready) {
-      warn(`${link}: the share stub is not ready (${probe.detail}); left for the next build`)
+      warn(`${link}: the page is not up (${probe.detail}); left for the next build`)
       continue
     }
     // Read again right before sending: another run, or the owner by hand, may have recorded
-    // this delivery while we were waiting for the stub.
+    // this delivery while we were waiting for the page.
     try {
       const latest = await store.load()
       if (latest) journal = mergeJournals(latest, journal)

@@ -8,7 +8,7 @@ import { loadConfig } from "./config"
 import { parseFeed, type FeedEntry } from "./feed"
 import { run } from "./run"
 import { fileStore, gitStore, type Git } from "./store"
-import { waitForStub } from "./stub"
+import { waitForPage } from "./page"
 import { redact, sendMessage } from "./telegram"
 
 const USAGE = `Announce new feed entries in Telegram.
@@ -73,7 +73,7 @@ async function main(): Promise<number> {
         ? fileStore(values.journal)
         : gitStore(git, values.remote, config.stateBranch),
       send: (message) => sendMessage(token, message, { fetch, sleep, log }),
-      waitForStub: (url, deadline) => waitForStub(url, deadline, { fetch, sleep, now: Date.now }),
+      waitForPage: (url, deadline) => waitForPage(url, deadline, { fetch, sleep, now: Date.now }),
       now: () => new Date(),
       log,
       warn,
