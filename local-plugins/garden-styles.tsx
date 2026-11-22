@@ -310,5 +310,34 @@ article :is(h4, h5, h6) {
   opacity: 0.7 !important;
 }
 `
+  // The graph plugin fixes the radius of a node and has no setting for the opening zoom, so
+  // larger nodes and names come from zooming in once the graph is up: d3-zoom reads the
+  // factor from a wheel event. If the plugin changes, the graph just opens at its stock size.
+  Styles.afterDOMLoaded = `
+(() => {
+  const ZOOM = { "graph-container": 1.9, "global-graph-container": 1.5 }
+  const closer = (canvas) => {
+    const box = canvas.parentElement
+    const k = box && ZOOM[[...box.classList].find((name) => name in ZOOM)]
+    if (!k || !canvas.isConnected) return
+    const r = canvas.getBoundingClientRect()
+    canvas.dispatchEvent(
+      new WheelEvent("wheel", {
+        deltaY: -Math.log2(k) / 0.002,
+        clientX: r.left + r.width / 2,
+        clientY: r.top + r.height / 2,
+        bubbles: true,
+        cancelable: true,
+      }),
+    )
+  }
+  new MutationObserver((records) => {
+    for (const record of records)
+      for (const node of record.addedNodes)
+        if (node instanceof HTMLCanvasElement && node.closest(".graph"))
+          setTimeout(() => closer(node), 400)
+  }).observe(document.body, { childList: true, subtree: true })
+})()
+`
   return Styles
 }) satisfies QuartzComponentConstructor
