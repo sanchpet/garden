@@ -282,6 +282,14 @@ article a.internal {
 article a:hover {
   text-decoration-color: currentColor !important;
 }
+/* A picture in a text is held to the screen: a portrait phone photo at column width is taller than it. */
+article p > img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(70vh, 36rem);
+  margin: 1rem auto;
+}
 article a.internal.tag-link,
 article a:has(> img),
 article .garden-drawing a {
