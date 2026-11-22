@@ -9,6 +9,7 @@ import {
 import { GardenStyles } from "./local-plugins/garden-styles"
 import { InlineDrawings } from "./local-plugins/drawing"
 import { GardenBrand, HomeLogo } from "./local-plugins/brand"
+import { ContentCards } from "./local-plugins/cards"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
@@ -79,6 +80,7 @@ if (wrapped === 0) {
 config.plugins.emitters.push(
   LegacyRedirects(),
   GardenBrand(),
+  ContentCards(),
   RacesFeed(),
   PublicationFeed(),
   ContentProblems(),
