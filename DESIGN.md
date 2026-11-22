@@ -29,6 +29,10 @@ colors:
   chalk-text: "#DAD3C5"
   link-on-graphite: "#9DBADB"
   hover-on-graphite: "#E0B25A"
+  italic-on-paper: "#2F5D50"
+  bold-on-paper: "#A4452C"
+  italic-on-graphite: "#9CC3B8"
+  bold-on-graphite: "#EBA58C"
 typography:
   hand:
     fontFamily: "Caveat, cursive"
@@ -87,7 +91,7 @@ components:
 
 The site is a workbook: printed text in a calm column, and next to it things drawn by hand. What is drawn is the furniture of a study. The library is a bookcase with nightstands beside it, the tech radar is an instrument with a round scope and a knob, the race calendar is a row of paper bibs pinned by their corners. Each is drawn the way an engineer sketches: a projection that is actually constructed, a contour, a label in handwriting. A drawing here explains or holds content; none is decoration.
 
-The page is paper in the light theme and graphite in the dark one. The text is set in a book serif. The hand reaches the frame as the owner's marginal notes: pencil rules and underlines in place of straight lines, and the labels of blocks written in handwriting. Headings and running text stay typeset.
+The page is paper in the light theme and graphite in the dark one. The text is set in a book serif. The hand reaches the frame as the owner's marginal notes: pencil rules and underlines in place of straight lines, and the labels of blocks written in handwriting. Headings and running text stay typeset. One thing in the reading column is written by hand: a quotation, which the author uses for his own annotations, is set in his handwriting behind a pencil line, as a note in the margin. A callout stays typeset.
 
 **Key Characteristics:**
 
@@ -119,6 +123,7 @@ One palette for the page and for what is drawn on it: paper and ink, steel blue 
 - **Ink on Paper** (`ink-on-paper`, `note-on-paper`): text on a cream object, main and secondary. Fixed in both themes, because the paper does not change with the theme.
 - **Page** (`page-paper`, `graphite`): the ground, light and dark. The page is a lighter sheet than a paper object, so a bib or a marker still reads as a separate piece of paper on it.
 - **Text** (`ink-text` and `ink` on paper, `chalk-text` and `paper-cream` on graphite): running text and headings. Secondary text is `note-on-paper` on paper and `chalk-note` on graphite; both clear 4.5:1 on their ground, because they are read as text.
+- **Emphasis** (`italic-on-paper`, `bold-on-paper`, `italic-on-graphite`, `bold-on-graphite`): italic and bold in running text each carry a colour of their own, forest green and brick; inside a link the link colour stays. All four clear 4.5:1 on their ground.
 - **Rules** (`paper-rule`, `graphite-rule`): hairlines of typeset controls: a tag, a popover, a table row.
 - **Pencil** is not a fixed colour: it is the theme's text colour on the page's ground. A pencil drawing therefore inverts with the theme; a marker or paper object does not.
 
