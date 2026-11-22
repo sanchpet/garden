@@ -1,3 +1,4 @@
+import type { ListItem, Root as MdRoot } from "mdast"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import type { QuartzEmitterPlugin, QuartzTransformerPlugin } from "../quartz/plugins/types"
 import type { QuartzPluginData } from "../quartz/plugins/vfile"
@@ -107,6 +108,79 @@ export const FrontmatterLinks: QuartzTransformerPlugin = () => ({
   },
 })
 
+// While pages are parsed a text's title is still where Obsidian keeps it, in `aliases`.
+function titleOnDisk(ctx: BuildCtx, slug: string): string | undefined {
+  const fm = publishedPages(ctx).get(slug) ?? {}
+  const first = [fm.title, fm.aliases].flat().find((v) => typeof v === "string" && v.trim())
+  return typeof first === "string" ? first.trim() : undefined
+}
+
+const TEXTS_BLOCK = /text-sources["'][^)]*mode:\s*["']texts["']/
+
+const dated = (day: string, locale: string) =>
+  new Date(day).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    timeZone: "UTC",
+  })
+
+// A source card places its texts itself: where the note has the Obsidian block that lists
+// them, the site lists them too, under the note's own heading. A card without the block gets
+// the list under the page (SourceList). Must run before ObsidianOnlyBlocks removes the block.
+export const SourceTextsInPlace: QuartzTransformerPlugin = () => ({
+  name: "SourceTextsInPlace",
+  markdownPlugins(ctx) {
+    return [
+      () => (tree: MdRoot, file) => {
+        const slug = file.data.slug!
+        const at = tree.children.findIndex(
+          (node) =>
+            node.type === "code" && node.lang === "dataviewjs" && TEXTS_BLOCK.test(node.value),
+        )
+        if (at < 0) return
+        const lang = languageOf(slug) === "en" ? "en" : "ru"
+        const ui = UI[lang]
+        const texts = textsFor(sourcesOnDisk(ctx).texts.get(slug) ?? [], lang)
+        if (!texts.length) return
+        const item = (text: (typeof texts)[number]): ListItem => ({
+          type: "listItem",
+          children: [
+            {
+              type: "paragraph",
+              children: [
+                {
+                  type: "link",
+                  // CrawlLinks takes a full slug as it is and makes the address relative to the page.
+                  url: text.slug,
+                  children: [{ type: "text", value: titleOnDisk(ctx, text.slug) ?? text.title }],
+                },
+                {
+                  type: "emphasis",
+                  data: { hName: "span", hProperties: { className: ["sources-meta"] } },
+                  children: [
+                    {
+                      type: "text",
+                      value: [
+                        ui.kinds[text.type] ?? text.type,
+                        text.published ? dated(text.published, ui.locale) : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" · "),
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        })
+        tree.children.splice(at, 1, { type: "list", ordered: false, children: texts.map(item) })
+        ;(file.data as { sourceTextsPlaced?: boolean }).sourceTextsPlaced = true
+      },
+    ]
+  },
+})
+
 export const ContentProblems: QuartzEmitterPlugin = () => ({
   name: "ContentProblems",
   async emit(ctx, content) {
@@ -132,7 +206,8 @@ export const SourceList = (() => {
     const ui = UI[lang]
     const sources = sourcesOf(allFiles, ctx)
     const references = sources.references.get(slug) ?? []
-    const texts = textsFor(sources.texts.get(slug) ?? [], lang)
+    const placed = (fileData as { sourceTextsPlaced?: boolean }).sourceTextsPlaced
+    const texts = placed ? [] : textsFor(sources.texts.get(slug) ?? [], lang)
     const href = (target: string) => resolveRelative(slug, target as FullSlug)
 
     return (
@@ -174,14 +249,7 @@ export const SourceList = (() => {
                     {text.published && (
                       <>
                         {" · "}
-                        <time datetime={text.published}>
-                          {new Date(text.published).toLocaleDateString(ui.locale, {
-                            year: "numeric",
-                            month: "short",
-                            day: "2-digit",
-                            timeZone: "UTC",
-                          })}
-                        </time>
+                        <time datetime={text.published}>{dated(text.published, ui.locale)}</time>
                       </>
                     )}
                   </span>
@@ -210,6 +278,7 @@ export const SourceList = (() => {
   margin: 0.25rem 0;
 }
 .sources-meta {
+  font-style: normal;
   margin-left: 0.6rem;
   font-size: 0.85rem;
   color: var(--gray);
