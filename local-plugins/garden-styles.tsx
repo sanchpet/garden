@@ -163,11 +163,45 @@ hr {
   mask: var(--pencil-underline) center / 100% 100% no-repeat !important;
 }
 
-/* A quotation is marked by a pencil line down the margin. */
+/* A quotation is the author's note in the margin: a pencil line down the side and his
+   handwriting. A callout keeps its typeset form. */
 article blockquote {
   position: relative !important;
   border-left: 0 !important;
   padding-left: 1.25rem !important;
+}
+article blockquote:not(.callout),
+article blockquote:not(.callout) :is(p, li) {
+  font-family: "Caveat", cursive !important;
+  font-weight: 500 !important;
+  font-size: 1.6rem !important;
+  line-height: 1.25 !important;
+}
+article blockquote:not(.callout) p {
+  margin: 0.7rem 0 !important;
+}
+article blockquote:not(.callout) :is(strong, b) {
+  font-weight: 700 !important;
+}
+article blockquote:not(.callout) code {
+  font-size: 0.62em !important;
+}
+
+/* Emphasis in the text is coloured: italic and bold each have a marker of their own. A link
+   keeps the link colour. */
+:root {
+  --italic-ink: #2f5d50;
+  --bold-ink: #a4452c;
+}
+:root[saved-theme="dark"] {
+  --italic-ink: #9cc3b8;
+  --bold-ink: #eba58c;
+}
+article :is(em, i):not(a *, a) {
+  color: var(--italic-ink) !important;
+}
+article :is(strong, b):not(a *, a) {
+  color: var(--bold-ink) !important;
 }
 article blockquote::before {
   content: "" !important;
