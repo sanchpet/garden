@@ -53,6 +53,12 @@ article:has(.bases-page) + .page-listing {
   font-weight: 400 700;
   font-display: swap;
 }
+@font-face {
+  font-family: "Neucha";
+  src: url("/static/neucha.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
 .garden-drawing {
   margin: 1.5rem 0;
   overflow-x: auto;
@@ -163,8 +169,9 @@ hr {
   mask: var(--pencil-underline) center / 100% 100% no-repeat !important;
 }
 
-/* A quotation is the author's note in the margin: a pencil line down the side and his
-   handwriting. A callout keeps its typeset form. */
+/* A quotation is the author's note in the margin: a pencil line down the side and a hand that
+   prints its letters, because an annotation runs to paragraphs and the cursive of the labels
+   is slow to read at that length. A callout keeps its typeset form. */
 article blockquote {
   position: relative !important;
   border-left: 0 !important;
@@ -172,19 +179,17 @@ article blockquote {
 }
 article blockquote:not(.callout),
 article blockquote:not(.callout) :is(p, li) {
-  font-family: "Caveat", cursive !important;
-  font-weight: 500 !important;
-  font-size: 1.6rem !important;
-  line-height: 1.25 !important;
+  font-family: "Neucha", "Caveat", cursive !important;
+  font-weight: 400 !important;
+  font-size: 1.35rem !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0.01em !important;
 }
 article blockquote:not(.callout) p {
   margin: 0.7rem 0 !important;
 }
-article blockquote:not(.callout) :is(strong, b) {
-  font-weight: 700 !important;
-}
 article blockquote:not(.callout) code {
-  font-size: 0.62em !important;
+  font-size: 0.75em !important;
 }
 
 /* Emphasis in the text is coloured: italic and bold each have a marker of their own. A link

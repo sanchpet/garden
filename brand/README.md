@@ -28,4 +28,4 @@ It needs [uv](https://docs.astral.sh/uv/); Python dependencies are pulled per ru
 
 ## Fonts
 
-[Caveat](https://github.com/googlefonts/caveat) and [Literata](https://github.com/googlefonts/literata), both under the SIL Open Font License 1.1 (`fonts/OFL.txt`, `fonts/OFL-Literata.txt`). The Literata files are cut down to Latin and Cyrillic.
+[Caveat](https://github.com/googlefonts/caveat), [Literata](https://github.com/googlefonts/literata) and Neucha (from [Google Fonts](https://github.com/google/fonts/tree/main/ofl/neucha)), all under the SIL Open Font License 1.1 (`fonts/OFL.txt`, `fonts/OFL-Literata.txt`, `fonts/OFL-Neucha.txt`). Neucha is the hand of the annotations in the text. The Literata files are cut down to Latin and Cyrillic.
