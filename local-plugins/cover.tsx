@@ -74,6 +74,16 @@ export const NoteCover = (() => {
 .center > hr {
   clear: both;
 }
+/* In a link popover the full cover fills the whole window and the page's title and text are
+   out of sight below it. */
+.popover .note-cover {
+  margin: 1rem 0 0.5rem 1rem;
+}
+.popover .note-cover img {
+  max-width: 110px;
+  max-height: 140px;
+  box-shadow: none;
+}
 @media (max-width: 800px) {
   .page-header .popover-hint:has(> .note-cover) {
     display: flex;
