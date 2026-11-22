@@ -322,16 +322,16 @@
       "graphite": {
         "role": "neutral",
         "displayName": "Graphite",
-        "canonical": "oklch(23.5% 0.006 92)",
+        "canonical": "oklch(20.7% 0.004 229)",
         "tonalRamp": [
-          "oklch(15% 0.003 92)",
-          "oklch(26% 0.004 92)",
-          "oklch(38% 0.005 92)",
-          "oklch(49% 0.005 92)",
-          "oklch(61% 0.005 92)",
-          "oklch(72% 0.005 92)",
-          "oklch(84% 0.004 92)",
-          "oklch(95% 0.003 92)"
+          "oklch(15% 0.003 229)",
+          "oklch(26% 0.004 229)",
+          "oklch(38% 0.005 229)",
+          "oklch(49% 0.005 229)",
+          "oklch(61% 0.005 229)",
+          "oklch(72% 0.005 229)",
+          "oklch(84% 0.004 229)",
+          "oklch(95% 0.003 229)"
         ]
       },
       "graphite-rule": {
