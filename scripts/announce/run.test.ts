@@ -9,9 +9,8 @@ import type { Message } from "./telegram"
 
 const config: Config = {
   feeds: ["ru/feed.xml"],
-  shareHost: "l.sanch.pet",
   stateBranch: "announce-state",
-  stubTimeoutSeconds: 720,
+  pageTimeoutSeconds: 720,
   channels: {
     lytdybr: { chat: "@sanchpetlytdybr" },
     sanchpetblog: { chat: "@sanchpetblog" },
@@ -50,7 +49,7 @@ function harness(over: Partial<Deps> = {}, journal?: Journal) {
       state.sent.push(message)
       return 100 + state.sent.length
     },
-    waitForStub: async (_url, deadline) => {
+    waitForPage: async (_url, deadline) => {
       state.waits.push(deadline)
       return { ready: true, detail: "200 with og:title" }
     },
@@ -117,7 +116,7 @@ describe("run", () => {
     )
   })
 
-  test("a note goes out without a preview and does not wait for its stub", async () => {
+  test("a note goes out without a preview and does not wait for its page", async () => {
     const note: FeedEntry = {
       id: "https://sanch.pet/ru/notes/n",
       title: "Туман",
@@ -126,7 +125,7 @@ describe("run", () => {
       related: [],
       kind: "note",
     }
-    const h = await seeded({ waitForStub: async () => ({ ready: false, detail: "HTTP 404" }) })
+    const h = await seeded({ waitForPage: async () => ({ ready: false, detail: "HTTP 404" }) })
     assert.strictEqual(await h.go([note, ...fixture()]), 0)
     assert.deepStrictEqual(h.state.sent, [
       {
@@ -143,8 +142,8 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [
       {
         chat: "@sanchpetblog",
-        text: "Анонс\n\nhttps://l.sanch.pet/ru/posts/svezhij",
-        previewUrl: "https://l.sanch.pet/ru/posts/svezhij",
+        text: "Анонс\n\nhttps://sanch.pet/ru/posts/svezhij",
+        previewUrl: "https://sanch.pet/ru/posts/svezhij",
       },
     ])
     assert.deepStrictEqual(h.state.saves, [
@@ -165,10 +164,7 @@ describe("run", () => {
   test("without an announcement the message is the title and the link", async () => {
     const h = await seeded()
     await h.go([{ ...fresh, content: undefined }])
-    assert.strictEqual(
-      h.state.sent[0].text,
-      "<b>Свежий</b>\n\nhttps://l.sanch.pet/ru/posts/svezhij",
-    )
+    assert.strictEqual(h.state.sent[0].text, "<b>Свежий</b>\n\nhttps://sanch.pet/ru/posts/svezhij")
   })
 
   test("the journal is saved after each message, not once at the end", async () => {
@@ -304,16 +300,16 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [])
   })
 
-  test("a stub that never comes up: no message, no record, a warning, exit 0", async () => {
-    const h = await seeded({ waitForStub: async () => ({ ready: false, detail: "HTTP 404" }) })
+  test("a page that never comes up: no message, no record, a warning, exit 0", async () => {
+    const h = await seeded({ waitForPage: async () => ({ ready: false, detail: "HTTP 404" }) })
     assert.strictEqual(await h.go([fresh, ...fixture()]), 0)
     assert.deepStrictEqual(h.state.sent, [])
     assert.deepStrictEqual(h.state.saves, [])
     assert.strictEqual(h.state.journal!.delivered[fresh.id], undefined)
-    assert.match(h.state.warnings[0], /share stub is not ready \(HTTP 404\)/)
+    assert.match(h.state.warnings[0], /page is not up \(HTTP 404\)/)
   })
 
-  test("all stubs share one deadline, the configured time from the start", async () => {
+  test("all pages share one deadline, the configured time from the start", async () => {
     const h = await seeded()
     await h.go([both])
     const start = new Date("2026-11-20T12:00:00Z").getTime()

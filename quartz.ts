@@ -12,7 +12,6 @@ import { GardenBrand, HomeLogo } from "./local-plugins/brand"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
-import { ShareStubs } from "./local-plugins/share"
 import { PublicationFeed } from "./local-plugins/feed"
 import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
@@ -80,7 +79,6 @@ if (wrapped === 0) {
 config.plugins.emitters.push(
   LegacyRedirects(),
   GardenBrand(),
-  ShareStubs(),
   RacesFeed(),
   PublicationFeed(),
   ContentProblems(),
