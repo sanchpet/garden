@@ -117,6 +117,29 @@ article:has(.bases-page) + .page-listing {
   display: none;
 }
 
+/* The home page ends with a rule and a line of links written by hand: the ways further in. */
+article.home hr:last-of-type {
+  margin: 2.5rem 0 0.9rem !important;
+}
+article.home hr:last-of-type + p {
+  margin: 0 !important;
+}
+article.home hr:last-of-type + p a {
+  margin-right: 1.2rem;
+  font-family: "Caveat", cursive !important;
+  font-size: 1.7rem !important;
+  font-weight: 700 !important;
+  color: var(--darkgray) !important;
+  background: none !important;
+  text-decoration: none !important;
+}
+article.home hr:last-of-type + p a:hover {
+  color: var(--dark) !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1.5px !important;
+  text-underline-offset: 0.2em !important;
+}
+
 /* The hand in the frame (DESIGN.md): pencil strokes for rules and underlines, handwriting for
    the labels of blocks. The strokes are seeded and baked, like the ones in the drawn modules;
    as masks they take the text colour, so pencil follows the theme.

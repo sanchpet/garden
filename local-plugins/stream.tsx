@@ -395,15 +395,18 @@ hr:has(+ .page-footer .stream),
   return (() => List) satisfies QuartzComponentConstructor
 })()
 
-// The way to the stream from every page: a handwritten word next to the mark.
+// The way to the stream from every page: a handwritten word next to the mark. The home page
+// names it itself, in the line of links under its text.
 export const StreamLink = (() => {
-  const LABEL = { ru: "стрим", en: "stream" }
+  const LABEL = { ru: "поток", en: "stream" }
   const Link: QuartzComponent = ({ fileData, allFiles }) => {
     const slug = fileData.slug
     if (!slug) return null
     const lang: Language = languageOf(slug) ?? "ru"
     const target = `${lang}/stream`
     if (!allFiles.some((file) => file.slug === target)) return null
+    const classes = (fileData.frontmatter as { cssclasses?: unknown } | undefined)?.cssclasses
+    if (Array.isArray(classes) && classes.includes("home")) return null
     return (
       <a
         class="stream-link"
