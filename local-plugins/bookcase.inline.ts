@@ -87,11 +87,27 @@ function mount(root: HTMLElement) {
     apply(true)
   }
 
+  // The list beside the case names the same books; a row and its book find each other by address.
+  const list = root.querySelector<HTMLElement>(".bookcase-list")
+  const rowOf = (book: SVGAElement) =>
+    [...(list?.querySelectorAll<HTMLElement>("li[data-book]") ?? [])].find(
+      (row) => row.dataset.book === book.href.baseVal,
+    )
+  const mark = (book: SVGAElement | null) => {
+    list?.querySelector(".is-current")?.classList.remove("is-current")
+    const row = book && rowOf(book)
+    if (!row) return
+    row.classList.add("is-current")
+    // Only when the pointer is elsewhere: a list that scrolls under the pointer picks another row.
+    if (!list!.matches(":hover")) row.scrollIntoView({ block: "nearest" })
+  }
+
   const drop = () => {
     if (!picked) return
     const out = lift.firstElementChild
     const book = picked
     picked = null
+    mark(null)
     panel.hidden = true
     if (!out) return book.classList.remove("is-out")
     out.classList.remove("is-pulled", "is-near")
@@ -280,6 +296,7 @@ function mount(root: HTMLElement) {
     requestAnimationFrame(() => requestAnimationFrame(() => out.classList.add("is-pulled")))
     describe(book)
     reveal(book)
+    mark(book)
   }
 
   const go = (book: SVGAElement) => window.spaNavigate(new URL(book.href.baseVal, location.href))
@@ -374,6 +391,63 @@ function mount(root: HTMLElement) {
     const book = bookAt(event.target)
     if (book) dressRow(book)
   })
+
+  if (list) {
+    const books = [...scene.querySelectorAll<SVGAElement>(".bookcase-book")]
+    const bookOf = (target: EventTarget | null) => {
+      const row = target instanceof Element ? target.closest<HTMLElement>("li[data-book]") : null
+      return row ? books.find((book) => book.href.baseVal === row.dataset.book) : undefined
+    }
+    // A pause before the pull: the pointer crossing the list on its way must not shake the case.
+    let intent = 0
+    on(list, "pointerover", (event: PointerEvent) => {
+      const book = bookOf(event.target)
+      clearTimeout(intent)
+      if (book) intent = window.setTimeout(() => pick(book), 140)
+    })
+    on(list, "pointerleave", () => {
+      clearTimeout(intent)
+      drop()
+    })
+    on(list, "focusin", (event: FocusEvent) => {
+      const book = bookOf(event.target)
+      if (book) pick(book)
+    })
+    cleanups.push(() => clearTimeout(intent))
+
+    const filter = list.querySelector<HTMLInputElement>(".bookcase-filter")
+    if (filter) {
+      const rows = [...list.querySelectorAll<HTMLElement>("li[data-book]")]
+      const sift = () => {
+        const words = filter.value.toLowerCase().split(/\s+/).filter(Boolean)
+        const shown = new Set<string>()
+        for (const row of rows) {
+          const text = (row.textContent ?? "").toLowerCase()
+          row.hidden = !words.every((word) => text.includes(word))
+          if (!row.hidden) shown.add(row.dataset.book!)
+        }
+        for (const heading of list.querySelectorAll<HTMLElement>("h3")) {
+          const group = heading.nextElementSibling
+          heading.hidden = !group?.querySelector("li:not([hidden])")
+        }
+        for (const book of books)
+          book.classList.toggle("is-dim", words.length > 0 && !shown.has(book.href.baseVal))
+        list.classList.toggle("is-empty", shown.size === 0)
+      }
+      on(filter, "input", sift)
+      on(filter, "keydown", (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          filter.value = ""
+          sift()
+        }
+        if (event.key !== "Enter") return
+        const first = rows.find((row) => !row.hidden)
+        const book = first && books.find((b) => b.href.baseVal === first.dataset.book)
+        if (book) pick(book)
+      })
+      cleanups.push(() => books.forEach((book) => book.classList.remove("is-dim")))
+    }
+  }
 
   on(stage, "focusin", (event: FocusEvent) => {
     const book = bookAt(event.target)
