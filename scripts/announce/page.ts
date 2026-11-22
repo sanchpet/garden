@@ -2,7 +2,7 @@ import type { Fetch, Sleep } from "./telegram"
 
 export type Probe = { ready: boolean; detail: string }
 
-export async function probeStub(url: string, fetch: Fetch): Promise<Probe> {
+export async function probePage(url: string, fetch: Fetch): Promise<Probe> {
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(15_000) })
     if (response.status !== 200) return { ready: false, detail: `HTTP ${response.status}` }
@@ -13,15 +13,15 @@ export async function probeStub(url: string, fetch: Fetch): Promise<Probe> {
   }
 }
 
-// Pages may serve the previous deployment for some minutes after a new one is reported done.
-export async function waitForStub(
+// The site takes the new build a minute or so after the publication is pushed.
+export async function waitForPage(
   url: string,
   deadline: number,
   deps: { fetch: Fetch; sleep: Sleep; now: () => number; intervalMs?: number },
 ): Promise<Probe> {
   const interval = deps.intervalMs ?? 20_000
   for (;;) {
-    const probe = await probeStub(url, deps.fetch)
+    const probe = await probePage(url, deps.fetch)
     if (probe.ready || deps.now() + interval > deadline) return probe
     await deps.sleep(interval)
   }

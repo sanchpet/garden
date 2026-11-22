@@ -3,7 +3,7 @@ import test, { describe } from "node:test"
 import { redact, sendMessage, type Fetch } from "./telegram"
 
 const TOKEN = "123456:TEST-not-a-real-token"
-const message = { chat: "@sanchpetblog", text: "<b>A</b>", previewUrl: "https://l.sanch.pet/a" }
+const message = { chat: "@sanchpetblog", text: "<b>A</b>", previewUrl: "https://sanch.pet/a" }
 const reply = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } })
 
@@ -24,7 +24,7 @@ function harness(replies: (() => Response | Promise<Response>)[]) {
 }
 
 describe("sendMessage", () => {
-  test("posts HTML with the preview taken from the share stub, returns the message id", async () => {
+  test("posts HTML with the preview taken from the page, returns the message id", async () => {
     const h = harness([() => reply(200, { ok: true, result: { message_id: 362 } })])
     assert.strictEqual(await sendMessage(TOKEN, message, h.deps), 362)
     assert.strictEqual(h.calls[0].url, `https://api.telegram.org/bot${TOKEN}/sendMessage`)
@@ -32,7 +32,7 @@ describe("sendMessage", () => {
       chat_id: "@sanchpetblog",
       text: "<b>A</b>",
       parse_mode: "HTML",
-      link_preview_options: { url: "https://l.sanch.pet/a" },
+      link_preview_options: { url: "https://sanch.pet/a" },
     })
   })
 

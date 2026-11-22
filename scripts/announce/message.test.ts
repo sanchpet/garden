@@ -1,37 +1,22 @@
 import assert from "node:assert"
-import fs from "node:fs"
 import test, { describe } from "node:test"
-import { loadConfig } from "./config"
-import { buildText, escapeHtml, messageUrl, stubUrl } from "./message"
+import { buildText, escapeHtml, messageUrl, pageUrl } from "./message"
 
 const entry = { id: "https://sanch.pet/ru/posts/a", title: "A", categories: [], related: [] }
-const LINK = "https://l.sanch.pet/ru/posts/a"
+const LINK = "https://sanch.pet/ru/posts/a"
 
-describe("stubUrl", () => {
-  test("keeps the path and swaps the host", () => {
+describe("pageUrl", () => {
+  test("is the page's own address", () => {
     assert.strictEqual(
-      stubUrl("https://sanch.pet/ru/posts/za-sekundu", "l.sanch.pet"),
-      LINK.replace(/a$/, "za-sekundu"),
+      pageUrl("https://sanch.pet/ru/posts/%D0%B0"),
+      "https://sanch.pet/ru/posts/%D0%B0",
     )
-    assert.strictEqual(stubUrl("https://sanch.pet/ru/", "l.sanch.pet"), "https://l.sanch.pet/ru/")
-    assert.strictEqual(
-      stubUrl("https://sanch.pet/ru/posts/%D0%B0", "l.sanch.pet"),
-      "https://l.sanch.pet/ru/posts/%D0%B0",
-    )
+    assert.strictEqual(pageUrl("https://sanch.pet/ru/"), "https://sanch.pet/ru/")
   })
 
   test("refuses what is not an https address", () => {
-    assert.throws(() => stubUrl("tag:sanch.pet,2026:a", "l.sanch.pet"))
-    assert.throws(() => stubUrl("not a url", "l.sanch.pet"))
-  })
-
-  test("the configured host is the one the build lays the stubs out for", () => {
-    const config = loadConfig(new URL("./config.json", import.meta.url).pathname)
-    const plugin = fs.readFileSync(
-      new URL("../../local-plugins/share.tsx", import.meta.url),
-      "utf8",
-    )
-    assert.ok(plugin.includes(`export const SHARE_HOST = "${config.shareHost}"`))
+    assert.throws(() => pageUrl("tag:sanch.pet,2026:a"))
+    assert.throws(() => pageUrl("not a url"))
   })
 })
 

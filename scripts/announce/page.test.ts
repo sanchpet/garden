@@ -1,9 +1,9 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { waitForStub } from "./stub"
+import { waitForPage } from "./page"
 import type { Fetch } from "./telegram"
 
-const STUB = `<html><head><meta property="og:title" content="A"></head></html>`
+const PAGE = `<html><head><meta property="og:title" content="A"></head></html>`
 
 // A clock that only moves when the code under test sleeps.
 function harness(pages: (Response | Error)[]) {
@@ -23,10 +23,10 @@ function harness(pages: (Response | Error)[]) {
   return { deps, requests: () => requests, time: () => time }
 }
 
-describe("waitForStub", () => {
+describe("waitForPage", () => {
   test("ready at once", async () => {
-    const h = harness([new Response(STUB)])
-    assert.deepStrictEqual(await waitForStub("https://l.sanch.pet/a", 60_000, h.deps), {
+    const h = harness([new Response(PAGE)])
+    assert.deepStrictEqual(await waitForPage("https://sanch.pet/a", 60_000, h.deps), {
       ready: true,
       detail: "200 with og:title",
     })
@@ -38,15 +38,15 @@ describe("waitForStub", () => {
       new Response("", { status: 404 }),
       new Response("<html>old</html>"),
       new TypeError("fetch failed"),
-      new Response(STUB),
+      new Response(PAGE),
     ])
-    assert.ok((await waitForStub("https://l.sanch.pet/a", 720_000, h.deps)).ready)
+    assert.ok((await waitForPage("https://sanch.pet/a", 720_000, h.deps)).ready)
     assert.strictEqual(h.requests(), 4)
   })
 
   test("gives up at the deadline and says what it last saw", async () => {
     const h = harness([new Response("", { status: 404 })])
-    assert.deepStrictEqual(await waitForStub("https://l.sanch.pet/a", 60_000, h.deps), {
+    assert.deepStrictEqual(await waitForPage("https://sanch.pet/a", 60_000, h.deps), {
       ready: false,
       detail: "HTTP 404",
     })
@@ -55,8 +55,8 @@ describe("waitForStub", () => {
   })
 
   test("a deadline already passed still gets one look", async () => {
-    const h = harness([new Response(STUB)])
-    assert.ok((await waitForStub("https://l.sanch.pet/a", 0, h.deps)).ready)
+    const h = harness([new Response(PAGE)])
+    assert.ok((await waitForPage("https://sanch.pet/a", 0, h.deps)).ready)
     assert.strictEqual(h.requests(), 1)
   })
 })
