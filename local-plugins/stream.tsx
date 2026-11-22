@@ -1,9 +1,17 @@
 import type { Element, ElementContent, Root } from "hast"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import { htmlToJsx } from "../quartz/util/jsx"
-import { FilePath, FullSlug, normalizeHastElement, resolveRelative } from "../quartz/util/path"
+import {
+  FilePath,
+  FullSlug,
+  joinSegments,
+  normalizeHastElement,
+  pathToRoot,
+  resolveRelative,
+} from "../quartz/util/path"
 import { languageOf, type Language } from "./languages"
 import { ranRaces } from "./races"
+import { pictureSlug, thumbPath } from "./thumbs"
 import { RING, ringOf } from "./radar"
 import {
   byYear,
@@ -141,6 +149,34 @@ export const Stream = (() => {
       )
     }
 
+    // A picture of a note shows here as its small copy (local-plugins/thumbs.tsx), a link to the note.
+    // Applied after the body is rebased to this page, so both addresses are this page's own.
+    const thumbnails = (node: Element, to: string): Element => {
+      const children = node.children.map((child) => {
+        if (child.type !== "element") return child
+        const src = child.properties?.src
+        const picture = child.tagName === "img" && typeof src === "string" && pictureSlug(src, slug)
+        if (!picture) return thumbnails(child, to)
+        const img: Element = {
+          ...child,
+          properties: {
+            ...child.properties,
+            src: joinSegments(pathToRoot(slug), encodeURI(thumbPath(picture))),
+            loading: "lazy",
+            width: undefined,
+            height: undefined,
+          },
+        }
+        return {
+          type: "element",
+          tagName: "a",
+          properties: { href: to, className: ["stream-picture", "internal"] },
+          children: [img],
+        } as Element
+      })
+      return { ...node, children }
+    }
+
     // The body of a note as its own page shows it, with links rebased to this page.
     const note = (event: StreamEvent) => {
       const body = (bodies.get(event.slug)?.htmlAst as Root | undefined)?.children ?? []
@@ -148,10 +184,9 @@ export const Stream = (() => {
         type: "root",
         children: body.map((child) =>
           child.type === "element"
-            ? (normalizeHastElement(
-                child as Element,
-                slug,
-                event.slug as FullSlug,
+            ? (thumbnails(
+                normalizeHastElement(child as Element, slug, event.slug as FullSlug) as Element,
+                href(event.slug!),
               ) as ElementContent)
             : child,
         ),
@@ -363,6 +398,18 @@ export const Stream = (() => {
 }
 .stream .stream-note > :last-child {
   margin-bottom: 0 !important;
+}
+.stream .stream-note .stream-picture {
+  display: inline-block;
+  text-decoration: none !important;
+}
+.stream .stream-note .stream-picture img {
+  display: block;
+  width: auto;
+  max-width: min(100%, 20rem);
+  max-height: 14rem;
+  margin: 0;
+  border-radius: 4px;
 }
 .stream .stream-empty,
 .stream .stream-feed,
