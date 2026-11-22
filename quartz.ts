@@ -23,6 +23,7 @@ import {
   ContentProblems,
   FrontmatterLinks,
   SourceList,
+  SourceTextsInPlace,
   withoutSourceTexts,
 } from "./local-plugins/sources"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
@@ -32,6 +33,7 @@ const config = await loadQuartzConfig()
 // and links must find their language before unpublished ones are stripped.
 // First, before the table of contents collects headings that are about to go.
 config.plugins.transformers.unshift(ObsidianOnlyBlocks())
+config.plugins.transformers.unshift(SourceTextsInPlace())
 config.plugins.transformers.push(
   InlineDrawings(),
   PageLanguage(),
