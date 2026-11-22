@@ -53,6 +53,7 @@ const git: Git = (args, input) =>
   execFileSync("git", args, { input, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] })
 
 async function main(): Promise<number> {
+  let settled = false
   const config = loadConfig(values.config)
   const entries: FeedEntry[] = []
   for (const file of values.feed ?? config.feeds.map((feed) => path.join(values.out, feed))) {
@@ -73,7 +74,13 @@ async function main(): Promise<number> {
         ? fileStore(values.journal)
         : gitStore(git, values.remote, config.stateBranch),
       send: (message) => sendMessage(token, message, { fetch, sleep, log }),
-      waitForPage: (url, deadline) => waitForPage(url, deadline, { fetch, sleep, now: Date.now }),
+      // A build lands on a replica in one piece: once one page has settled, the rest of it has too.
+      waitForPage: async (url, deadline) => {
+        const settleMs = settled ? 0 : undefined
+        const probe = await waitForPage(url, deadline, { fetch, sleep, now: Date.now, settleMs })
+        if (probe.ready) settled = true
+        return probe
+      },
       now: () => new Date(),
       log,
       warn,

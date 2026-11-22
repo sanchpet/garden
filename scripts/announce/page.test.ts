@@ -25,10 +25,7 @@ function harness(pages: (Response | Error)[]) {
 
 describe("waitForPage", () => {
   test("a picture is ready once it is served as an image", async () => {
-    const h = harness([
-      new Response("<html>404</html>", { status: 404 }),
-      new Response("x", { headers: { "content-type": "image/jpeg" } }),
-    ])
+    const h = harness([new Response("x", { headers: { "content-type": "image/jpeg" } })])
     assert.deepStrictEqual(await waitForPage("https://sanch.pet/media/t.jpg", 60_000, h.deps), {
       ready: true,
       detail: "200 image",
@@ -52,7 +49,35 @@ describe("waitForPage", () => {
       new Response(PAGE),
     ])
     assert.ok((await waitForPage("https://sanch.pet/a", 720_000, h.deps)).ready)
+    assert.strictEqual(h.requests(), 5)
+  })
+
+  test("a page served by one replica is looked at again once the others have had time", async () => {
+    const h = harness([new Response(PAGE), new Response(PAGE)])
+    assert.deepStrictEqual(await waitForPage("https://sanch.pet/a", 300_000, h.deps), {
+      ready: true,
+      detail: "200 with og:title, still after 90 s",
+    })
+    assert.strictEqual(h.time(), 90_000)
+  })
+
+  test("a page that one replica served and the next did not is waited for again", async () => {
+    const h = harness([
+      new Response(PAGE),
+      new Response("", { status: 404 }),
+      new Response(PAGE),
+      new Response(PAGE),
+    ])
+    const probe = await waitForPage("https://sanch.pet/a", 300_000, h.deps)
+    assert.ok(probe.ready)
     assert.strictEqual(h.requests(), 4)
+    assert.strictEqual(h.time(), 90_000 + 20_000 + 90_000)
+  })
+
+  test("a deadline that runs out while settling is not ready", async () => {
+    const h = harness([new Response(PAGE), new Response("", { status: 404 })])
+    const probe = await waitForPage("https://sanch.pet/a", 100_000, h.deps)
+    assert.strictEqual(probe.ready, false)
   })
 
   test("gives up at the deadline and says what it last saw", async () => {
