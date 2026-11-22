@@ -25,6 +25,7 @@ describe("parseFeed", () => {
       categories: ["lytdybr"],
       related: ["https://t.me/sanchpetlytdybr/334"],
       kind: undefined,
+      image: "https://sanch.pet/ru/posts/za-sekundu.png",
     })
   })
 

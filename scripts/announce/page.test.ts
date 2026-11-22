@@ -24,6 +24,17 @@ function harness(pages: (Response | Error)[]) {
 }
 
 describe("waitForPage", () => {
+  test("a picture is ready once it is served as an image", async () => {
+    const h = harness([
+      new Response("<html>404</html>", { status: 404 }),
+      new Response("x", { headers: { "content-type": "image/jpeg" } }),
+    ])
+    assert.deepStrictEqual(await waitForPage("https://sanch.pet/media/t.jpg", 60_000, h.deps), {
+      ready: true,
+      detail: "200 image",
+    })
+  })
+
   test("ready at once", async () => {
     const h = harness([new Response(PAGE)])
     assert.deepStrictEqual(await waitForPage("https://sanch.pet/a", 60_000, h.deps), {

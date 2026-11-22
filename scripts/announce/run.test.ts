@@ -5,7 +5,7 @@ import type { FeedEntry } from "./feed"
 import { fixture } from "./fixtures/load"
 import { ANY_CHANNEL, record, type Journal } from "./journal"
 import { run, type Deps } from "./run"
-import type { Message } from "./telegram"
+import { Rejected, type Message } from "./telegram"
 
 const config: Config = {
   feeds: ["ru/feed.xml"],
@@ -134,6 +134,76 @@ describe("run", () => {
         previewUrl: undefined,
       },
     ])
+  })
+
+  describe("a note with a picture", () => {
+    const picture = "https://sanch.pet/media/tuman.jpg"
+    const note = (content: string): FeedEntry => ({
+      id: "https://sanch.pet/ru/notes/n",
+      title: "Туман",
+      content,
+      categories: ["sanchpetblog"],
+      related: [],
+      kind: "note",
+      image: picture,
+    })
+    const tail = '\n\n<a href="https://sanch.pet/ru/notes/n">Прочесть заметку на сайте</a>'
+
+    test("goes out as a photo with its text for a caption, once the picture is up", async () => {
+      const waited: string[] = []
+      const h = await seeded({
+        waitForPage: async (url) => (waited.push(url), { ready: true, detail: "200 image" }),
+      })
+      assert.strictEqual(await h.go([note("Туман."), ...fixture()]), 0)
+      assert.deepStrictEqual(waited, [picture])
+      assert.deepStrictEqual(h.state.sent, [
+        { chat: "@sanchpetblog", text: `Туман.${tail}`, photoUrl: picture },
+      ])
+    })
+
+    test("too long for a caption, goes out whole with the picture above", async () => {
+      const long = "Туман. ".repeat(200).trim()
+      const h = await seeded()
+      await h.go([note(long), ...fixture()])
+      assert.deepStrictEqual(h.state.sent, [
+        { chat: "@sanchpetblog", text: `${long}${tail}`, previewUrl: picture, previewAbove: true },
+      ])
+    })
+
+    test("a photo Telegram refuses is sent again as a picture above the text", async () => {
+      const sent: Message[] = []
+      const refusing = await seeded({
+        send: async (message) => {
+          sent.push(message)
+          if (message.photoUrl) throw new Rejected("sendPhoto failed: 400 wrong file")
+          return 7
+        },
+      })
+      assert.strictEqual(await refusing.go([note("Туман."), ...fixture()]), 0)
+      assert.deepStrictEqual(sent.slice(1), [
+        { chat: "@sanchpetblog", text: `Туман.${tail}`, previewUrl: picture, previewAbove: true },
+      ])
+      assert.match(refusing.state.warnings[0], /picture above the text instead/)
+      assert.strictEqual(refusing.state.journal!.delivered[note("").id].sanchpetblog.messageId, 7)
+    })
+
+    test("a failure that may have posted is not sent again another way", async () => {
+      const sent: Message[] = []
+      const h = await seeded({
+        send: async (message) => {
+          sent.push(message)
+          throw new Error("sendPhoto failed: no usable response (ETIMEDOUT)")
+        },
+      })
+      assert.strictEqual(await h.go([note("Туман."), ...fixture()]), 1)
+      assert.strictEqual(sent.length, 1)
+    })
+
+    test("is left for the next build while the picture is not up", async () => {
+      const h = await seeded({ waitForPage: async () => ({ ready: false, detail: "HTTP 404" }) })
+      await h.go([note("Туман."), ...fixture()])
+      assert.deepStrictEqual(h.state.sent, [])
+    })
   })
 
   test("the run after seeding announces only what is new, and the one after that nothing", async () => {

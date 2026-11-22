@@ -6,6 +6,9 @@ export async function probePage(url: string, fetch: Fetch): Promise<Probe> {
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(15_000) })
     if (response.status !== 200) return { ready: false, detail: `HTTP ${response.status}` }
+    // A note's picture is waited for like a page: Telegram fetches it from the site.
+    if (response.headers.get("content-type")?.startsWith("image/"))
+      return { ready: true, detail: "200 image" }
     const ready = /property=["']og:title["']/.test(await response.text())
     return { ready, detail: ready ? "200 with og:title" : "200 without og:title" }
   } catch (error) {

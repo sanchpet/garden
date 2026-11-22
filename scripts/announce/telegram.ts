@@ -1,8 +1,18 @@
 export type Fetch = typeof fetch
 export type Sleep = (ms: number) => Promise<void>
 
-// Without `previewUrl` the message goes out with no link preview at all.
-export type Message = { chat: string; text: string; previewUrl?: string }
+// Without `previewUrl` the message goes out with no link preview at all; `previewAbove` makes the
+// preview a large picture over the text. With `photoUrl` the text is the caption of that photo.
+export type Message = {
+  chat: string
+  text: string
+  previewUrl?: string
+  previewAbove?: boolean
+  photoUrl?: string
+}
+
+// Telegram answered and refused: nothing was posted, so another way of sending is safe.
+export class Rejected extends Error {}
 
 const RETRIES = 3
 const LONGEST_WAIT_SECONDS = 60
@@ -37,23 +47,29 @@ export async function sendMessage(
   message: Message,
   deps: { fetch: Fetch; sleep: Sleep; log: (line: string) => void },
 ): Promise<number> {
-  const fail = (reason: string) =>
-    new Error(redact(`sendMessage to ${message.chat} failed: ${reason}`, token))
+  const method = message.photoUrl ? "sendPhoto" : "sendMessage"
+  const fail = (reason: string, Kind: new (text: string) => Error = Error) =>
+    new Kind(redact(`${method} to ${message.chat} failed: ${reason}`, token))
+  const body = message.photoUrl
+    ? { chat_id: message.chat, photo: message.photoUrl, caption: message.text, parse_mode: "HTML" }
+    : {
+        chat_id: message.chat,
+        text: message.text,
+        parse_mode: "HTML",
+        link_preview_options: !message.previewUrl
+          ? { is_disabled: true }
+          : message.previewAbove
+            ? { url: message.previewUrl, prefer_large_media: true, show_above_text: true }
+            : { url: message.previewUrl },
+      }
   for (let attempt = 0; ; attempt++) {
     let status: number
     let reply: Reply
     try {
-      const response = await deps.fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      const response = await deps.fetch(`https://api.telegram.org/bot${token}/${method}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          chat_id: message.chat,
-          text: message.text,
-          parse_mode: "HTML",
-          link_preview_options: message.previewUrl
-            ? { url: message.previewUrl }
-            : { is_disabled: true },
-        }),
+        body: JSON.stringify(body),
         signal: AbortSignal.timeout(30_000),
       })
       status = response.status
@@ -69,6 +85,8 @@ export async function sendMessage(
       await deps.sleep(wait * 1000)
       continue
     }
-    throw fail(`${reply.error_code ?? status} ${reply.description ?? "no description"}`)
+    const reason = `${reply.error_code ?? status} ${reply.description ?? "no description"}`
+    // A 4xx with a reply is a refusal; a 5xx may hide a message that went out.
+    throw fail(reason, status >= 400 && status < 500 ? Rejected : Error)
   }
 }

@@ -1,7 +1,9 @@
 import type { FeedEntry } from "./feed"
 
-// Telegram counts the limit after entity parsing, so it applies to the unescaped text.
+// Telegram counts the limits after entity parsing, so they apply to the unescaped text.
 const LIMIT = 4096
+// A photo's caption: a note longer than this goes out as a message with its picture above.
+export const CAPTION_LIMIT = 1024
 
 export function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -29,9 +31,9 @@ function noteTail(entry: FeedEntry): { html: string; length: number } {
 
 // The author's announcement stands alone; without one the title does. The description is
 // left out either way: the preview card under the message already shows it.
-export function buildText(entry: FeedEntry, link: string): string {
+export function buildText(entry: FeedEntry, link: string, limit = LIMIT): string {
   const tail = isNote(entry) ? noteTail(entry) : { html: escapeHtml(link), length: link.length }
-  const room = LIMIT - tail.length - 2
+  const room = limit - tail.length - 2
   let body = entry.content?.trim() ?? ""
   if (body.length > room) body = body.slice(0, room - 1).trimEnd() + "…"
   const head = body ? escapeHtml(body) : `<b>${escapeHtml(entry.title.trim().slice(0, room))}</b>`
