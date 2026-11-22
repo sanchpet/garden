@@ -91,7 +91,7 @@ components:
 
 The site is a workbook: printed text in a calm column, and next to it things drawn by hand. What is drawn is the furniture of a study. The library is a bookcase with nightstands beside it, the tech radar is an instrument with a round scope and a knob, the race calendar is a row of paper bibs pinned by their corners. Each is drawn the way an engineer sketches: a projection that is actually constructed, a contour, a label in handwriting. A drawing here explains or holds content; none is decoration.
 
-The page is paper in the light theme and graphite in the dark one. The text is set in a book serif. The hand reaches the frame as the owner's marginal notes: pencil rules and underlines in place of straight lines, and the labels of blocks written in handwriting. Headings and running text stay typeset. One thing in the reading column is written by hand: a quotation, which the author uses for his own annotations, is set in his handwriting behind a pencil line, as a note in the margin. A callout stays typeset.
+The page is paper in the light theme and graphite in the dark one. The text is set in a book serif. The hand reaches the frame as the owner's marginal notes: pencil rules and underlines in place of straight lines, and the labels of blocks written in handwriting. Headings and running text stay typeset. One thing in the reading column is written by hand: a quotation, which the author uses for his own annotations, is set behind a pencil line in a hand that prints its letters (Neucha), as a note in the margin: an annotation runs to paragraphs, and the cursive of the labels is slow to read at that length. A callout stays typeset.
 
 **Key Characteristics:**
 
