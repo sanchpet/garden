@@ -23,7 +23,7 @@ colors:
   page-paper: "#FAF5E9"
   paper-rule: "#E3D9C4"
   ink-text: "#33302B"
-  graphite: "#1F1E1B"
+  graphite: "#161819"
   graphite-rule: "#3B3832"
   chalk-note: "#A39B8C"
   chalk-text: "#DAD3C5"
