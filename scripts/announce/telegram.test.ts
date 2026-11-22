@@ -1,6 +1,6 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { redact, sendMessage, type Fetch } from "./telegram"
+import { redact, Rejected, sendMessage, type Fetch } from "./telegram"
 
 const TOKEN = "123456:TEST-not-a-real-token"
 const message = { chat: "@sanchpetblog", text: "<b>A</b>", previewUrl: "https://sanch.pet/a" }
@@ -40,6 +40,48 @@ describe("sendMessage", () => {
     const h = harness([() => reply(200, { ok: true, result: { message_id: 1 } })])
     await sendMessage(TOKEN, { chat: "@sanchpetlytdybr", text: "A" }, h.deps)
     assert.deepStrictEqual(h.calls[0].body.link_preview_options, { is_disabled: true })
+  })
+
+  test("a photo goes out by sendPhoto with the text as its caption", async () => {
+    const h = harness([() => reply(200, { ok: true, result: { message_id: 5 } })])
+    const photo = {
+      chat: "@sanchpetlytdybr",
+      text: "Туман.",
+      photoUrl: "https://sanch.pet/media/t.jpg",
+    }
+    assert.strictEqual(await sendMessage(TOKEN, photo, h.deps), 5)
+    assert.strictEqual(h.calls[0].url, `https://api.telegram.org/bot${TOKEN}/sendPhoto`)
+    assert.deepStrictEqual(h.calls[0].body, {
+      chat_id: "@sanchpetlytdybr",
+      photo: "https://sanch.pet/media/t.jpg",
+      caption: "Туман.",
+      parse_mode: "HTML",
+    })
+  })
+
+  test("a preview above the text is a large picture", async () => {
+    const h = harness([() => reply(200, { ok: true, result: { message_id: 1 } })])
+    const above = {
+      chat: "@a",
+      text: "A",
+      previewUrl: "https://sanch.pet/media/t.jpg",
+      previewAbove: true,
+    }
+    await sendMessage(TOKEN, above, h.deps)
+    assert.deepStrictEqual(h.calls[0].body.link_preview_options, {
+      url: "https://sanch.pet/media/t.jpg",
+      prefer_large_media: true,
+      show_above_text: true,
+    })
+  })
+
+  test("a 4xx is a refusal, a 5xx is not: a message may have gone out behind it", async () => {
+    const refused = harness([
+      () => reply(400, { ok: false, error_code: 400, description: "Bad Request: wrong file" }),
+    ])
+    await assert.rejects(sendMessage(TOKEN, message, refused.deps), Rejected)
+    const broken = harness([() => reply(502, { ok: false, error_code: 502 })])
+    await assert.rejects(sendMessage(TOKEN, message, broken.deps), (e) => !(e instanceof Rejected))
   })
 
   test("waits as long as a 429 asks, then sends", async () => {

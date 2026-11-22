@@ -14,6 +14,8 @@ export type FeedEntry = {
   related: string[]
   // The species of the text, from the category that carries KIND_SCHEME.
   kind?: string
+  // A note's picture, from its enclosure.
+  image?: string
 }
 
 // The same value as in local-plugins/feed-atom.ts, which writes it.
@@ -84,6 +86,9 @@ export function parseFeed(xml: string): { entries: FeedEntry[]; warnings: string
       related: emptyElements(body, "link").flatMap((a) =>
         a.rel === "related" && a.href ? a.href : [],
       ),
+      image: emptyElements(body, "link").find(
+        (a) => a.rel === "enclosure" && a.type?.startsWith("image/") && a.href,
+      )?.href,
     })
   }
   return { entries, warnings }

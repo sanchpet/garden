@@ -10,6 +10,8 @@ export type Page = {
   frontmatter: Record<string, unknown>
   // The page's text without markup, paragraphs apart; a note has no other title.
   text?: string
+  // The first picture of a note's body, its `src` as rendered: relative to the page.
+  image?: string
 }
 
 export type Entry = {
@@ -25,6 +27,8 @@ export type Entry = {
   related: string[]
   // The species of the text (`post`, `evergreen`, `note`): a consumer may treat them differently.
   kind: string
+  // A note's picture, absolute: the poster attaches it to the message.
+  image?: string
 }
 
 export type Feed = {
@@ -148,6 +152,33 @@ export function blocksText(root: Node): string {
     .join("\n\n")
 }
 
+type Element = Node & { properties?: Record<string, unknown> }
+
+// The `src` of the first picture in a rendered body, in document order.
+export function firstImage(root: Element): string | undefined {
+  if (root.tagName === "img" && typeof root.properties?.src === "string" && root.properties.src)
+    return root.properties.src
+  for (const child of root.children ?? []) {
+    const found = firstImage(child)
+    if (found) return found
+  }
+  return undefined
+}
+
+const IMAGE_TYPES: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+}
+
+// Only the formats Telegram takes as a photo; anything else is no picture to a consumer.
+export function imageType(url: string): string | undefined {
+  const ext = /\.([a-z0-9]+)$/i.exec(new URL(url).pathname)?.[1]?.toLowerCase()
+  return ext ? IMAGE_TYPES[ext] : undefined
+}
+
 export function isPublication(page: Page): boolean {
   const { type, draft } = page.frontmatter
   return isText(type) && draft !== true && draft !== "true"
@@ -173,9 +204,11 @@ export function entryOf(page: Page, base: string): { entry?: Entry; warnings: st
   if (!page.lang || !published) return { warnings }
   // A note has no title and needs no announcement written for it: it is one.
   const note = fm.type === "note" ? text(page.text) : undefined
+  const id = pageUrl(base, page.slug)
+  const image = fm.type === "note" && page.image ? new URL(page.image, id).href : undefined
   const entry: Entry = {
     lang: page.lang,
-    id: pageUrl(base, page.slug),
+    id,
     title: (note && excerpt(note)) ?? text(fm.title) ?? page.slug,
     published,
     // A revision dated before the release is a typo, not a way to predate it.
@@ -186,6 +219,8 @@ export function entryOf(page: Page, base: string): { entry?: Entry; warnings: st
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
     kind: String(fm.type),
   }
+  if (image && imageType(image)) entry.image = image
+  else if (image) warnings.push(`${page.slug}: the picture is not JPEG, PNG, WebP or GIF: ${image}`)
   return { entry, warnings }
 }
 
@@ -224,6 +259,9 @@ function renderEntry(entry: Entry): string {
     `<id>${x(entry.id)}</id>`,
     `<link rel="alternate" type="text/html" href="${x(entry.id)}"/>`,
     ...entry.related.map((href) => `<link rel="related" href="${x(href)}"/>`),
+    ...(entry.image
+      ? [`<link rel="enclosure" type="${imageType(entry.image)}" href="${x(entry.image)}"/>`]
+      : []),
     `<published>${entry.published}</published>`,
     `<updated>${entry.updated}</updated>`,
   ]

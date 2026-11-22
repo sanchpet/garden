@@ -5,6 +5,7 @@ import {
   buildFeed,
   entryOf,
   escapeXml,
+  firstImage,
   renderFeed,
   timestamp,
   type Page,
@@ -339,6 +340,47 @@ describe("a note", () => {
     const made = entry(note({ title: "21 ноября 2026" }))!
     assert.strictEqual(made.title, "21 ноября 2026")
     assert.strictEqual(made.content, undefined)
+  })
+
+  test("carries its first picture as an enclosure, resolved against its page", () => {
+    const made = entry({ ...note({}, "Туман."), image: "../../media/tuman%20utrom.jpg" })!
+    assert.strictEqual(made.image, "https://sanch.pet/media/tuman%20utrom.jpg")
+    assert.match(
+      renderFeed(feed([{ ...note({}, "Туман."), image: "../../media/tuman.jpg" }])),
+      /<link rel="enclosure" type="image\/jpeg" href="https:\/\/sanch\.pet\/media\/tuman\.jpg"\/>/,
+    )
+  })
+
+  test("a picture Telegram cannot take as a photo is left out with a warning", () => {
+    const { entry: made, warnings } = entryOf(
+      { ...note({}, "Схема."), image: "../../media/scheme.svg" },
+      "https://sanch.pet",
+    )
+    assert.strictEqual(made!.image, undefined)
+    assert.match(warnings[0], /not JPEG, PNG, WebP or GIF/)
+  })
+
+  test("a post carries no picture: its preview is the page's own card", () => {
+    assert.strictEqual(entry({ ...post({}), image: "../media/a.jpg" })!.image, undefined)
+  })
+
+  test("the first picture is found in document order", () => {
+    const tree = {
+      type: "root",
+      children: [
+        { type: "element", tagName: "p", children: [{ type: "text", value: "a" }] },
+        {
+          type: "element",
+          tagName: "p",
+          children: [
+            { type: "element", tagName: "img", properties: { src: "../../media/one.png" } },
+            { type: "element", tagName: "img", properties: { src: "../../media/two.png" } },
+          ],
+        },
+      ],
+    }
+    assert.strictEqual(firstImage(tree), "../../media/one.png")
+    assert.strictEqual(firstImage({ type: "root", children: [] }), undefined)
   })
 
   test("a post does not take its text for an announcement", () => {

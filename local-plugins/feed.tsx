@@ -2,7 +2,7 @@ import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import type { FullSlug } from "../quartz/util/path"
 import { LANGUAGES, languageOf } from "./languages"
-import { blocksText, buildFeed, entryOf, renderFeed, type Entry } from "./feed-atom"
+import { blocksText, buildFeed, entryOf, firstImage, renderFeed, type Entry } from "./feed-atom"
 
 // publish.yaml greps the build log for this to report what the feed could not take as written.
 export const FEED_PROBLEM_MARK = "garden: feed problem"
@@ -24,8 +24,9 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
       const frontmatter = (file.data.frontmatter ?? {}) as Record<string, unknown>
       // Only a note is posted as its own text, and there its paragraphs must survive.
       const text = frontmatter.type === "note" ? blocksText(tree) : undefined
+      const image = frontmatter.type === "note" ? firstImage(tree) : undefined
       const { entry, warnings } = entryOf(
-        { slug, lang: languageOf(slug), frontmatter, text },
+        { slug, lang: languageOf(slug), frontmatter, text, image },
         site.base,
       )
       for (const warning of warnings) console.warn(`${FEED_PROBLEM_MARK}: ${warning}`)
