@@ -92,6 +92,7 @@ export const UI = {
     fit: "Весь шкаф",
     full: "На весь экран",
     sections: "Разделы",
+    list: "Список книг",
   },
   en: {
     all: "all",
@@ -104,6 +105,7 @@ export const UI = {
     fit: "Whole bookcase",
     full: "Full screen",
     sections: "Sections",
+    list: "List of books",
   },
 }
 
@@ -759,6 +761,12 @@ viewRegistry.register({
     const [vw, vh] = [scene.x1 - vx + MARGIN.right, scene.y1 - vy + MARGIN.bottom]
     const pull = project(0, -(layout.depth + CASE.setback + CASE.pullClear), CASE.lift)
     const tabs = groups.filter((g) => g.label).length > 1 || stacks.length > 0
+    // The same books as a plain list beside the case: every title is readable there, which a
+    // spine in the drawing is not.
+    const listed = [
+      ...groups.map((group) => ({ label: group.label, books: group.books })),
+      { label: ui.stand, books: stacks.flat().map(({ item, path }) => ({ item, path })) },
+    ].filter((group) => group.books.length > 0)
 
     return (
       <div
@@ -768,6 +776,26 @@ viewRegistry.register({
         data-close={ui.close}
         style={`--pull-x:${f(pull[0])}px;--pull-y:${f(pull[1])}px`}
       >
+        <nav class="bookcase-list" aria-label={ui.list}>
+          {listed.map((group) => (
+            <>
+              {group.label && <h3>{group.label}</h3>}
+              <ul>
+                {group.books.map(({ item, path }) => {
+                  const b = describe(item, path)
+                  return (
+                    <li>
+                      <a class="internal" href={resolveRelative(from, b.entry.slug as FullSlug)}>
+                        {b.title}
+                      </a>
+                      {b.author && <small>{b.author}</small>}
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
+          ))}
+        </nav>
         <div class="bookcase-stage">
           <svg
             class="bookcase-scene"
@@ -843,6 +871,70 @@ ${FONT_FACE}
 /* The catalogue is its folder's index note; the folder listing under it would repeat the shelf. */
 article:has(.bookcase) + .page-listing {
   display: none;
+}
+/* The list stands in the empty column left of the text; without that column it is left out,
+   and the «list» view of the page shows the same books. */
+.bookcase {
+  position: relative;
+}
+.bookcase-list {
+  display: none;
+}
+/* The page of a Bases view clips what leaves it; the list has to. */
+.bases-page:has(.bookcase) {
+  overflow: visible !important;
+}
+@media (min-width: 1200px) {
+  .bookcase:not(.is-full) > .bookcase-list {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: calc(100% + 1.75rem);
+    width: 15.5rem;
+    max-height: min(84vh, 760px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    text-align: right;
+  }
+}
+.bookcase-list h3 {
+  margin: 1.1rem 0 0.3rem;
+  font-family: "Caveat", cursive;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--gray);
+}
+.bookcase-list h3:first-child {
+  margin-top: 0;
+}
+.bookcase-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bookcase-list li {
+  margin: 0 0 0.55rem;
+  line-height: 1.25;
+}
+.bookcase-list a {
+  display: block;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  color: var(--darkgray) !important;
+  background: none !important;
+  border: 0 !important;
+  text-decoration: none !important;
+}
+.bookcase-list a:hover {
+  color: var(--secondary) !important;
+}
+.bookcase-list small {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--gray);
 }
 .bookcase-stage {
   position: relative;
