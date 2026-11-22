@@ -14,6 +14,10 @@ A red valve handwheel with an eye for a hub, drawn from the author's hand sketch
 
 Palette: marker red `#EC0E16`, shadow `#B3000E`, contour `#5E0611`, card blue `#1E3959`, title cream `#F5ECDC`.
 
+## Cards drawn per page
+
+Texts, source cards (books, courses) and radar tools get a preview card of their own, drawn at build time by `local-plugins/cards.tsx` on the same ground and with the same mark: a text shows its title and description, a book stands with its cover, a tool is a dot in its ring of the radar scope. These are not kept in the repository; the build writes them to `static/cards/`. Text is set as outlines from the font files in `fonts/`, so the build needs no installed fonts.
+
 ## Rebuilding
 
 ```sh
@@ -22,6 +26,6 @@ brand/build.sh
 
 It needs [uv](https://docs.astral.sh/uv/); Python dependencies are pulled per run. The outputs in `out/` are committed, and `local-plugins/brand.tsx` copies them into the site.
 
-## Font
+## Fonts
 
-[Caveat](https://github.com/googlefonts/caveat), SIL Open Font License 1.1 (`fonts/OFL.txt`).
+[Caveat](https://github.com/googlefonts/caveat) and [Literata](https://github.com/googlefonts/literata), both under the SIL Open Font License 1.1 (`fonts/OFL.txt`, `fonts/OFL-Literata.txt`). The Literata files are cut down to Latin and Cyrillic.
