@@ -3,6 +3,7 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
 import { coverName } from "./cover"
+import { dayOf, formatDay } from "./stream-events"
 import {
   CASE,
   bookSize,
@@ -93,6 +94,8 @@ export const UI = {
     full: "На весь экран",
     sections: "Разделы",
     list: "Список книг",
+    filter: "искать…",
+    none: "ничего не нашлось",
   },
   en: {
     all: "all",
@@ -106,6 +109,8 @@ export const UI = {
     full: "Full screen",
     sections: "Sections",
     list: "List of books",
+    filter: "search…",
+    none: "nothing found",
   },
 }
 
@@ -777,17 +782,28 @@ viewRegistry.register({
         style={`--pull-x:${f(pull[0])}px;--pull-y:${f(pull[1])}px`}
       >
         <nav class="bookcase-list" aria-label={ui.list}>
+          <input
+            class="bookcase-filter"
+            type="search"
+            placeholder={ui.filter}
+            aria-label={ui.filter}
+            autocomplete="off"
+          />
+          <p class="bookcase-none">{ui.none}</p>
           {listed.map((group) => (
             <>
               {group.label && <h3>{group.label}</h3>}
               <ul>
                 {group.books.map(({ item, path }) => {
                   const b = describe(item, path)
+                  const href = resolveRelative(from, b.entry.slug as FullSlug)
+                  const added = dayOf(b.entry.properties.created)
                   return (
-                    <li>
-                      <a class="internal" href={resolveRelative(from, b.entry.slug as FullSlug)}>
+                    <li data-book={href}>
+                      <a class="internal" href={href}>
                         {b.title}
                       </a>
+                      {added && <time datetime={added}>{formatDay(added, lang, "short")}</time>}
                       {b.author && <small>{b.author}</small>}
                     </li>
                   )
@@ -890,13 +906,42 @@ article:has(.bookcase) + .page-listing {
     position: absolute;
     top: 0;
     right: calc(100% + 1.75rem);
-    width: 15.5rem;
+    width: 17rem;
     max-height: min(84vh, 760px);
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
-    text-align: right;
   }
+}
+.bookcase-filter {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 0 0.9rem;
+  padding: 0.35rem 0.6rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--dark);
+  background: var(--light);
+  border: 1px solid var(--lightgray);
+  border-radius: 4px;
+}
+.bookcase-filter:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 1px;
+}
+/* Without the script the field would filter nothing. */
+.bookcase:not(.is-live) .bookcase-filter,
+.bookcase-none {
+  display: none;
+}
+.bookcase-list.is-empty .bookcase-none {
+  display: block;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--gray);
 }
 .bookcase-list h3 {
   margin: 1.1rem 0 0.3rem;
@@ -915,8 +960,32 @@ article:has(.bookcase) + .page-listing {
   list-style: none;
 }
 .bookcase-list li {
-  margin: 0 0 0.55rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.6rem;
+  align-items: baseline;
+  margin: 0;
+  padding: 0.3rem 0.4rem;
   line-height: 1.25;
+  border-radius: 4px;
+}
+.bookcase-list li[hidden] {
+  display: none;
+}
+.bookcase-list li.is-current {
+  background: var(--highlight);
+}
+.bookcase-list li.is-current a {
+  color: var(--secondary) !important;
+}
+.bookcase-list time {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--gray);
+}
+.bookcase-book.is-dim {
+  opacity: 0.18;
 }
 .bookcase-list a {
   display: block;
@@ -932,6 +1001,7 @@ article:has(.bookcase) + .page-listing {
   color: var(--secondary) !important;
 }
 .bookcase-list small {
+  grid-column: 1 / -1;
   display: block;
   font-size: 0.78rem;
   color: var(--gray);
