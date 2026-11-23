@@ -11,6 +11,7 @@ import { InlineDrawings } from "./local-plugins/drawing"
 import { GardenBrand, HomeLogo } from "./local-plugins/brand"
 import { ContentCards } from "./local-plugins/cards"
 import { Thumbnails } from "./local-plugins/thumbs"
+import { LoneDollars } from "./local-plugins/dollars"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
@@ -35,6 +36,7 @@ const config = await loadQuartzConfig()
 // First, before the table of contents collects headings that are about to go.
 config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.unshift(SourceTextsInPlace())
+config.plugins.transformers.unshift(LoneDollars())
 config.plugins.transformers.push(
   InlineDrawings(),
   PageLanguage(),
