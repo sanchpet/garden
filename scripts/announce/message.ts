@@ -10,9 +10,11 @@ export function escapeHtml(value: string): string {
 }
 
 // The link of a message is the page's own address; an id that is not one cannot be announced.
-export function pageUrl(id: string): string {
+// With a channel it carries `ref=tg<channel>`, which the site's analytics reads as the source.
+export function pageUrl(id: string, channel?: string): string {
   const url = new URL(id)
   if (url.protocol !== "https:") throw new Error(`not an https URL: ${id}`)
+  if (channel) url.searchParams.set("ref", `tg${channel}`)
   return url.href
 }
 
@@ -24,15 +26,17 @@ export function isNote(entry: FeedEntry): boolean {
 
 const READ_ON_SITE = { ru: "Прочесть заметку на сайте", en: "Read the note on the site" }
 
-function noteTail(entry: FeedEntry): { html: string; length: number } {
+function noteTail(entry: FeedEntry, link: string): { html: string; length: number } {
   const label = new URL(entry.id).pathname.startsWith("/en/") ? READ_ON_SITE.en : READ_ON_SITE.ru
-  return { html: `<a href="${escapeHtml(entry.id)}">${label}</a>`, length: label.length }
+  return { html: `<a href="${escapeHtml(link)}">${label}</a>`, length: label.length }
 }
 
 // The author's announcement stands alone; without one the title does. The description is
 // left out either way: the preview card under the message already shows it.
 export function buildText(entry: FeedEntry, link: string, limit = LIMIT): string {
-  const tail = isNote(entry) ? noteTail(entry) : { html: escapeHtml(link), length: link.length }
+  const tail = isNote(entry)
+    ? noteTail(entry, link)
+    : { html: escapeHtml(link), length: link.length }
   const room = limit - tail.length - 2
   let body = entry.content?.trim() ?? ""
   if (body.length > room) body = body.slice(0, room - 1).trimEnd() + "…"
