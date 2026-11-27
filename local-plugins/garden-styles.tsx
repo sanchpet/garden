@@ -69,6 +69,16 @@ article:has(.bases-page) + .page-listing {
   min-width: var(--drawing-min, 720px);
   height: auto;
 }
+/* A tablet sketch keeps the size it was drawn at, so the handwriting matches the text. Its
+   pencil is the theme's text colour; marker strokes keep their own colour in both themes. */
+.garden-drawing > svg.garden-sketch {
+  width: auto;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.garden-sketch .sketch-pencil {
+  fill: var(--darkgray);
+}
 .garden-drawing a {
   cursor: pointer;
 }

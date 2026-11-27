@@ -206,6 +206,8 @@ A dated list of what happened in the garden, and the same list narrowed to one k
 
 A hand drawing from the texts repository, inlined as SVG so that its labels are page text and its shapes can be links. A linked shape thickens its stroke to 4 on hover and focus, and its label underlines.
 
+A sketch drawn by hand on a tablet (`.garden-sketch`) comes in the same way, with no paper card of its own: it sits on the page's ground at the size it was drawn, so the handwriting matches the text. Its black pen is pencil and follows the theme; any other pen is a marker from the palette (orange is `cover-ochre`) and keeps its colour.
+
 ### Post cover
 
 A dated post may carry a cover image. Covers are black and white, with grain. Nothing on the site enforces this yet; it holds by the choice of images.
