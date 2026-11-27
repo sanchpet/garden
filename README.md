@@ -44,6 +44,6 @@ Take what the garden needs with `git diff <from> <to> -- <paths> | git apply -3`
 
 ## Credits
 
-Everything a reader meets on the site that comes from someone else is credited, with its author and a link, in the colophon ([ru](https://sanch.pet/ru/colophon), [en](https://sanch.pet/en/colophon)).
+Everything a reader meets on the site that comes from someone else is credited in the colophon, with a link to the original ([ru](https://sanch.pet/ru/colophon), [en](https://sanch.pet/en/colophon)).
 
 Quartz is by Jacky Zhao and contributors, MIT licensed (`LICENSE.txt`).
