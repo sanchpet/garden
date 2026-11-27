@@ -62,6 +62,18 @@ export function dayOf(value: unknown): string | undefined {
   return timestamp(value)?.slice(0, 10)
 }
 
+// A post or an evergreen text: the day it came out on the site, and the day of its latest
+// edition when that is later. Texts published before `published` was written for evergreens
+// carry only `created`.
+export function textDates(fm: Record<string, unknown>): { published?: string; revised?: string } {
+  const published = dayOf(fm.published ?? fm.created)
+  const revised = fm.type === "evergreen" ? dayOf(fm.revised) : undefined
+  return {
+    published,
+    revised: revised && (!published || revised > published) ? revised : undefined,
+  }
+}
+
 function moment(value: unknown): { at: string; day: string } | undefined {
   const at = timestamp(value)
   const day = dayOf(value)
@@ -83,7 +95,7 @@ export function eventsOf(page: Page): StreamEvent[] {
   if (species === "post") {
     add(fm.published ?? fm.created, "published", { detail: text(fm.description) })
   } else if (species === "evergreen") {
-    const out = add(fm.created, "published", { detail: text(fm.description) })
+    const out = add(fm.published ?? fm.created, "published", { detail: text(fm.description) })
     const revised = moment(fm.revised)
     // A revision dated at or before the release is the release itself.
     if (revised && (!out || revised.at > out.at)) {

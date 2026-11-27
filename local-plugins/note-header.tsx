@@ -4,10 +4,12 @@ import { FullSlug, resolveRelative, slugTag } from "../quartz/util/path"
 import { plain, statusLabel } from "./bookcase"
 import type { Species } from "./kinds"
 import { RING, day, ringOf } from "./radar"
+import { textDates } from "./stream-events"
 
 const LABELS = {
   ru: {
     tags: "Теги",
+    published: "Опубликовано",
     modified: "Изменено",
     reading: "Чтение",
     minutes: "мин",
@@ -21,6 +23,7 @@ const LABELS = {
   },
   en: {
     tags: "Tags",
+    published: "Published",
     modified: "Modified",
     reading: "Reading",
     minutes: "min",
@@ -87,7 +90,14 @@ export const NoteHeader = (() => {
     const repo = tool && typeof fm.repo === "string" && /^https:\/\//.test(fm.repo) ? fm.repo : ""
     const annotation = typeof fm.description === "string" ? fm.description.trim() : ""
     const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : []
-    const modified = fileData.dates?.modified
+    // A text is dated by its release and its editions; any other page by its last change.
+    const released = is("post") || is("evergreen") ? textDates(fm) : undefined
+    const dates: [string, Date | undefined][] = released
+      ? [
+          [l.published, released.published ? new Date(released.published) : undefined],
+          [l.modified, released.revised ? new Date(released.revised) : undefined],
+        ]
+      : [[l.modified, calendar || stream || note ? undefined : fileData.dates?.modified]]
     const words = (text ?? "").split(/\s+/).filter(Boolean).length
     const minutes = Math.ceil(words / WORDS_PER_MINUTE)
     const slug = fileData.slug as FullSlug
@@ -130,13 +140,16 @@ export const NoteHeader = (() => {
               </dd>
             </div>
           )}
-          {modified && !calendar && !stream && !note && (
-            <div>
-              <dt>{l.modified}</dt>
-              <dd>
-                <DateTag date={modified} locale={cfg.locale} />
-              </dd>
-            </div>
+          {dates.map(
+            ([label, date]) =>
+              date && (
+                <div>
+                  <dt>{label}</dt>
+                  <dd>
+                    <DateTag date={date} locale={cfg.locale} />
+                  </dd>
+                </div>
+              ),
           )}
           {minutes > 0 && !note && (
             <div>
