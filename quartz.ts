@@ -13,6 +13,7 @@ import { SiteFontFaces, SiteFonts } from "./local-plugins/fonts"
 import { ContentCards } from "./local-plugins/cards"
 import { Thumbnails } from "./local-plugins/thumbs"
 import { LoneDollars } from "./local-plugins/dollars"
+import { ParagraphPerLine } from "./local-plugins/paragraphs"
 import { VaultPaths } from "./local-plugins/vault-paths"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
@@ -44,6 +45,7 @@ config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.unshift(SourceTextsInPlace())
 config.plugins.transformers.unshift(LoneDollars(), VaultPaths())
 config.plugins.transformers.push(
+  ParagraphPerLine(),
   InlineDrawings(),
   PageLanguage(),
   GardenFrontmatter(),
