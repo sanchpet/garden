@@ -41,6 +41,8 @@ export type Feed = {
   title: string
   author: string
   entries: Entry[]
+  // XHTML paragraphs (feed-note.ts) a browser shows above the list, with the feed's address.
+  note?: string
 }
 
 // Marks the category that names an entry's species; the ones without a scheme are channels.
@@ -311,6 +313,16 @@ function renderEntry(entry: Entry): string {
 // A browser that opens the feed shows it with this stylesheet; feed readers ignore it.
 export const FEED_STYLESHEET = "/static/feed.css"
 
+const SUBSCRIBE: Record<string, string> = { ru: "подписка", en: "subscribe" }
+
+// The note and the address a reader copies into a feed reader; one click selects the address.
+function subscribe(feed: Feed): string {
+  const x = escapeXml
+  const label = SUBSCRIBE[feed.lang] ?? SUBSCRIBE.en
+  return `  <h:div class="subscribe"><h:p class="label">${x(label)}</h:p>${feed.note ?? ""}<h:code class="address">${x(feed.id)}</h:code></h:div>
+`
+}
+
 // The feed also carries XHTML for the browser: a viewport, so a phone does not lay it out at
 // desktop width, and the rows below.
 const XHTML = "http://www.w3.org/1999/xhtml"
@@ -330,6 +342,6 @@ export function renderFeed(feed: Feed): string {
   <author>
     <name>${x(feed.author)}</name>
   </author>
-${feed.entries.map(renderEntry).join("")}</feed>
+${subscribe(feed)}${feed.entries.map(renderEntry).join("")}</feed>
 `
 }

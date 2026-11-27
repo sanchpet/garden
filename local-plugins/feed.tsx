@@ -1,7 +1,7 @@
 import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import type { FullSlug } from "../quartz/util/path"
-import { LANGUAGES, languageOf } from "./languages"
+import { LANGUAGES, languageOf, type Language } from "./languages"
 import {
   blocksText,
   buildFeed,
@@ -11,6 +11,7 @@ import {
   renderFeed,
   type Entry,
 } from "./feed-atom"
+import { feedNote } from "./feed-note"
 import { feedCss } from "./feed-style"
 import { textFontFaces } from "./fonts"
 
@@ -27,11 +28,14 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
     const { baseUrl, pageTitle } = ctx.cfg.configuration
     const site = { base: `https://${baseUrl}`, title: pageTitle, author: pageTitle }
     const entries: Entry[] = []
+    const notes: Partial<Record<Language, unknown>> = {}
     for (const [tree, file] of content) {
       // Notes only: tag and folder listings are virtual pages with no source file.
       if (!file.data.filePath?.endsWith(".md")) continue
       const slug = file.data.slug!
       const frontmatter = (file.data.frontmatter ?? {}) as Record<string, unknown>
+      const lang = languageOf(slug)
+      if (lang && slug === `${lang}/index`) notes[lang] = frontmatter.feed_note
       // Only a note is posted as its own text, and there its paragraphs must survive.
       const text = frontmatter.type === "note" ? blocksText(tree) : undefined
       const image = frontmatter.type === "note" ? firstImage(tree) : undefined
@@ -47,7 +51,10 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
         ctx,
         slug: `${lang}/feed` as FullSlug,
         ext: ".xml",
-        content: renderFeed(buildFeed(entries, lang, site)),
+        content: renderFeed({
+          ...buildFeed(entries, lang, site),
+          note: feedNote(notes[lang], lang),
+        }),
       })
     }
     yield write({

@@ -1,11 +1,7 @@
-// What a browser shows when someone opens the feed itself: a note on what the address is for,
-// then one line per entry, its title or a note's address on the left and its day on the right.
-// The lines are the XHTML rows feed-atom.ts writes into each entry; the Atom text is hidden.
-
-const NOTE = {
-  ru: "Это лента для RSS-читалки. Скопируйте адрес страницы в читалку, чтобы подписаться.",
-  en: "This is a feed for an RSS reader. Copy the page's address into your reader to subscribe.",
-}
+// What a browser shows when someone opens the feed itself: the title, a note on what the
+// address is for with the address to copy, then one line per entry, its title or a note's
+// address on the left and its day on the right. Both are XHTML that feed-atom.ts writes into
+// the feed; the Atom text is hidden.
 
 export function feedCss(textFaces: string): string {
   return `${textFaces}
@@ -23,6 +19,7 @@ feed {
   --rule: #e3d9c4;
   --link: #1e3959;
   --hover: #8c2f39;
+  --band: #f3ead8;
   display: block;
   max-width: 44rem;
   margin: 0 auto;
@@ -42,26 +39,12 @@ feed {
     --rule: #3b3832;
     --link: #9dbadb;
     --hover: #e0b25a;
+    --band: #222426;
   }
 }
 ::selection {
   background: #f2b705;
   color: #1b1a1c;
-}
-feed::before {
-  display: block;
-  margin-bottom: 1.5rem;
-  color: var(--note);
-  font-family: "Caveat", cursive;
-  font-weight: 700;
-  font-size: 1.45rem;
-  line-height: 1.3;
-}
-feed:lang(ru)::before {
-  content: "${NOTE.ru}";
-}
-feed:lang(en)::before {
-  content: "${NOTE.en}";
 }
 id,
 link,
@@ -78,6 +61,49 @@ feed > title {
   font-size: 2.2rem;
   font-weight: 600;
   line-height: 1.2;
+}
+div.subscribe {
+  display: block;
+  margin: 0 0 2.25rem;
+}
+div.subscribe p {
+  margin: 0 0 0.6rem;
+}
+div.subscribe p.label {
+  margin: 0 0 0.25rem;
+  color: var(--note);
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+div.subscribe a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--link) 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+div.subscribe a:hover {
+  color: var(--hover);
+  text-decoration-color: currentColor;
+}
+div.subscribe code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9em;
+}
+code.address {
+  display: block;
+  margin-top: 0.9rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 3px 5px 4px 6px;
+  background: var(--band);
+  color: var(--heading);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+  user-select: all;
+  -webkit-user-select: all;
+  cursor: text;
 }
 entry > *:not(a) {
   display: none;
