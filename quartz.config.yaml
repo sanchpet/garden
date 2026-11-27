@@ -12,8 +12,8 @@ configuration:
     - private
     - templates
     - .obsidian
-    # Obsidian-side view of the book cards; its filter is a vault path.
-    - library.base
+    # Obsidian-side views (book cards, series); their filters are vault paths.
+    - "*.base"
     # Drawing sources; the page embeds the SVG rendered from them.
     - "**/*.excalidraw.md"
     # Quartz's own icon and social card; local-plugins/brand.tsx emits ours.
