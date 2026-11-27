@@ -32,7 +32,8 @@ async function mouseEnterHandler(
     if (hash !== "") {
       const inner = popoverElement.querySelector(".popover-inner") as HTMLElement | null
       if (inner) {
-        const targetAnchor = `#popover-internal-${hash.slice(1)}`
+        // ids are not CSS identifiers: block ids start with `^`, headings may start with a digit
+        const targetAnchor = `#${CSS.escape(`popover-internal-${hash.slice(1)}`)}`
         const heading = inner.querySelector(targetAnchor) as HTMLElement | null
         if (heading) {
           // leave ~12px of buffer when scrolling to a heading
@@ -139,3 +140,8 @@ function setupPopovers() {
 
 document.addEventListener("nav", setupPopovers)
 document.addEventListener("render", setupPopovers)
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return
+  activeAnchor = null
+  document.querySelectorAll(".popover").forEach((popover) => popover.remove())
+})
