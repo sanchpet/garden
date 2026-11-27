@@ -296,6 +296,26 @@ describe("rendering", () => {
     assert.deepStrictEqual(parseFeed(xml), parseFeed(bare))
   })
 
+  test("a browser gets the note and the address above the list; a feed reader ignores both", () => {
+    const plain = feed([myshlenie, zaSekundu])
+    const xml = renderFeed({
+      ...plain,
+      note: '<h:p>Скопируйте <h:a href="https://x.test/">адрес</h:a>.</h:p>',
+    })
+    assert.ok(
+      xml.includes(
+        '<h:div class="subscribe"><h:p class="label">подписка</h:p><h:p>Скопируйте <h:a href="https://x.test/">адрес</h:a>.</h:p><h:code class="address">https://sanch.pet/ru/feed.xml</h:code></h:div>\n  <entry>',
+      ),
+    )
+    assert.deepStrictEqual(parseFeed(xml), parseFeed(renderFeed(plain)))
+    const en = renderFeed(feed([], "en"))
+    assert.ok(
+      en.includes(
+        '<h:p class="label">subscribe</h:p><h:code class="address">https://sanch.pet/en/feed.xml</h:code>',
+      ),
+    )
+  })
+
   test("the whole feed", () => {
     assert.strictEqual(
       renderFeed(feed([myshlenie, zaSekundu])),
@@ -311,6 +331,7 @@ describe("rendering", () => {
   <author>
     <name>sanchpet</name>
   </author>
+  <h:div class="subscribe"><h:p class="label">подписка</h:p><h:code class="address">https://sanch.pet/ru/feed.xml</h:code></h:div>
   <entry>
     <title>За секунду</title>
     <id>https://sanch.pet/ru/posts/za-sekundu</id>
