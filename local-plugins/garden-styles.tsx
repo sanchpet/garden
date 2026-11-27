@@ -259,6 +259,7 @@ article blockquote::before {
 .sidebar :is(.graph, .backlinks) > h3,
 .sidebar .toc .toc-header h3,
 .sources h2,
+.series h2,
 section.footnotes > h2,
 .note-header .note-meta dt {
   font-family: "Caveat", cursive !important;
@@ -273,6 +274,7 @@ section.footnotes > h2,
   line-height: 1.1 !important;
 }
 .sources h2,
+.series h2,
 section.footnotes > h2 {
   font-size: 1.7rem !important;
 }
@@ -282,9 +284,11 @@ section.footnotes > h2 {
   color: var(--gray) !important;
 }
 
-/* A link in the text is underlined in pen; the stock wash behind internal links is dropped. */
+/* A link in the text is underlined in pen; the stock wash behind internal links is dropped.
+   The series under the text is read as part of it, so its links follow. */
 article a,
-article a.internal {
+article a.internal,
+.series a.internal {
   background: none !important;
   padding: 0 !important;
   font-weight: 400 !important;
@@ -293,7 +297,8 @@ article a.internal {
   text-underline-offset: 0.18em !important;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent) !important;
 }
-article a:hover {
+article a:hover,
+.series a.internal:hover {
   text-decoration-color: currentColor !important;
 }
 /* A picture in a text is held to the screen: a portrait phone photo at column width is taller than it.

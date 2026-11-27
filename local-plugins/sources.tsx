@@ -109,7 +109,7 @@ export const FrontmatterLinks: QuartzTransformerPlugin = () => ({
 })
 
 // While pages are parsed a text's title is still where Obsidian keeps it, in `aliases`.
-function titleOnDisk(ctx: BuildCtx, slug: string): string | undefined {
+export function titleOnDisk(ctx: BuildCtx, slug: string): string | undefined {
   const fm = publishedPages(ctx).get(slug) ?? {}
   const first = [fm.title, fm.aliases].flat().find((v) => typeof v === "string" && v.trim())
   return typeof first === "string" ? first.trim() : undefined

@@ -5,6 +5,7 @@
 import { timestamp } from "./feed-atom"
 import { isSource, isText, isUnknownType } from "./kinds"
 import { languageOf, twinsOf } from "./languages"
+import { seriesProblems } from "./series-index"
 
 export type Page = { slug: string; frontmatter: Record<string, unknown> }
 
@@ -218,5 +219,6 @@ export function contentProblems(pages: Page[], normalise?: (target: string) => s
   const types = pages.flatMap(({ slug, frontmatter: { type } }) =>
     isUnknownType(type) ? [`${slug}: unknown type ${JSON.stringify(type)}`] : [],
   )
-  return [...types, ...buildSources(pages, normalise).problems]
+  const series = seriesProblems(new Map(pages.map((page) => [page.slug, page.frontmatter])))
+  return [...types, ...series, ...buildSources(pages, normalise).problems]
 }

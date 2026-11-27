@@ -210,6 +210,10 @@ Language note and footnote tooltip share one form: page ground, 1px rule, 6px ra
 
 A plain list under the text with a 1.2rem heading; an entry's secondary part (kind, date) follows in 0.85rem muted text. No drawing.
 
+### Series
+
+Texts that share a `series` name in frontmatter end with the whole series, first after the closing rule: a handwritten label, «Серия «…»» / "Series “…”", then a numbered list in the order the texts came out. The current text sits in its place unlinked, at 600, with a pencil underline; the others are links underlined in pen as in the text. Below, the way on: "раньше" / "earlier" and "дальше" / "next" in Caveat 1.15rem muted, each before its link; side by side on a wide screen, stacked under 800px. A series of one draws nothing.
+
 ### Stream
 
 A dated list of what happened in the garden, and the same list narrowed to one kind of page (the posts page). Years are labelled by hand, each label followed by a pencil rule. A row is a day written by hand in the margin column (4.6rem), then what happened in 0.85rem muted text, then the page's name as a link; a day is written once for the rows that share it. A text's name is set at 600, a catalogue card's at 400, and cards entered on one day share one row. A note has no name: its day is its link and its text stands in the row at body size. A finished book and a race that was run carry the marker's tick, the only red in the list. Below 560px the day stands above its row. The header's handwritten word leads here from every page.
