@@ -15,6 +15,7 @@ import { Thumbnails } from "./local-plugins/thumbs"
 import { LoneDollars } from "./local-plugins/dollars"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
+import { ViewCount } from "./local-plugins/views"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
 import { PublicationFeed } from "./local-plugins/feed"
 import { BookcaseScript } from "./local-plugins/bookcase"
@@ -67,12 +68,14 @@ const cover = NoteCover()
 const races = RaceCalendar()
 const sources = SourceList()
 const stream = Stream()
+// Its script counts every page, so it sits in every layout even where it draws nothing.
+const views = ViewCount()
 let wrapped = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
-  pageLayout.afterBody = [races, stream, sources, ...(pageLayout.afterBody ?? [])]
+  pageLayout.afterBody = [races, stream, sources, views, ...(pageLayout.afterBody ?? [])]
   pageLayout.right = pageLayout.right?.map((component) => {
     if (component.name !== "Backlinks") return component
     wrapped++

@@ -192,6 +192,10 @@ A link in the text is underlined in pen: a 1px underline at 45% of the link colo
 
 A footnote mark is the one exception: a superscript number at 600 on a chip of the link colour at 24%, no underline, filled with the link colour under the pointer. A bare digit underlined like a link is lost in running text.
 
+### View count
+
+Under a post or an evergreen text, below the closing rule: the number of readers in muted 0.8rem text, "128 просмотров" / "128 views". It appears only once the number arrives and is above zero; a blocked or failed request leaves no gap.
+
 ### Popover
 
 Language note and footnote tooltip share one form: page ground, 1px rule, 6px radius, 0.85rem text, a soft shadow, at most 24rem wide.
