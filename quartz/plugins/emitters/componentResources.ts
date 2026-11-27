@@ -22,6 +22,7 @@ import {
 import { Features, transform } from "lightningcss"
 import { transform as transpile } from "esbuild"
 import { write } from "./helpers"
+import { isolateComponentCss } from "../../util/componentCss"
 
 function hashContent(content: string | Buffer): string {
   return createHash("sha256").update(content).digest("hex").slice(0, 8)
@@ -32,6 +33,8 @@ type ComponentResources = {
   beforeDOMLoaded: string[]
   afterDOMLoaded: string[]
   componentCssStrings: Set<string>
+  /** Component CSS → the component that brought it, to name it in warnings. */
+  cssOwners: Map<string, string>
 }
 
 function getComponentResources(ctx: BuildCtx): ComponentResources {
@@ -54,9 +57,13 @@ function getComponentResources(ctx: BuildCtx): ComponentResources {
     afterDOMLoaded: new Set<string>(),
   }
 
+  const cssOwners = new Map<string, string>()
   for (const component of allComponents) {
     const { css, beforeDOMLoaded, afterDOMLoaded } = component
-    for (const c of normalizeResource(css)) componentResources.css.add(c)
+    for (const c of normalizeResource(css)) {
+      componentResources.css.add(c)
+      if (!cssOwners.has(c)) cssOwners.set(c, component.displayName ?? component.name ?? "")
+    }
     for (const b of normalizeResource(beforeDOMLoaded)) componentResources.beforeDOMLoaded.add(b)
     for (const a of normalizeResource(afterDOMLoaded)) componentResources.afterDOMLoaded.add(a)
   }
@@ -66,6 +73,7 @@ function getComponentResources(ctx: BuildCtx): ComponentResources {
     beforeDOMLoaded: [...componentResources.beforeDOMLoaded],
     afterDOMLoaded: [...componentResources.afterDOMLoaded],
     componentCssStrings: new Set(componentResources.css),
+    cssOwners,
   }
 }
 
@@ -404,11 +412,16 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
         include: Features.MediaQueries,
       }).code.toString()
 
+      // All component styles go into one stylesheet, in their order, in one
+      // `quartz-base` layer: a file per component meant ~20 render-blocking
+      // requests per page, many for a few hundred bytes.
       const cssStringToFilename = new Map<string, string>()
-      for (const cssString of componentResources.componentCssStrings) {
-        if (cssStringToFilename.has(cssString)) continue
-
-        const wrapped = `@layer quartz-base {\n${cssString}\n}`
+      const componentCss = [...componentResources.componentCssStrings]
+      if (componentCss.length > 0) {
+        const isolated = componentCss.map((c) =>
+          isolateComponentCss(c, componentResources.cssOwners.get(c)),
+        )
+        const wrapped = `@layer quartz-base {\n${isolated.join("\n")}\n}`
         const minified = transform({
           filename: "component.css",
           code: Buffer.from(wrapped),
@@ -420,7 +433,7 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
         const hash = hashContent(minified)
         const slug = `component-${hash}`
         const filename = `${slug}.css`
-        cssStringToFilename.set(cssString, filename)
+        for (const cssString of componentCss) cssStringToFilename.set(cssString, filename)
 
         yield write({
           ctx,
