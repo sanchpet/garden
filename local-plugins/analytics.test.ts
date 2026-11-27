@@ -1,5 +1,6 @@
 import { describe, it } from "node:test"
 import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
 import { counterUrl, viewsLine } from "./analytics"
 
 describe("counterUrl", () => {
@@ -29,5 +30,13 @@ describe("viewsLine", () => {
     assert.equal(viewsLine("0", "ru"), undefined)
     assert.equal(viewsLine("", "ru"), undefined)
     assert.equal(viewsLine(undefined, "en"), undefined)
+  })
+})
+
+describe("vendored count.js", () => {
+  const src = readFileSync(new URL("./goatcounter/count.js", import.meta.url), "utf8")
+  it("does not take the Phantom wallet's window.phantom for PhantomJS", () => {
+    assert.doesNotMatch(src, /\bw\.phantom\b/)
+    assert.match(src, /w\.callPhantom \|\| w\._phantom/)
   })
 })
