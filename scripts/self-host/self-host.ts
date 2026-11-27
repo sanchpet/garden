@@ -67,6 +67,10 @@ export const LIBRARIES: Library[] = [
 ]
 
 export const VENDOR = "/static/vendor"
+// The site's server types .mjs as application/octet-stream, and a browser will not run a module
+// served so; ES modules are copied as .js and their imports of one another rewritten.
+const MODULE = /\.mjs$/
+const esc = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 export const local = (lib: Library) => `${VENDOR}/${lib.pkg}/`
 
 // Hosts that serve code or styles; a reference to one left after the rewrite fails the build.
@@ -94,6 +98,10 @@ export function rewrite(text: string): string {
     for (const [from, to] of Object.entries(lib.alias ?? {})) {
       out = out.replaceAll(lib.url + from, local(lib) + to)
     }
+    out = out.replace(
+      new RegExp(`${esc(lib.url)}([^"'\`\\s)]*?)\\.mjs\\b`, "g"),
+      `${local(lib)}$1.js`,
+    )
     out = out.replaceAll(lib.url, local(lib))
   }
   return out
@@ -136,9 +144,14 @@ export function selfHost(out: string, modules = "node_modules"): string[] {
     }
     const root = path.join(pkg, lib.dist)
     for (const file of lib.files.flatMap((pattern) => expand(root, pattern))) {
-      const dest = path.join(out, local(lib), file)
+      const dest = path.join(out, local(lib), file.replace(MODULE, ".js"))
       fs.mkdirSync(path.dirname(dest), { recursive: true })
-      fs.copyFileSync(path.join(root, file), dest)
+      if (MODULE.test(file)) {
+        const text = fs.readFileSync(path.join(root, file), "utf8")
+        fs.writeFileSync(dest, text.replace(/(["'`]\.{1,2}\/[^"'`]*?)\.mjs(["'`])/g, "$1.js$2"))
+      } else {
+        fs.copyFileSync(path.join(root, file), dest)
+      }
     }
   }
   const left: string[] = []
