@@ -30,6 +30,30 @@ export const FootnoteTooltip = (() => {
   const Tooltip: QuartzComponent = () => null
   Tooltip.afterDOMLoaded = script
   Tooltip.css = `
+/* A footnote mark is a tinted chip in the link colour: a bare superscript digit, underlined
+   like every link, is lost in running text. sup keeps no line height so the line stays even.
+   !important beats the pen underline every article link gets in garden-styles. */
+article sup:has(> a[data-footnote-ref]) {
+  line-height: 0;
+}
+article sup > a[data-footnote-ref] {
+  display: inline-block;
+  margin-left: 0.1em;
+  padding: 0.15em 0.4em !important;
+  border-radius: 0.35em;
+  font-size: 0.85em;
+  font-weight: 600 !important;
+  line-height: 1;
+  color: var(--secondary) !important;
+  background: color-mix(in srgb, var(--secondary) 24%, transparent) !important;
+  text-decoration: none !important;
+  transition: background-color 0.15s, color 0.15s;
+}
+article sup > a[data-footnote-ref]:hover,
+article sup > a[data-footnote-ref]:focus-visible {
+  color: var(--light) !important;
+  background: var(--secondary) !important;
+}
 section.footnotes {
   font-size: 0.85em;
 }
