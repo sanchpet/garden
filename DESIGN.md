@@ -146,7 +146,7 @@ One palette for the page and for what is drawn on it: paper and ink, steel blue 
 
 - **Headline** (600, 2.2rem): the note's own title, underlined in pencil.
 - **Title** (600; h2 1.6rem, h3 1.3rem, h4 and below 1.125rem): section headings in the column.
-- **Body** (400, 1.125rem, line-height 1.65): running text. The annotation under a title is body italic.
+- **Body** (400, 1.125rem, line-height 1.65): running text. The annotation under a title is body italic. One line of the source is one paragraph, as in Obsidian; a paragraph that follows another opens with a 1.5em red line. Indexes and module pages keep Markdown's own line joining.
 - **Label** (Caveat 700, 1.15rem): the names of the note's fields and the days of the stream. The labels of the right column's blocks are Caveat at 1.45rem, the heading of the sources list at 1.7rem.
 - **Hand on objects** (Caveat 700): a bib number at 4.2rem, a bib name at 1.6rem, a module's drawn heading at 1.7rem, labels inside drawings at their drawn size.
 

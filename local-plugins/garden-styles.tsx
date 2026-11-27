@@ -340,6 +340,11 @@ article p,
 article li {
   line-height: 1.65 !important;
 }
+/* A paragraph that follows another starts with a red line, as in a book: one line of the
+   source is one paragraph (ParagraphPerLine), and the indent shows where it begins. */
+article .markdown-preview-view > p + p:not(:has(> img)) {
+  text-indent: 1.5em;
+}
 
 /* Headings step up from the larger body: 1.125 → 1.3 → 1.6 → 2.2rem. */
 .page-header .article-title {
