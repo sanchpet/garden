@@ -13,6 +13,7 @@ import { SiteFontFaces, SiteFonts } from "./local-plugins/fonts"
 import { ContentCards } from "./local-plugins/cards"
 import { Thumbnails } from "./local-plugins/thumbs"
 import { LoneDollars } from "./local-plugins/dollars"
+import { DropCap } from "./local-plugins/dropcap"
 import { ParagraphPerLine } from "./local-plugins/paragraphs"
 import { VaultPaths } from "./local-plugins/vault-paths"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
@@ -47,6 +48,7 @@ config.plugins.transformers.unshift(LoneDollars(), VaultPaths())
 config.plugins.transformers.push(
   ParagraphPerLine(),
   InlineDrawings(),
+  DropCap(),
   PageLanguage(),
   GardenFrontmatter(),
   FrontmatterLinks(),

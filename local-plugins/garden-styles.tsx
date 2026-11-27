@@ -346,6 +346,31 @@ article.red-line .markdown-preview-view > p + p:not(:has(> img)) {
   text-indent: 1.5em;
 }
 
+/* A post or an evergreen note opens with a drop cap, as a chapter does: the same Literata, which
+   takes its display optical size at this height, in ink. The build marks the paragraph
+   (DropCap); a browser without initial-letter shows the plain opening. Never in a preview. */
+@supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+  article .markdown-preview-view > p.dropcap::first-letter {
+    -webkit-initial-letter: 3;
+    initial-letter: 3;
+    margin-right: 0.1em;
+    color: var(--dark);
+    font-weight: 400;
+  }
+  @media (max-width: 600px) {
+    article .markdown-preview-view > p.dropcap::first-letter {
+      -webkit-initial-letter: 2;
+      initial-letter: 2;
+    }
+  }
+  .popover article .markdown-preview-view > p.dropcap::first-letter {
+    -webkit-initial-letter: normal;
+    initial-letter: normal;
+    margin-right: 0;
+    color: inherit;
+  }
+}
+
 /* Headings step up from the larger body: 1.125 → 1.3 → 1.6 → 2.2rem. */
 .page-header .article-title {
   font-size: 2.2rem !important;
