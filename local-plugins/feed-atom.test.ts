@@ -265,12 +265,44 @@ describe("rendering", () => {
     )
   })
 
+  test("a browser row links the text and shows its day; a note is named by its address", () => {
+    const note: Page = {
+      slug: "ru/notes/2026-11-22-0130",
+      lang: "ru",
+      frontmatter: { type: "note", created: "2026-11-22T01:30+04:00" },
+      text: "Первые слова заметки",
+    }
+    const xml = renderFeed(feed([note, zaSekundu]))
+    assert.ok(
+      xml.includes(
+        '<h:a class="row note" href="https://sanch.pet/ru/notes/2026-11-22-0130"><h:span>2026-11-22-0130</h:span> <h:time datetime="2026-11-22">22 ноября 2026</h:time></h:a>',
+      ),
+    )
+    const en = renderFeed(feed([post({ title: "Speed" }, "en/posts/speed")], "en"))
+    assert.ok(en.includes('<h:time datetime="2026-01-02">2 January 2026</h:time>'))
+  })
+
+  test("a feed reader reads the same entries with the browser rows as without them", () => {
+    const note: Page = {
+      slug: "ru/notes/2026-11-21-1830",
+      lang: "ru",
+      frontmatter: { type: "note", channels: ["lytdybr"], created: "2026-11-21T18:30+04:00" },
+      text: "Заметка <с> разметкой & амперсандом",
+      image: "../../media/a.jpg",
+    }
+    const xml = renderFeed(feed([note, zaSekundu, myshlenie]))
+    const bare = xml.replace(/\n\s*<h:a [^\n]*<\/h:a>/g, "")
+    assert.notStrictEqual(bare, xml)
+    assert.deepStrictEqual(parseFeed(xml), parseFeed(bare))
+  })
+
   test("the whole feed", () => {
     assert.strictEqual(
       renderFeed(feed([myshlenie, zaSekundu])),
       `<?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/css" href="/static/feed.css"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ru">
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:h="http://www.w3.org/1999/xhtml" xml:lang="ru">
+  <h:meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>sanchpet</title>
   <id>https://sanch.pet/ru/feed.xml</id>
   <link rel="self" type="application/atom+xml" href="https://sanch.pet/ru/feed.xml"/>
@@ -288,6 +320,7 @@ describe("rendering", () => {
     <updated>2026-11-15T00:00:00Z</updated>
     <category term="lytdybr"/>
     <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/za-sekundu"><h:span>За секунду</h:span> <h:time datetime="2026-11-15">15 ноября 2026</h:time></h:a>
   </entry>
   <entry>
     <title>Мышление</title>
@@ -297,6 +330,7 @@ describe("rendering", () => {
     <updated>2026-11-02T00:00:00Z</updated>
     <summary type="text">Что есть</summary>
     <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+    <h:a class="row" href="https://sanch.pet/ru/evergreen/myshlenie"><h:span>Мышление</h:span> <h:time datetime="2026-10-26">26 октября 2026</h:time></h:a>
   </entry>
 </feed>
 `,

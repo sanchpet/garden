@@ -3,6 +3,7 @@
 // consumers treat a changed entry as an event.
 
 import { isText } from "./kinds"
+import type { Language } from "./languages"
 
 export type Page = {
   slug: string
@@ -29,6 +30,8 @@ export type Entry = {
   kind: string
   // A note's picture, absolute: the poster attaches it to the message.
   image?: string
+  // The day it came out, as the site shows it: the author's own calendar day, not UTC's.
+  day: string
 }
 
 export type Feed = {
@@ -68,6 +71,26 @@ export function timestamp(value: unknown): string | undefined {
   }
   if (isNaN(date.getTime())) return undefined
   return date.toISOString().replace(/\.\d{3}Z$/, "Z")
+}
+
+// A date-only value is that day. A value with a time keeps the day it was written with when
+// it arrives as a string; YAML turns an unquoted one into a Date, which only knows UTC.
+export function dayOf(value: unknown): string | undefined {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value.trim())) {
+    return value.trim().slice(0, 10)
+  }
+  return timestamp(value)?.slice(0, 10)
+}
+
+// "21 Nov" in a row, "21 November 2026" as the heading of a note's own page.
+export function formatDay(day: string, lang: Language, style: "short" | "long"): string {
+  const text = new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", {
+    day: "numeric",
+    month: style,
+    year: style === "long" ? "numeric" : undefined,
+    timeZone: "UTC",
+  })
+  return text.replace(/\s*г\.$/, "")
 }
 
 function text(value: unknown): string | undefined {
@@ -218,6 +241,7 @@ export function entryOf(page: Page, base: string): { entry?: Entry; warnings: st
     categories: list(fm.channels),
     related: list(fm.link).filter((href) => /^https?:\/\//.test(href)),
     kind: String(fm.type),
+    day: dayOf(fm.published ?? fm.created) ?? published.slice(0, 10),
   }
   if (image && imageType(image)) entry.image = image
   else if (image) warnings.push(`${page.slug}: the picture is not JPEG, PNG, WebP or GIF: ${image}`)
@@ -252,6 +276,17 @@ export function escapeXml(value: string): string {
     .replace(/'/g, "&apos;")
 }
 
+// Atom carries no markup a browser would link, so each entry also holds one line of XHTML: the
+// browser draws it as the list, feed readers skip it as foreign markup (RFC 4287, 6.4). A note
+// has no title, and the first words of its text would only repeat it; its address names it.
+function row(entry: Entry): string {
+  const x = escapeXml
+  const note = entry.kind === "note"
+  const label = note ? decodeURI(new URL(entry.id).pathname.split("/").pop()!) : entry.title
+  const date = formatDay(entry.day, entry.lang as Language, "long")
+  return `<h:a class="${note ? "row note" : "row"}" href="${x(entry.id)}"><h:span>${x(label)}</h:span> <h:time datetime="${entry.day}">${x(date)}</h:time></h:a>`
+}
+
 function renderEntry(entry: Entry): string {
   const x = escapeXml
   const lines = [
@@ -269,18 +304,24 @@ function renderEntry(entry: Entry): string {
   if (entry.content) lines.push(`<content type="text">${x(entry.content)}</content>`)
   lines.push(...entry.categories.map((term) => `<category term="${x(term)}"/>`))
   lines.push(`<category scheme="${KIND_SCHEME}" term="${x(entry.kind)}"/>`)
+  lines.push(row(entry))
   return `  <entry>\n${lines.map((line) => `    ${line}`).join("\n")}\n  </entry>\n`
 }
 
 // A browser that opens the feed shows it with this stylesheet; feed readers ignore it.
 export const FEED_STYLESHEET = "/static/feed.css"
 
+// The feed also carries XHTML for the browser: a viewport, so a phone does not lay it out at
+// desktop width, and the rows below.
+const XHTML = "http://www.w3.org/1999/xhtml"
+
 export function renderFeed(feed: Feed): string {
   const x = escapeXml
   const updated = feed.entries.reduce((max, e) => (e.updated > max ? e.updated : max), EPOCH)
   return `<?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/css" href="${FEED_STYLESHEET}"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="${x(feed.lang)}">
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:h="${XHTML}" xml:lang="${x(feed.lang)}">
+  <h:meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>${x(feed.title)}</title>
   <id>${x(feed.id)}</id>
   <link rel="self" type="application/atom+xml" href="${x(feed.id)}"/>

@@ -1,6 +1,6 @@
-// What a browser shows when someone opens the feed itself: the entries as a readable column in
-// the site's paper or graphite, and a note on what the address is for. CSS styles the Atom
-// elements directly; it cannot make links, so the page is a card to read, not to navigate.
+// What a browser shows when someone opens the feed itself: a note on what the address is for,
+// then one line per entry, its title or a note's address on the left and its day on the right.
+// The lines are the XHTML rows feed-atom.ts writes into each entry; the Atom text is hidden.
 
 const NOTE = {
   ru: "Это лента для RSS-читалки. Скопируйте адрес страницы в читалку, чтобы подписаться.",
@@ -21,6 +21,8 @@ feed {
   --heading: #1b1a1c;
   --note: #6b6459;
   --rule: #e3d9c4;
+  --link: #1e3959;
+  --hover: #8c2f39;
   display: block;
   max-width: 44rem;
   margin: 0 auto;
@@ -38,6 +40,8 @@ feed {
     --heading: #f5ecdc;
     --note: #a39b8c;
     --rule: #3b3832;
+    --link: #9dbadb;
+    --hover: #e0b25a;
   }
 }
 ::selection {
@@ -75,29 +79,53 @@ feed > title {
   font-weight: 600;
   line-height: 1.2;
 }
+entry > *:not(a) {
+  display: none;
+}
 entry {
   display: block;
-  padding: 1.1rem 0;
   border-top: 1px solid var(--rule);
 }
-entry > title {
-  display: block;
-  color: var(--heading);
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.35;
+entry:last-of-type {
+  border-bottom: 1px solid var(--rule);
 }
-summary,
-content {
-  display: -webkit-box;
-  margin-top: 0.4rem;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  white-space: pre-line;
+a.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.55rem 0;
+  color: var(--link);
+  line-height: 1.4;
+  text-decoration: none;
 }
-summary + content {
-  display: none;
+a.row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+a.row:hover {
+  color: var(--hover);
+}
+a.row:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+a.note span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.95rem;
+}
+a.row time {
+  flex: none;
+  color: var(--note);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  a.row {
+    flex-direction: column;
+    gap: 0.1rem;
+  }
 }
 `
 }
