@@ -186,8 +186,10 @@ hr {
   mask: var(--pencil-rule) center / 100% 100% no-repeat !important;
 }
 
-/* The note's title is underlined by hand. */
+/* The note's title is underlined by hand. Its own formatting context keeps the box, and the
+   underline with it, beside a floated cover instead of running under it. */
 .page-header .article-title {
+  display: flow-root !important;
   width: fit-content !important;
   max-width: 100% !important;
 }
