@@ -1,0 +1,40 @@
+name: Upstream watch
+
+# Weekly: is there anything in Quartz v5 after the commit in UPSTREAM? Keeps one open issue
+# listing the new commits and closes it once UPSTREAM catches up.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: List new upstream commits
+        id: report
+        run: |
+          git fetch -q --filter=blob:none https://github.com/jackyzha0/quartz.git v5
+          echo "count=$(scripts/upstream/report.sh FETCH_HEAD "$RUNNER_TEMP/body.md")" >> "$GITHUB_OUTPUT"
+
+      - name: Open, refresh or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COUNT: ${{ steps.report.outputs.count }}
+        run: |
+          gh label create upstream --color 5319e7 --description "Changes in upstream Quartz" 2>/dev/null || true
+          open=$(gh issue list --label upstream --state open --json number --jq '.[0].number // empty')
+          title="Upstream Quartz: $COUNT new commits since $(cut -c1-7 UPSTREAM)"
+          if [ "$COUNT" = 0 ]; then
+            [ -z "$open" ] || gh issue close "$open" --comment "UPSTREAM is at the head of v5."
+          elif [ -n "$open" ]; then
+            gh issue edit "$open" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh issue create --title "$title" --label upstream --body-file "$RUNNER_TEMP/body.md"
+          fi

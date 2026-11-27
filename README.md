@@ -38,6 +38,8 @@ git fetch upstream v5
 git log --oneline "$(cat UPSTREAM)..upstream/v5"
 ```
 
+Every Monday the Upstream watch workflow does this and keeps one issue labelled `upstream` with the list; it closes once `UPSTREAM` catches up.
+
 Take what the garden needs with `git diff <from> <to> -- <paths> | git apply -3`, then move `UPSTREAM` to the commit you reviewed up to.
 
 ## Credits
