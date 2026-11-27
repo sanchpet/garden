@@ -10,11 +10,12 @@ export function escapeHtml(value: string): string {
 }
 
 // The link of a message is the page's own address; an id that is not one cannot be announced.
-// With a channel it carries `ref=tg<channel>`, which the site's analytics reads as the source.
+// With a channel it carries `src=tg<channel>`, which the site's analytics reads as the source. Not
+// `ref`: Telegram strips `ref` and `utm_source` from the link of a preview card.
 export function pageUrl(id: string, channel?: string): string {
   const url = new URL(id)
   if (url.protocol !== "https:") throw new Error(`not an https URL: ${id}`)
-  if (channel) url.searchParams.set("ref", `tg${channel}`)
+  if (channel) url.searchParams.set("src", `tg${channel}`)
   return url.href
 }
 
