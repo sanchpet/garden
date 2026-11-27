@@ -16,6 +16,7 @@ import { LoneDollars } from "./local-plugins/dollars"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { ViewCount } from "./local-plugins/views"
+import { SiteFooter } from "./local-plugins/site-footer"
 import { DrawnCursor } from "./local-plugins/cursor"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
 import { Series, SeriesLinks } from "./local-plugins/series"
@@ -75,12 +76,21 @@ const stream = Stream()
 // Its script counts every page, so it sits in every layout even where it draws nothing.
 const views = ViewCount()
 const cursor = DrawnCursor()
+const siteFooter = SiteFooter()
 let wrapped = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
-  pageLayout.afterBody = [races, stream, series, sources, views, ...(pageLayout.afterBody ?? [])]
+  pageLayout.afterBody = [
+    races,
+    stream,
+    series,
+    sources,
+    views,
+    ...(pageLayout.afterBody ?? []),
+    siteFooter,
+  ]
   pageLayout.footer = [...(pageLayout.footer ?? []), cursor]
   pageLayout.right = pageLayout.right?.map((component) => {
     if (component.name !== "Backlinks") return component

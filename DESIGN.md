@@ -182,6 +182,10 @@ Drawn strokes are generated. A line from one point to another drifts off the str
 
 Under the title: an italic annotation, then the note's fields as a row of pairs, a handwritten label over its value, wrapping with a 2.5rem gap. Tags are outlined boxes (1px rule, 3px radius) with no fill.
 
+### Site footer
+
+The last line under every page, in the column, written in Caveat at label size and `gray`: the colophon of the page's language (only once it is published, and not on the colophon itself) and the owner's GitHub. No rule above it and no plate behind the links; a link turns the hover colour under the pointer.
+
 ### Language switch
 
 Two short options at the top right. The current language is filled with the link colour; the other is plain text. A language the note does not exist in is shown at half opacity, and pointing at it opens a popover that says so.
