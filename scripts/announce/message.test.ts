@@ -14,6 +14,13 @@ describe("pageUrl", () => {
     assert.strictEqual(pageUrl("https://sanch.pet/ru/"), "https://sanch.pet/ru/")
   })
 
+  test("names the channel for the site's analytics", () => {
+    assert.strictEqual(
+      pageUrl("https://sanch.pet/ru/posts/a", "sanchpetblog"),
+      "https://sanch.pet/ru/posts/a?ref=tgsanchpetblog",
+    )
+  })
+
   test("refuses what is not an https address", () => {
     assert.throws(() => pageUrl("tag:sanch.pet,2026:a"))
     assert.throws(() => pageUrl("not a url"))
@@ -68,14 +75,14 @@ describe("a note", () => {
 
   test("is posted whole, with the way to its page as a phrase and no bare address", () => {
     assert.strictEqual(
-      buildText(note, LINK),
-      'Туман &lt;такой&gt;, что города не видно.\n\n<a href="https://sanch.pet/ru/notes/2026-11-21-0910">Прочесть заметку на сайте</a>',
+      buildText(note, `${note.id}?ref=tgsanchpetblog`),
+      'Туман &lt;такой&gt;, что города не видно.\n\n<a href="https://sanch.pet/ru/notes/2026-11-21-0910?ref=tgsanchpetblog">Прочесть заметку на сайте</a>',
     )
   })
 
   test("an English note is signed in English", () => {
     assert.match(
-      buildText({ ...note, id: "https://sanch.pet/en/notes/n" }, LINK),
+      buildText({ ...note, id: "https://sanch.pet/en/notes/n" }, "https://sanch.pet/en/notes/n"),
       /<a href="https:\/\/sanch\.pet\/en\/notes\/n">Read the note on the site<\/a>$/,
     )
   })

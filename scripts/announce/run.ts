@@ -71,7 +71,7 @@ export async function run(entries: FeedEntry[], options: Options, deps: Deps): P
   for (const { entry, channel, chat } of planned.sends) {
     let link: string
     try {
-      link = pageUrl(entry.id)
+      link = pageUrl(entry.id, channel)
     } catch (error) {
       warn(`${entry.id}: ${errorText(error)}, not announced`)
       continue
