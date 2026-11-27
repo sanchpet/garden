@@ -4,8 +4,8 @@ import { publishedSlugs } from "./garden"
 import { languageOf, type Language } from "./languages"
 
 const COLOPHON: Record<Language, string> = {
-  ru: "как сделан этот сайт",
-  en: "how this site is made",
+  ru: "колофон",
+  en: "colophon",
 }
 const GITHUB = "https://github.com/sanchpet"
 // The texts' licence; the engine's code is MIT, in its own repository.
@@ -42,10 +42,17 @@ export const SiteFooter = (() => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1.4rem;
-  margin: 3rem 0 1.5rem;
+  margin: 0 0 1.5rem;
   font-family: "Caveat", cursive;
   font-weight: 700;
   font-size: 1.15rem;
+}
+/* Straight under the page's closing rule, the line sits close to it. */
+.center > hr:has(+ .page-footer > .site-footer:first-child) {
+  margin-bottom: 0.5rem;
+}
+.page-footer:has(> .site-footer:first-child) {
+  margin-top: 0;
 }
 .site-footer a {
   color: var(--gray);
