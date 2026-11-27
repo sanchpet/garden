@@ -1,14 +1,11 @@
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
-import { SWITCH_LABEL } from "./cursor-state"
 import { cursorForms, type Form } from "./cursor-forms"
-import { languageOf } from "./languages"
 // @ts-ignore
 import script from "./cursor.inline"
 
 // The drawn cursor (DESIGN.md, Cursor): the pointer as the owner's pencil, with brackets,
 // a marker and a scope's crosshair where the page asks for them. The drawings are baked here;
-// the page script mounts them and moves them. The switch under the page hands the pointer
-// back to the system.
+// the page script mounts them and moves them.
 const forms = cursorForms()
 
 function placed(name: string, form: Form): string {
@@ -33,41 +30,11 @@ const LAYER =
   `<template class="dc-underline">${forms.underline}</template>`
 
 export const DrawnCursor = (() => {
-  const Cursor: QuartzComponent = ({ fileData }) => {
-    const lang = languageOf(fileData.slug) ?? "en"
-    return (
-      <div class="cursor-switch">
-        <button type="button" data-cursor-switch hidden>
-          {SWITCH_LABEL[lang].drawn}
-        </button>
-        <template id="drawn-cursor" dangerouslySetInnerHTML={{ __html: LAYER }} />
-      </div>
-    )
-  }
+  const Cursor: QuartzComponent = () => (
+    <template id="drawn-cursor" dangerouslySetInnerHTML={{ __html: LAYER }} />
+  )
   Cursor.afterDOMLoaded = script
   Cursor.css = `
-.cursor-switch {
-  margin: 2rem 0 1rem;
-}
-.cursor-switch > button {
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: var(--bodyFont);
-  font-size: 0.8rem;
-  color: var(--gray);
-  cursor: pointer;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
-  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
-}
-.cursor-switch > button:hover,
-.cursor-switch > button:focus-visible {
-  color: var(--darkgray);
-  text-decoration-color: currentColor;
-}
-
 .drawn-cursor {
   position: fixed;
   inset: 0;

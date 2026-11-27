@@ -1,6 +1,6 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { CHOICE_KEY, readChoice, resolveCursor, shouldDraw, writeChoice } from "./cursor-state"
+import { resolveCursor, shouldDraw } from "./cursor-state"
 import { cursorForms } from "./cursor-forms"
 
 // A stand-in for an element: `closest` answers from the selectors it is declared to match,
@@ -80,7 +80,6 @@ describe("shouldDraw", () => {
     finePointer: true,
     reducedData: false,
     forcedColors: false,
-    choice: "drawn",
   } as const
 
   test("draws for a mouse by default", () => {
@@ -91,35 +90,6 @@ describe("shouldDraw", () => {
     assert.strictEqual(shouldDraw({ ...mouse, finePointer: false }), false)
     assert.strictEqual(shouldDraw({ ...mouse, reducedData: true }), false)
     assert.strictEqual(shouldDraw({ ...mouse, forcedColors: true }), false)
-    assert.strictEqual(shouldDraw({ ...mouse, choice: "system" }), false)
-  })
-})
-
-describe("the reader's choice", () => {
-  test("round-trips through storage", () => {
-    const map = new Map<string, string>()
-    const store = {
-      getItem: (k: string) => map.get(k) ?? null,
-      setItem: (k: string, v: string) => void map.set(k, v),
-    }
-    assert.strictEqual(readChoice(store), "drawn")
-    writeChoice(store, "system")
-    assert.strictEqual(map.get(CHOICE_KEY), "system")
-    assert.strictEqual(readChoice(store), "system")
-  })
-
-  test("a storage that throws or is missing falls back to the drawing", () => {
-    const broken = {
-      getItem: () => {
-        throw new Error("blocked")
-      },
-      setItem: () => {
-        throw new Error("blocked")
-      },
-    }
-    assert.strictEqual(readChoice(broken), "drawn")
-    assert.doesNotThrow(() => writeChoice(broken, "system"))
-    assert.strictEqual(readChoice(undefined), "drawn")
   })
 })
 

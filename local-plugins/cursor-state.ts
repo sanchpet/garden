@@ -76,39 +76,10 @@ export interface Environment {
   finePointer: boolean
   reducedData: boolean
   forcedColors: boolean
-  choice: Choice
 }
 
 // A drawn cursor needs a mouse; it is left out where it costs data or would defeat the
-// reader's own high-contrast colours, and whenever the reader chose the system one.
+// reader's own high-contrast colours.
 export function shouldDraw(env: Environment): boolean {
-  return env.finePointer && !env.reducedData && !env.forcedColors && env.choice === "drawn"
-}
-
-export type Choice = "drawn" | "system"
-export const CHOICE_KEY = "garden-cursor"
-
-interface Store {
-  getItem(key: string): string | null
-  setItem(key: string, value: string): void
-}
-
-// Storage can be missing or throw (a private window, blocked site data): the default then.
-export function readChoice(store: Store | undefined): Choice {
-  try {
-    return store?.getItem(CHOICE_KEY) === "system" ? "system" : "drawn"
-  } catch {
-    return "drawn"
-  }
-}
-
-export function writeChoice(store: Store | undefined, choice: Choice): void {
-  try {
-    store?.setItem(CHOICE_KEY, choice)
-  } catch {}
-}
-
-export const SWITCH_LABEL: Record<string, Record<Choice, string>> = {
-  ru: { drawn: "системный курсор", system: "нарисованный курсор" },
-  en: { drawn: "system cursor", system: "drawn cursor" },
+  return env.finePointer && !env.reducedData && !env.forcedColors
 }
