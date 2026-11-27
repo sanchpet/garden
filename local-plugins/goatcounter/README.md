@@ -1,0 +1,1 @@
+`count.js` is GoatCounter's client from release v2.7.0 (`public/count.js` in arp242/goatcounter), unchanged, ISC licence (header of the file). Bundled into the page script so no request goes to another host for it. Update it together with the server in homelab-v2 `apps/stats`.
