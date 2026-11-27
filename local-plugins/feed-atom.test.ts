@@ -1,5 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
+import { parseFeed } from "../scripts/announce/feed"
 import {
   blocksText,
   buildFeed,
@@ -253,10 +254,22 @@ describe("rendering", () => {
     assert.ok(xml.includes('<link rel="related" href="https://t.me/x/1?a=1&amp;b=2"/>'))
   })
 
+  test("a browser gets the stylesheet, a feed reader still reads the entries", () => {
+    const xml = renderFeed(feed([myshlenie, zaSekundu]))
+    const [declaration, stylesheet] = xml.split("\n")
+    assert.strictEqual(declaration, '<?xml version="1.0" encoding="utf-8"?>')
+    assert.strictEqual(stylesheet, '<?xml-stylesheet type="text/css" href="/static/feed.css"?>')
+    assert.deepStrictEqual(
+      parseFeed(xml).entries.map((entry) => entry.id),
+      ["https://sanch.pet/ru/posts/za-sekundu", "https://sanch.pet/ru/evergreen/myshlenie"],
+    )
+  })
+
   test("the whole feed", () => {
     assert.strictEqual(
       renderFeed(feed([myshlenie, zaSekundu])),
       `<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="/static/feed.css"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ru">
   <title>sanchpet</title>
   <id>https://sanch.pet/ru/feed.xml</id>

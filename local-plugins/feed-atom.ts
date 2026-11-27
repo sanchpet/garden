@@ -272,10 +272,14 @@ function renderEntry(entry: Entry): string {
   return `  <entry>\n${lines.map((line) => `    ${line}`).join("\n")}\n  </entry>\n`
 }
 
+// A browser that opens the feed shows it with this stylesheet; feed readers ignore it.
+export const FEED_STYLESHEET = "/static/feed.css"
+
 export function renderFeed(feed: Feed): string {
   const x = escapeXml
   const updated = feed.entries.reduce((max, e) => (e.updated > max ? e.updated : max), EPOCH)
   return `<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="${FEED_STYLESHEET}"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="${x(feed.lang)}">
   <title>${x(feed.title)}</title>
   <id>${x(feed.id)}</id>

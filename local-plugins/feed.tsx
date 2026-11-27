@@ -2,7 +2,17 @@ import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { write } from "../quartz/plugins/emitters/helpers"
 import type { FullSlug } from "../quartz/util/path"
 import { LANGUAGES, languageOf } from "./languages"
-import { blocksText, buildFeed, entryOf, firstImage, renderFeed, type Entry } from "./feed-atom"
+import {
+  blocksText,
+  buildFeed,
+  entryOf,
+  FEED_STYLESHEET,
+  firstImage,
+  renderFeed,
+  type Entry,
+} from "./feed-atom"
+import { feedCss } from "./feed-style"
+import { textFontFaces } from "./fonts"
 
 // publish.yaml greps the build log for this to report what the feed could not take as written.
 export const FEED_PROBLEM_MARK = "garden: feed problem"
@@ -40,6 +50,12 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
         content: renderFeed(buildFeed(entries, lang, site)),
       })
     }
+    yield write({
+      ctx,
+      slug: FEED_STYLESHEET.slice(1).replace(/\.css$/, "") as FullSlug,
+      ext: ".css",
+      content: feedCss(textFontFaces()),
+    })
   },
   externalResources: (ctx) => ({
     additionalHead: [
