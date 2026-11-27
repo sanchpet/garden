@@ -8,9 +8,11 @@ const COLOPHON: Record<Language, string> = {
   en: "how this site is made",
 }
 const GITHUB = "https://github.com/sanchpet"
+// The texts' licence; the engine's code is MIT, in its own repository.
+const LICENCE = (lang: Language) => `https://creativecommons.org/licenses/by-nc-sa/4.0/deed.${lang}`
 
 // The last line under every page, written in the margin like the labels of blocks: the
-// colophon in the page's language once it is out, and the owner's GitHub.
+// colophon in the page's language once it is out, the owner's GitHub and the texts' licence.
 export const SiteFooter = (() => {
   const Footer: QuartzComponent = ({ fileData, ctx }) => {
     const slug = fileData.slug as FullSlug
@@ -27,6 +29,9 @@ export const SiteFooter = (() => {
         )}
         <a class="external" href={GITHUB} rel="me">
           github
+        </a>
+        <a class="external" href={LICENCE(lang)} rel="license">
+          cc by-nc-sa
         </a>
       </p>
     )
