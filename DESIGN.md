@@ -192,6 +192,12 @@ A link in the text is underlined in pen: a 1px underline at 45% of the link colo
 
 A footnote mark is the one exception: a superscript number at 600 on a chip of the link colour at 24%, no underline, filled with the link colour under the pointer. A bare digit underlined like a link is lost in running text.
 
+### Cursor
+
+With a mouse the pointer is the owner's pencil (`cursor.tsx`), drawn from a seed like every stroke and following the theme. Over a link in the text the pencil stays and pens a full-colour line under the link in place of the 45% underline. A control outside the text (a button, the language switch, a list row) is framed by four pencil corners, the pencil shrinking to its point and leaning a little towards the block. A drawn object that is a link (a book, a radar blip, a bib, a shape in a drawing) takes a marker: cream barrel, steel-blue nib. A footnote mark gets a handwritten question mark beside the point; the radar's scope a crosshair. Where text is read, selected or typed (the article's running text, the title, the annotation, a field) the system I-beam comes back, since the text is typeset.
+
+The drawing replaces the system cursor only after the first mouse move with the layer already mounted, so a failed script leaves the system cursor. It is off for touch and pen, under `prefers-reduced-data` and `forced-colors`, and when the reader picks "system cursor" under the page; `prefers-reduced-motion` switches forms without the cross-fade and the underline without drawing on.
+
 ### View count
 
 Under a post or an evergreen text, below the closing rule: the number of readers in muted 0.8rem text, "128 просмотров" / "128 views". It appears only once the number arrives and is above zero; a blocked or failed request leaves no gap.
@@ -239,6 +245,7 @@ A race the author picked, as a paper bib: cream ground, 2px outline, four pin do
 - **Do** generate strokes from a seed and bake them into paths, as `bookcase.tsx` and `brand/src/gen_icon.py` do.
 - **Do** keep content reachable without the drawing: a list under the radar, the picks under the calendar.
 - **Do** give every moving drawn part a `prefers-reduced-motion` override, as the four drawn modules do.
+- **Do** leave the system I-beam wherever text is read, selected or typed; the drawn cursor belongs to the frame and the drawings.
 
 ### Don't:
 
