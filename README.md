@@ -1,17 +1,45 @@
-# Quartz v5
+# garden
 
-> “[One] who works with the door open gets all kinds of interruptions, but [they] also occasionally gets clues as to what the world is and what might be important.” — Richard Hamming
+The engine behind [sanch.pet](https://sanch.pet), a bilingual digital garden: posts, evergreen notes, a library, a tech radar and a race calendar. The texts live in [sanchpet/garden-texts](https://github.com/sanchpet/garden-texts); this repo turns them into the site.
 
-Quartz is a set of tools that helps you publish your [digital garden](https://jzhao.xyz/posts/networked-thought) and notes as a website for free.
+## Layout
 
-🔗 Read the documentation and get started: https://quartz.jzhao.xyz/
+Built on [Quartz](https://github.com/jackyzha0/quartz) v5. The garden's own code:
 
-[Join the Discord Community](https://discord.gg/cRFFHYye7t)
+- `quartz.config.yaml`, `quartz.ts`: which plugins run, in what order;
+- `local-plugins/`: the garden's components and emitters (languages, note header, bookcase, radar, races, feeds, analytics);
+- `scripts/`: self-hosting of third-party assets and the Telegram announcer;
+- `DESIGN.md`, `PRODUCT.md`: the look and who it's for.
 
-## Sponsors
+`quartz/` is the Quartz engine. A few core files carry the garden's own changes; the rest is as upstream left it.
 
-<p align="center">
-  <a href="https://github.com/sponsors/jackyzha0">
-    <img src="https://cdn.jsdelivr.net/gh/jackyzha0/jackyzha0/sponsorkit/sponsors.svg" />
-  </a>
-</p>
+## Running locally
+
+```sh
+mise install
+npm ci
+git clone https://github.com/sanchpet/garden-texts ../garden-texts
+npx quartz build -d ../garden-texts --serve
+```
+
+Without the race feed at `races-feed/events.json` (branch `public` of [sanchpet/races](https://github.com/sanchpet/races)) the race calendar builds empty. Checks: `npm test`, `npm run check`.
+
+## Publishing
+
+A push to `main`, or a `repository_dispatch` from garden-texts, runs the Publish workflow: it builds the site, replaces CDN assets with self-hosted copies and force-pushes the result to the `public` branch as one commit. The server pulls that branch every minute.
+
+## Upstream
+
+Quartz changes come in as patches, not merges. `UPSTREAM` holds the last commit of `jackyzha0/quartz` (branch `v5`) that was reviewed. To see what is new since then:
+
+```sh
+git remote add upstream https://github.com/jackyzha0/quartz.git
+git fetch upstream v5
+git log --oneline "$(cat UPSTREAM)..upstream/v5"
+```
+
+Take what the garden needs with `git diff <from> <to> -- <paths> | git apply -3`, then move `UPSTREAM` to the commit you reviewed up to.
+
+## Credits
+
+Quartz is by Jacky Zhao and contributors, MIT licensed (`LICENSE.txt`).
