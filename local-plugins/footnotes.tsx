@@ -2,6 +2,8 @@ import type { Element, Root } from "hast"
 import { visit } from "unist-util-visit"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import type { QuartzTransformerPlugin } from "../quartz/plugins/types"
+import { labelFootnotes } from "./footnote-list"
+import { languageOf } from "./languages"
 // @ts-ignore
 import script from "./footnote-tooltip.inline"
 
@@ -11,7 +13,7 @@ export const FootnoteLinks: QuartzTransformerPlugin = () => ({
   name: "FootnoteLinks",
   htmlPlugins() {
     return [
-      () => (tree: Root) => {
+      () => (tree: Root, file) => {
         visit(tree, "element", (node: Element) => {
           const props = node.properties
           if (node.tagName !== "a" || !props) return
@@ -19,11 +21,11 @@ export const FootnoteLinks: QuartzTransformerPlugin = () => ({
             props.dataNoPopover = "true"
           }
         })
+        labelFootnotes(tree, languageOf(file.data.slug))
       },
     ]
   },
 })
-
 export const FootnoteTooltip = (() => {
   const Tooltip: QuartzComponent = () => null
   Tooltip.afterDOMLoaded = script
@@ -31,14 +33,8 @@ export const FootnoteTooltip = (() => {
 section.footnotes {
   font-size: 0.85em;
 }
-/* The generated "Footnotes" heading is meant for screen readers only; Quartz has no sr-only rule. */
-section.footnotes > .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+section.footnotes > ol {
+  padding-left: 1.4rem;
 }
 .footnote-tooltip {
   position: absolute;
