@@ -12,7 +12,8 @@ const GITHUB = "https://github.com/sanchpet"
 const LICENCE = (lang: Language) => `https://creativecommons.org/licenses/by/4.0/deed.${lang}`
 
 // The last line under every page, written in the margin like the labels of blocks: the
-// colophon in the page's language once it is out, the owner's GitHub and the texts' licence.
+// colophon in the page's language once it is out, the owner's GitHub, the feed and the texts'
+// licence.
 export const SiteFooter = (() => {
   const Footer: QuartzComponent = ({ fileData, ctx }) => {
     const slug = fileData.slug as FullSlug
@@ -29,6 +30,9 @@ export const SiteFooter = (() => {
         )}
         <a class="external" href={GITHUB} rel="me">
           github
+        </a>
+        <a href={`/${lang}/feed.xml`} type="application/atom+xml" data-router-ignore>
+          rss
         </a>
         <a class="external" href={LICENCE(lang)} rel="license">
           cc by

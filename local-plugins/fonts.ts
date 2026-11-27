@@ -71,6 +71,11 @@ export const SiteFonts: QuartzEmitterPlugin = () => ({
   async *partialEmit() {},
 })
 
+// The same rules for a stylesheet outside the pages, such as the feed's.
+export function textFontFaces(): string {
+  return load().css
+}
+
 export const SiteFontFaces = (() => {
   const Faces: QuartzComponent = () => null
   Faces.css = load().css

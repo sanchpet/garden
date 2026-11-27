@@ -253,6 +253,14 @@ export const Stream = (() => {
     ))
     return (
       <section class="stream h-feed">
+        <a
+          class="stream-rss"
+          href={`/${lang}/feed.xml`}
+          type="application/atom+xml"
+          data-router-ignore
+        >
+          rss
+        </a>
         {years.length === 0 && <p class="stream-empty">{ui.empty}</p>}
         {body}
         {starred && ui.foreign && <p class="stream-foreign">* {ui.foreign}</p>}
@@ -412,6 +420,24 @@ export const Stream = (() => {
   border-radius: 4px;
 }
 .stream .stream-empty,
+/* The feed, written in the margin above the first year's rule. */
+.stream {
+  position: relative;
+}
+.stream .stream-rss {
+  position: absolute;
+  top: -2.4rem;
+  right: 0;
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--gray);
+  background: none !important;
+  padding: 0 !important;
+}
+.stream .stream-rss:hover {
+  color: var(--tertiary);
+}
 .stream .stream-feed,
 .stream .stream-foreign {
   color: var(--gray);
