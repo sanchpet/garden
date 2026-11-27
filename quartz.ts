@@ -18,6 +18,7 @@ import { NoteHeader } from "./local-plugins/note-header"
 import { ViewCount } from "./local-plugins/views"
 import { DrawnCursor } from "./local-plugins/cursor"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
+import { Series, SeriesLinks } from "./local-plugins/series"
 import { PublicationFeed } from "./local-plugins/feed"
 import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
@@ -45,6 +46,7 @@ config.plugins.transformers.push(
   PageLanguage(),
   GardenFrontmatter(),
   FrontmatterLinks(),
+  SeriesLinks(),
   LanguageLinks(),
   StripPrivateLinks(),
   FootnoteLinks(),
@@ -67,6 +69,7 @@ const header = [
 const noteHeader = NoteHeader()
 const cover = NoteCover()
 const races = RaceCalendar()
+const series = Series()
 const sources = SourceList()
 const stream = Stream()
 // Its script counts every page, so it sits in every layout even where it draws nothing.
@@ -77,7 +80,7 @@ for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)])
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
   pageLayout.beforeBody = [cover, ...(pageLayout.beforeBody ?? []), noteHeader]
-  pageLayout.afterBody = [races, stream, sources, views, ...(pageLayout.afterBody ?? [])]
+  pageLayout.afterBody = [races, stream, series, sources, views, ...(pageLayout.afterBody ?? [])]
   pageLayout.footer = [...(pageLayout.footer ?? []), cursor]
   pageLayout.right = pageLayout.right?.map((component) => {
     if (component.name !== "Backlinks") return component
