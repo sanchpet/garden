@@ -1,22 +1,7 @@
-const STORAGE_KEY = "garden-lang"
-const LANGUAGES = ["ru", "en"]
+import { preferredLanguage, rememberLanguage } from "./language-choice"
+
 // Search builds its index once per page load, from the language the reader arrived in.
 const indexedLanguages = new Set<string>([document.documentElement.lang])
-
-function rememberLanguage(lang: string) {
-  try {
-    localStorage.setItem(STORAGE_KEY, lang)
-  } catch {}
-}
-
-function preferredLanguage(): string {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved && LANGUAGES.includes(saved)) return saved
-  } catch {}
-  const browser = navigator.languages.map((l) => l.split("-")[0])
-  return browser.find((l) => LANGUAGES.includes(l)) ?? "en"
-}
 
 // Feed search each further language the reader reaches, by the switch or by a link.
 async function indexForSearch(lang: string) {
@@ -42,7 +27,7 @@ async function switchTo(link: HTMLAnchorElement) {
 }
 
 document.addEventListener("nav", () => {
-  // The site root only picks a language.
+  // The root reached by a link inside the site; a load of the root is redirected in the head.
   if (document.body.dataset.slug === "index") {
     const home = new URL(
       `${document.body.dataset.basepath ?? ""}/${preferredLanguage()}/`,
