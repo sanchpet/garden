@@ -66,7 +66,7 @@ article:has(.bases-page) + .page-listing {
 .garden-drawing > svg {
   display: block;
   width: 100%;
-  min-width: 720px;
+  min-width: var(--drawing-min, 720px);
   height: auto;
 }
 .garden-drawing a {
