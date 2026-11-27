@@ -194,7 +194,7 @@ A footnote mark is the one exception: a superscript number at 600 on a chip of t
 
 ### Cursor
 
-With a mouse the pointer is the owner's pencil (`cursor.tsx`), drawn from a seed like every stroke and following the theme. Over a link in the text the pencil stays and pens a full-colour line under the link in place of the 45% underline. A control outside the text (a button, the language switch, a list row) is framed by four pencil corners, the pencil shrinking to its point and leaning a little towards the block. A drawn object that is a link (a book, a radar blip, a bib, a shape in a drawing) takes a marker: cream barrel, steel-blue nib. A footnote mark gets a handwritten question mark beside the point; the radar's scope a crosshair. Where text is read, selected or typed (the article's running text, the title, the annotation, a field) the system I-beam comes back, since the text is typeset.
+With a mouse the pointer is the owner's pencil (`cursor.tsx`), drawn from a seed like every stroke and following the theme. Over a link in the text the pencil stays and pens a full-colour line under the link in place of the 45% underline. A control outside the text (a button, the language switch, a list row) is framed by four pencil corners, the pencil shrinking to its point and leaning a little towards the block. A drawn object that is a link (a book, a radar blip, a bib, a shape in a drawing) takes a marker: cream barrel, steel-blue nib. A footnote mark gets a handwritten question mark beside the point; the radar's scope a crosshair. Over running text and fields the pencil stays, its point held over the line as if about to write; the system cursor never comes back while the drawing is on, so it does not flicker between parts of the page.
 
 The drawing replaces the system cursor only after the first mouse move with the layer already mounted, so a failed script leaves the system cursor. It is off for touch and pen, under `prefers-reduced-data` and `forced-colors`; `prefers-reduced-motion` switches forms without the cross-fade and the underline without drawing on.
 
@@ -249,7 +249,7 @@ A race the author picked, as a paper bib: cream ground, 2px outline, four pin do
 - **Do** generate strokes from a seed and bake them into paths, as `bookcase.tsx` and `brand/src/gen_icon.py` do.
 - **Do** keep content reachable without the drawing: a list under the radar, the picks under the calendar.
 - **Do** give every moving drawn part a `prefers-reduced-motion` override, as the four drawn modules do.
-- **Do** leave the system I-beam wherever text is read, selected or typed; the drawn cursor belongs to the frame and the drawings.
+- **Don't** hand the pointer back to the system cursor over text or fields; switching between the two reads as a glitch.
 
 ### Don't:
 

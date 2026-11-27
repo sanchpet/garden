@@ -1,8 +1,7 @@
 // The drawn cursor: what the pointer turns into over each part of the page, and when the
 // page draws it at all. The DOM-free half, shared by the build and the page script.
 
-export type CursorMode =
-  "pencil" | "underline" | "bracket" | "marker" | "help" | "crosshair" | "native"
+export type CursorMode = "pencil" | "underline" | "bracket" | "marker" | "help" | "crosshair"
 
 // What resolveCursor needs from an element: Element.closest, so tests can pass a stand-in.
 export interface Closest {
@@ -15,13 +14,6 @@ export interface Resolved<T> {
   target: T | null
 }
 
-// Text is typeset, so wherever one reads, selects or types, the system I-beam stays.
-const TYPED = [
-  "input:not([type='checkbox'], [type='radio'], [type='button'], [type='submit'], [type='reset'], [type='range'], [type='color'], [type='file'])",
-  "textarea",
-  "[contenteditable]:not([contenteditable='false'])",
-  "[data-cursor-native]",
-].join(", ")
 const PROSE = [
   "article :is(p, li, dd, dt, td, th, blockquote, figcaption, pre, h1, h2, h3, h4, h5, h6)",
   "h1.article-title",
@@ -56,7 +48,6 @@ const SCOPE = ".radar-scope"
 export function resolveCursor<T extends Closest>(target: T | null): Resolved<T> {
   if (!target) return { mode: "pencil", target: null }
   const at = (selector: string) => target.closest(selector) as T | null
-  if (at(TYPED)) return { mode: "native", target: null }
   const footnote = at(FOOTNOTE)
   if (footnote) return { mode: "help", target: footnote }
   const drawn = at(DRAWN)
@@ -68,7 +59,6 @@ export function resolveCursor<T extends Closest>(target: T | null): Resolved<T> 
     return { mode: "bracket", target: at(BLOCK) ?? action }
   }
   if (at(SCOPE)) return { mode: "crosshair", target: null }
-  if (at(PROSE)) return { mode: "native", target: null }
   return { mode: "pencil", target: null }
 }
 

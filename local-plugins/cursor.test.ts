@@ -35,9 +35,9 @@ describe("resolveCursor", () => {
     assert.strictEqual(resolveCursor(null).mode, "pencil")
   })
 
-  test("the system I-beam over running text and fields", () => {
-    assert.strictEqual(resolveCursor(paragraph).mode, "native")
-    assert.strictEqual(resolveCursor(new Node("textarea", is("textarea"))).mode, "native")
+  test("the pencil stays over running text and fields", () => {
+    assert.strictEqual(resolveCursor(paragraph).mode, "pencil")
+    assert.strictEqual(resolveCursor(new Node("textarea", is("textarea"))).mode, "pencil")
   })
 
   test("a link in the text is underlined, not framed", () => {
@@ -52,7 +52,7 @@ describe("resolveCursor", () => {
     assert.deepStrictEqual(resolveCursor(button), { mode: "bracket", target: button })
   })
 
-  test("a button inside a code block is framed, not left to the I-beam", () => {
+  test("a button inside a code block is framed", () => {
     const pre = new Node("pre", is(PROSE))
     const copy = new Node("button", is("button:not(:disabled)"), pre)
     assert.strictEqual(resolveCursor(copy).mode, "bracket")
@@ -112,6 +112,9 @@ describe("cursorForms", () => {
         for (const v of form.hotspot) assert.ok(v >= 0 && v <= size, `${name} hotspot ${v}`)
       }
     }
+    const size = Number(/width="(\d+)"/.exec(forms.pencil.svg)![1])
+    const [tx, ty] = forms.pencil.hotspot
+    assert.ok(tx < size / 2 && ty > size / 2, "the pencil's point is at its lower left")
     assert.strictEqual(forms.corners.length, 4)
     assert.strictEqual(new Set(forms.corners).size, 4)
   })

@@ -50,7 +50,6 @@ function mount(): boolean {
 
 function release() {
   html.classList.remove("dc-on")
-  html.removeAttribute("data-dc-native")
   attach("pencil", null)
   if (layer) layer.dataset.visible = "false"
 }
@@ -112,8 +111,6 @@ function render() {
   const { mode: next, target } = resolveCursor(hovered)
   attach(next, target)
   layer.dataset.mode = next
-  if (next === "native") html.setAttribute("data-dc-native", "")
-  else html.removeAttribute("data-dc-native")
 
   let px = x
   let py = y
