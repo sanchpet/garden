@@ -1,25 +1,10 @@
-import {
-  SWITCH_LABEL,
-  readChoice,
-  resolveCursor,
-  shouldDraw,
-  writeChoice,
-  type Choice,
-  type CursorMode,
-} from "./cursor-state"
+import { resolveCursor, shouldDraw, type CursorMode } from "./cursor-state"
 
 // The drawn cursor's page side. Listeners are set once, the script runs once per page load;
-// `nav` (every page, the first included) re-reads the environment and the page's switch.
+// `nav` (every page, the first included) re-reads the environment.
 
 const html = document.documentElement
 const media = (q: string) => window.matchMedia(q).matches
-const storage = (): Storage | undefined => {
-  try {
-    return window.localStorage
-  } catch {
-    return undefined
-  }
-}
 
 let layer: HTMLElement | null = null
 let pointer: HTMLElement | null = null
@@ -35,8 +20,6 @@ let stale = false
 let frame = 0
 let mode: CursorMode = "pencil"
 let attached: Element | null = null
-// Kept in memory too: where storage is blocked, the switch still works for the visit.
-let choice: Choice = readChoice(storage())
 
 function environment() {
   return {
@@ -74,7 +57,7 @@ function release() {
 
 function apply() {
   const env = environment()
-  enabled = shouldDraw({ ...env, choice }) && mount()
+  enabled = shouldDraw(env) && mount()
   if (!enabled) release()
 }
 
@@ -192,29 +175,10 @@ window.addEventListener(
   { passive: true, capture: true },
 )
 
-function label(choice: Choice) {
-  const lang = html.lang in SWITCH_LABEL ? html.lang : "en"
-  return SWITCH_LABEL[lang][choice]
-}
-
 document.addEventListener("nav", () => {
   apply()
   // A new page under a still pointer: what it is over is no longer known.
   stale = true
   attach("pencil", null)
   schedule()
-
-  const button = document.querySelector<HTMLButtonElement>("[data-cursor-switch]")
-  if (!button) return
-  const env = environment()
-  button.hidden = !(env.finePointer && !env.reducedData && !env.forcedColors)
-  button.textContent = label(choice)
-  const toggle = () => {
-    choice = choice === "drawn" ? "system" : "drawn"
-    writeChoice(storage(), choice)
-    button.textContent = label(choice)
-    apply()
-  }
-  button.addEventListener("click", toggle)
-  window.addCleanup(() => button.removeEventListener("click", toggle))
 })
