@@ -130,7 +130,7 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [
       {
         chat: "@sanchpetblog",
-        text: 'Туман.\n\n<a href="https://sanch.pet/ru/notes/n?ref=tgsanchpetblog">Прочесть заметку на сайте</a>',
+        text: 'Туман.\n\n<a href="https://sanch.pet/ru/notes/n?src=tgsanchpetblog">Прочесть заметку на сайте</a>',
         previewUrl: undefined,
       },
     ])
@@ -148,7 +148,7 @@ describe("run", () => {
       image: picture,
     })
     const tail =
-      '\n\n<a href="https://sanch.pet/ru/notes/n?ref=tgsanchpetblog">Прочесть заметку на сайте</a>'
+      '\n\n<a href="https://sanch.pet/ru/notes/n?src=tgsanchpetblog">Прочесть заметку на сайте</a>'
 
     test("goes out as a photo with its text for a caption, once the picture is up", async () => {
       const waited: string[] = []
@@ -213,8 +213,8 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [
       {
         chat: "@sanchpetblog",
-        text: "Анонс\n\nhttps://sanch.pet/ru/posts/svezhij?ref=tgsanchpetblog",
-        previewUrl: "https://sanch.pet/ru/posts/svezhij?ref=tgsanchpetblog",
+        text: "Анонс\n\nhttps://sanch.pet/ru/posts/svezhij?src=tgsanchpetblog",
+        previewUrl: "https://sanch.pet/ru/posts/svezhij?src=tgsanchpetblog",
       },
     ])
     assert.deepStrictEqual(h.state.saves, [
@@ -237,7 +237,7 @@ describe("run", () => {
     await h.go([{ ...fresh, content: undefined }])
     assert.strictEqual(
       h.state.sent[0].text,
-      "<b>Свежий</b>\n\nhttps://sanch.pet/ru/posts/svezhij?ref=tgsanchpetblog",
+      "<b>Свежий</b>\n\nhttps://sanch.pet/ru/posts/svezhij?src=tgsanchpetblog",
     )
   })
 
