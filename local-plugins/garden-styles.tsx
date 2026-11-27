@@ -247,6 +247,7 @@ article blockquote::before {
 .sidebar :is(.graph, .backlinks) > h3,
 .sidebar .toc .toc-header h3,
 .sources h2,
+section.footnotes > h2,
 .note-header .note-meta dt {
   font-family: "Caveat", cursive !important;
   font-weight: 700 !important;
@@ -259,7 +260,8 @@ article blockquote::before {
   font-size: 1.45rem !important;
   line-height: 1.1 !important;
 }
-.sources h2 {
+.sources h2,
+section.footnotes > h2 {
   font-size: 1.7rem !important;
 }
 .note-header .note-meta dt {
