@@ -9,7 +9,7 @@ const COLOPHON: Record<Language, string> = {
 }
 const GITHUB = "https://github.com/sanchpet"
 // The texts' licence; the engine's code is MIT, in its own repository.
-const LICENCE = (lang: Language) => `https://creativecommons.org/licenses/by-nc-sa/4.0/deed.${lang}`
+const LICENCE = (lang: Language) => `https://creativecommons.org/licenses/by/4.0/deed.${lang}`
 
 // The last line under every page, written in the margin like the labels of blocks: the
 // colophon in the page's language once it is out, the owner's GitHub and the texts' licence.
@@ -31,7 +31,7 @@ export const SiteFooter = (() => {
           github
         </a>
         <a class="external" href={LICENCE(lang)} rel="license">
-          cc by-nc-sa
+          cc by
         </a>
       </p>
     )
