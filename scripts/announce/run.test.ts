@@ -130,7 +130,7 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [
       {
         chat: "@sanchpetblog",
-        text: 'Туман.\n\n<a href="https://sanch.pet/ru/notes/n">Прочесть заметку на сайте</a>',
+        text: 'Туман.\n\n<a href="https://sanch.pet/ru/notes/n?ref=tgsanchpetblog">Прочесть заметку на сайте</a>',
         previewUrl: undefined,
       },
     ])
@@ -147,7 +147,8 @@ describe("run", () => {
       kind: "note",
       image: picture,
     })
-    const tail = '\n\n<a href="https://sanch.pet/ru/notes/n">Прочесть заметку на сайте</a>'
+    const tail =
+      '\n\n<a href="https://sanch.pet/ru/notes/n?ref=tgsanchpetblog">Прочесть заметку на сайте</a>'
 
     test("goes out as a photo with its text for a caption, once the picture is up", async () => {
       const waited: string[] = []
@@ -212,8 +213,8 @@ describe("run", () => {
     assert.deepStrictEqual(h.state.sent, [
       {
         chat: "@sanchpetblog",
-        text: "Анонс\n\nhttps://sanch.pet/ru/posts/svezhij",
-        previewUrl: "https://sanch.pet/ru/posts/svezhij",
+        text: "Анонс\n\nhttps://sanch.pet/ru/posts/svezhij?ref=tgsanchpetblog",
+        previewUrl: "https://sanch.pet/ru/posts/svezhij?ref=tgsanchpetblog",
       },
     ])
     assert.deepStrictEqual(h.state.saves, [
@@ -234,7 +235,10 @@ describe("run", () => {
   test("without an announcement the message is the title and the link", async () => {
     const h = await seeded()
     await h.go([{ ...fresh, content: undefined }])
-    assert.strictEqual(h.state.sent[0].text, "<b>Свежий</b>\n\nhttps://sanch.pet/ru/posts/svezhij")
+    assert.strictEqual(
+      h.state.sent[0].text,
+      "<b>Свежий</b>\n\nhttps://sanch.pet/ru/posts/svezhij?ref=tgsanchpetblog",
+    )
   })
 
   test("the journal is saved after each message, not once at the end", async () => {
