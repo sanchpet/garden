@@ -66,7 +66,7 @@ article:has(.bases-page) + .page-listing {
 .garden-drawing > svg {
   display: block;
   width: 100%;
-  min-width: 720px;
+  min-width: var(--drawing-min, 720px);
   height: auto;
 }
 .garden-drawing a {
@@ -284,13 +284,17 @@ article a.internal {
 article a:hover {
   text-decoration-color: currentColor !important;
 }
-/* A picture in a text is held to the screen: a portrait phone photo at column width is taller than it. */
+/* A picture in a text is held to the screen: a portrait phone photo at column width is taller than it.
+   A width set in the note (![[picture|220]]) is kept, and the cap does not stretch it out of shape. */
 article p > img {
   display: block;
-  width: auto;
   max-width: 100%;
   max-height: min(70vh, 36rem);
+  object-fit: contain;
   margin: 1rem auto;
+}
+article p > img:not([width]) {
+  width: auto;
 }
 article a.internal.tag-link,
 article a:has(> img),
