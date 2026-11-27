@@ -188,7 +188,7 @@ The last line under every page, in the column, written in Caveat at label size a
 
 ### Feed
 
-The Atom feed of each language, opened in a browser, is styled by `/static/feed.css` (no XSLT): the site's ground and text in light or dark by `prefers-color-scheme`, a note in Caveat on what the address is for, the feed title, and each entry's title with three lines of its text. Links and dates are hidden: CSS cannot make links in XML or format a date. The stream carries "rss" in Caveat above the first year's rule, at its right end.
+The Atom feed of each language, opened in a browser, is styled by `/static/feed.css` (no XSLT, no script): the site's ground and text in light or dark by `prefers-color-scheme`, a note in Caveat on what the address is for, the feed title, then a compact list, one line per entry: its title as a link on the left, its day in muted text on the right, a light rule between lines; below 480px the day goes under the title. A note has no title, so its line names it by its address (`2026-11-22-1840`) in IBM Plex Mono. The lines are XHTML that the feed carries in each entry (with a viewport for phones); feed readers skip it as foreign markup, and the Atom text itself is hidden. The stream carries "rss" in Caveat above the first year's rule, at its right end.
 
 ### Language switch
 

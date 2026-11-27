@@ -2,7 +2,7 @@
 // There is no stored journal of events. Like the feed, nothing here reads the clock, git or
 // the file system: the same pages give the same stream.
 
-import { timestamp } from "./feed-atom"
+import { dayOf, formatDay, timestamp } from "./feed-atom"
 import { KINDS, type Species } from "./kinds"
 import { languageOf, twinsOf, type Language } from "./languages"
 
@@ -51,15 +51,6 @@ const CATALOGUE: readonly string[] = [...KINDS.source, ...KINDS.assessed]
 function text(value: unknown): string | undefined {
   if (typeof value !== "string" && typeof value !== "number") return undefined
   return String(value).trim() || undefined
-}
-
-// A date-only value is that day. A value with a time keeps the day it was written with when
-// it arrives as a string; YAML turns an unquoted one into a Date, which only knows UTC.
-export function dayOf(value: unknown): string | undefined {
-  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value.trim())) {
-    return value.trim().slice(0, 10)
-  }
-  return timestamp(value)?.slice(0, 10)
 }
 
 // A post or an evergreen text: the day it came out on the site, and the day of its latest
@@ -229,13 +220,5 @@ export function byYear(list: Row[]): [string, Row[]][] {
   return [...years]
 }
 
-// "21 Nov" in a row, "21 November 2026" as the heading of a note's own page.
-export function formatDay(day: string, lang: Language, style: "short" | "long"): string {
-  const text = new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", {
-    day: "numeric",
-    month: style,
-    year: style === "long" ? "numeric" : undefined,
-    timeZone: "UTC",
-  })
-  return text.replace(/\s*г\.$/, "")
-}
+// Their home is the feed, which needs them too and sits below this module.
+export { dayOf, formatDay }
