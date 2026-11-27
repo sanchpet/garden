@@ -23,8 +23,8 @@ export interface Form {
 
 const add = (a: Point, b: Point, k = 1): Point => [a[0] + b[0] * k, a[1] + b[1] * k]
 
-function svg(size: number, body: string): string {
-  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true" focusable="false">${body}</svg>`
+function svg(size: number, body: string, shown = size): string {
+  return `<svg viewBox="0 0 ${size} ${size}" width="${shown}" height="${shown}" aria-hidden="true" focusable="false">${body}</svg>`
 }
 
 function path(d: string, stroke: string, width: number, fill = "none"): string {
@@ -38,11 +38,12 @@ function haloed(parts: Array<[string, string]>, width: number): string {
   return under + over
 }
 
-// A pencil held at 45°, point up and to the left: graphite, the sharpened wood, the body.
+// A pencil held at 45° as a right hand holds it to write, point down and to the left:
+// graphite, the sharpened wood, the body.
 function pencil(rnd: () => number): Form {
-  const tip: Point = [2.5, 2.5]
-  const u: Point = [Math.SQRT1_2, Math.SQRT1_2]
-  const n: Point = [-Math.SQRT1_2, Math.SQRT1_2]
+  const tip: Point = [2.5, 29.5]
+  const u: Point = [Math.SQRT1_2, -Math.SQRT1_2]
+  const n: Point = [Math.SQRT1_2, Math.SQRT1_2]
   const cone = add(tip, u, 9)
   const end = add(cone, u, 17)
   const w = 3.6
@@ -58,7 +59,10 @@ function pencil(rnd: () => number): Form {
     [wobble(rnd, add(ferrule, n, w), add(ferrule, n, -w), amp), "none"],
     [wobble(rnd, add(cone, u, 1.2), add(end, u, -4.6), amp), "none"],
   ]
-  return { svg: svg(32, haloed(strokes, 1.4)), hotspot: tip }
+  // Drawn on a 32 grid and shown at 24 px, with the stroke thickened so the line keeps its weight.
+  const shown = 24
+  const k = shown / 32
+  return { svg: svg(32, haloed(strokes, 1.4 / k), shown), hotspot: [tip[0] * k, tip[1] * k] }
 }
 
 // A felt marker for drawn objects that are links: a paper barrel, the colour in the nib and

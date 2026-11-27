@@ -76,9 +76,6 @@ export const DrawnCursor = (() => {
 .drawn-cursor[data-mode="bracket"] .dc-form[data-form="dot"] {
   opacity: 1;
 }
-.drawn-cursor[data-mode="native"] .dc-pointer {
-  visibility: hidden;
-}
 .drawn-cursor[data-pressed="true"] .dc-form > svg {
   transform: scale(0.86);
 }
@@ -123,8 +120,10 @@ export const DrawnCursor = (() => {
   from { clip-path: inset(-4px 100% -4px 0); }
   to { clip-path: inset(-4px 0 -4px 0); }
 }
-html.dc-on:not([data-dc-native]),
-html.dc-on:not([data-dc-native]) * {
+html.dc-on,
+html.dc-on *,
+html.dc-on *::before,
+html.dc-on *::after {
   cursor: none !important;
 }
 html.dc-on article a[data-dc-underlined] {
