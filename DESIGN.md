@@ -184,7 +184,7 @@ Under the title: an italic annotation, then the note's fields as a row of pairs,
 
 ### Site footer
 
-The last line under every page, in the column, written in Caveat at label size and `gray`: the colophon of the page's language (only once it is published, and not on the colophon itself), the owner's GitHub and the texts' licence, CC BY-NC-SA, in the page's language. No rule above it and no plate behind the links; a link turns the hover colour under the pointer.
+The last line under every page, in the column, written in Caveat at label size and `gray`: the colophon of the page's language (only once it is published, and not on the colophon itself), the owner's GitHub and the texts' licence, CC BY 4.0, in the page's language. No rule above it and no plate behind the links; a link turns the hover colour under the pointer.
 
 ### Language switch
 
