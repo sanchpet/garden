@@ -42,11 +42,23 @@ export function splitLines(tree: Root): void {
   )
 }
 
+// The red line is a page's choice: `indent: true` adds a class the stock page puts on its article,
+// the same `cssclasses` Obsidian reads.
+export const RED_LINE = "red-line"
+
+export function withRedLine(frontmatter: Record<string, unknown> | undefined): void {
+  if (frontmatter?.indent !== true) return
+  const own = frontmatter.cssclasses
+  const classes = Array.isArray(own) ? own : typeof own === "string" ? [own] : []
+  if (!classes.includes(RED_LINE)) frontmatter.cssclasses = [...classes, RED_LINE]
+}
+
 export const ParagraphPerLine: QuartzTransformerPlugin = () => ({
   name: "ParagraphPerLine",
   markdownPlugins() {
     return [
       () => (tree: Root, file) => {
+        withRedLine(file.data.frontmatter)
         // Indexes and module pages (the stream, the race calendar) are laid out, not written.
         const slug = file.data.slug ?? ""
         if (slug === "index" || slug.endsWith("/index")) return

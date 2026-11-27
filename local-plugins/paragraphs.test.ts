@@ -1,7 +1,7 @@
 import assert from "node:assert"
 import { describe, test } from "node:test"
 import type { Paragraph, Root } from "mdast"
-import { splitLines } from "./paragraphs"
+import { RED_LINE, splitLines, withRedLine } from "./paragraphs"
 
 const text = (value: string) => ({ type: "text" as const, value })
 const para = (...children: Paragraph["children"]): Paragraph => ({ type: "paragraph", children })
@@ -51,5 +51,21 @@ describe("splitLines", () => {
     const before = structuredClone(tree)
     splitLines(tree)
     assert.deepStrictEqual(tree, before)
+  })
+})
+
+describe("withRedLine", () => {
+  test("indent: true asks for the red line, keeping the page's own classes", () => {
+    const frontmatter: Record<string, unknown> = { indent: true, cssclasses: ["wide"] }
+    withRedLine(frontmatter)
+    assert.deepStrictEqual(frontmatter.cssclasses, ["wide", RED_LINE])
+  })
+
+  test("without indent: true the page has no red line", () => {
+    for (const frontmatter of [{}, { indent: false }, { indent: "true" }]) {
+      const before = structuredClone(frontmatter)
+      withRedLine(frontmatter)
+      assert.deepStrictEqual(frontmatter, before)
+    }
   })
 })
