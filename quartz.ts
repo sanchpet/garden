@@ -13,6 +13,7 @@ import { SiteFontFaces, SiteFonts } from "./local-plugins/fonts"
 import { ContentCards } from "./local-plugins/cards"
 import { Thumbnails } from "./local-plugins/thumbs"
 import { LoneDollars } from "./local-plugins/dollars"
+import { VaultPaths } from "./local-plugins/vault-paths"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { ViewCount } from "./local-plugins/views"
@@ -41,7 +42,7 @@ const config = await loadQuartzConfig()
 // First, before the table of contents collects headings that are about to go.
 config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.unshift(SourceTextsInPlace())
-config.plugins.transformers.unshift(LoneDollars())
+config.plugins.transformers.unshift(LoneDollars(), VaultPaths())
 config.plugins.transformers.push(
   InlineDrawings(),
   PageLanguage(),
