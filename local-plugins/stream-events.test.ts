@@ -1,7 +1,15 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
 import { excerpt } from "./feed-atom"
-import { byYear, eventsOf, rows, streamOf, type Page, type StreamEvent } from "./stream-events"
+import {
+  byYear,
+  eventsOf,
+  rows,
+  streamOf,
+  textDates,
+  type Page,
+  type StreamEvent,
+} from "./stream-events"
 
 const page = (slug: string, frontmatter: Record<string, unknown>): Page => ({ slug, frontmatter })
 const said = (events: StreamEvent[]) => events.map((e) => `${e.day} ${e.verb} ${e.title}`)
@@ -31,6 +39,42 @@ describe("events of a page", () => {
       "2026-11-02 revised Мышление",
     ])
     assert.strictEqual(events[1].edition, 2)
+  })
+
+  test("an evergreen text comes out on its published day, not the day it was started", () => {
+    const text = page("ru/evergreen/m", {
+      type: "evergreen",
+      title: "Мышление",
+      created: "2026-10-26",
+      published: "2026-11-02",
+      revised: "2026-11-02",
+      revision: 2,
+    })
+    assert.deepStrictEqual(said(eventsOf(text)), ["2026-11-02 published Мышление"])
+  })
+
+  test("a text's header dates: release, and an edition only when later", () => {
+    const evergreen = { type: "evergreen", created: "2026-10-26", published: "2026-11-02" }
+    assert.deepStrictEqual(textDates({ ...evergreen, revised: "2026-11-02" }), {
+      published: "2026-11-02",
+      revised: undefined,
+    })
+    assert.deepStrictEqual(textDates({ ...evergreen, revised: "2026-11-20" }), {
+      published: "2026-11-02",
+      revised: "2026-11-20",
+    })
+    assert.deepStrictEqual(textDates({ type: "evergreen", created: "2026-10-26" }), {
+      published: "2026-10-26",
+      revised: undefined,
+    })
+    // A post has no editions: a stray `revised` is not shown.
+    assert.deepStrictEqual(
+      textDates({ type: "post", published: "2026-11-23", revised: "2026-11-25" }),
+      {
+        published: "2026-11-23",
+        revised: undefined,
+      },
+    )
   })
 
   test("a revision dated at the release is the release", () => {
