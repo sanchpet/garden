@@ -21,7 +21,7 @@ describe("rewrite", () => {
       rewrite(
         `import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.esm.min.mjs")`,
       ),
-      `import("/static/vendor/mermaid/mermaid.esm.min.mjs")`,
+      `import("/static/vendor/mermaid/mermaid.esm.min.js")`,
     )
   })
 
@@ -66,6 +66,12 @@ function modules(root: string, versions: Record<string, string> = {}) {
       fs.mkdirSync(path.dirname(path.join(dist, name)), { recursive: true })
       fs.writeFileSync(path.join(dist, name), name)
     }
+    if (lib.pkg === "mermaid") {
+      fs.writeFileSync(
+        path.join(dist, "mermaid.esm.min.mjs"),
+        `import{a}from"./chunks/mermaid.esm.min/sample.mjs";import("./chunks/mermaid.esm.min/b.mjs");const s="x.mjs"`,
+      )
+    }
   }
 }
 
@@ -88,8 +94,13 @@ describe("selfHost", () => {
       fs.readFileSync(path.join(out, "ru", "a.html"), "utf8").includes("/static/vendor/katex/"),
     )
     assert.ok(fs.existsSync(path.join(out, "static/vendor/katex/katex.min.css")))
+    // ES modules are served as .js, their imports of one another rewritten to match.
     assert.ok(
-      fs.existsSync(path.join(out, "static/vendor/mermaid/chunks/mermaid.esm.min/sample.mjs")),
+      fs.existsSync(path.join(out, "static/vendor/mermaid/chunks/mermaid.esm.min/sample.js")),
+    )
+    assert.strictEqual(
+      fs.readFileSync(path.join(out, "static/vendor/mermaid/mermaid.esm.min.js"), "utf8"),
+      `import{a}from"./chunks/mermaid.esm.min/sample.js";import("./chunks/mermaid.esm.min/b.js");const s="x.mjs"`,
     )
     assert.ok(fs.existsSync(path.join(out, "static/vendor/leaflet/images/sample.png")))
   })
