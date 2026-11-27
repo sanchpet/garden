@@ -184,7 +184,11 @@ Under the title: an italic annotation, then the note's fields as a row of pairs,
 
 ### Site footer
 
-The last line under every page, in the column, written in Caveat at label size and `gray`: the colophon of the page's language (only once it is published, and not on the colophon itself), the owner's GitHub and the texts' licence, CC BY 4.0, in the page's language. No rule above it and no plate behind the links; a link turns the hover colour under the pointer.
+The last line under every page, in the column, written in Caveat at label size and `gray`: the colophon of the page's language (only once it is published, and not on the colophon itself), the owner's GitHub, the feed of the page's language ("rss") and the texts' licence, CC BY 4.0, in the page's language. No rule above it and no plate behind the links; a link turns the hover colour under the pointer.
+
+### Feed
+
+The Atom feed of each language, opened in a browser, is styled by `/static/feed.css` (no XSLT): the site's ground and text in light or dark by `prefers-color-scheme`, a note in Caveat on what the address is for, the feed title, and each entry's title with three lines of its text. Links and dates are hidden: CSS cannot make links in XML or format a date. The stream carries "rss" in Caveat above the first year's rule, at its right end.
 
 ### Language switch
 
