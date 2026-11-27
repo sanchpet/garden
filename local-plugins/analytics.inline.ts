@@ -20,7 +20,9 @@ async function fillViews(path: string) {
   const lang = languageOf(path.slice(1))
   if (!lang) return
   try {
-    const res = await fetch(counterUrl(path))
+    // GoatCounter marks even its 404 ("no views yet") cacheable with no lifetime, so the browser
+    // would keep showing nothing after the first views arrive.
+    const res = await fetch(counterUrl(path), { cache: "no-cache" })
     if (!res.ok) return
     const text = viewsLine((await res.json()).count, lang)
     if (!text || location.pathname !== path) return

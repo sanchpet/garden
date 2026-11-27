@@ -1,3 +1,3 @@
 `count.js` is GoatCounter's client from release v2.7.0 (`public/count.js` in arp242/goatcounter), ISC licence (header of the file). Bundled into the page script so no request goes to another host for it. Update it together with the server in homelab-v2 `apps/stats`.
 
-One local change: the bot check no longer treats `window.phantom` as PhantomJS. The Phantom crypto wallet extension defines `window.phantom`, so every reader with it was counted as a bot (`b=150`) and dropped. PhantomJS itself is still caught by `callPhantom` and `_phantom`. Keep the change when updating the file.
+One local change: the bot check no longer treats `window.phantom` as PhantomJS. Wallet extensions define `window.phantom` (Phantom itself, and SafePal and others that pose as Phantom for Solana sites), so every reader with one was counted as a bot (`b=150`) and dropped. PhantomJS itself is still caught by `callPhantom` and `_phantom`. Keep the change when updating the file.
