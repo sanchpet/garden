@@ -53,7 +53,8 @@
 	var is_bot = function() {
 		// Headless browsers are probably a bot.
 		var w = window, d = document
-		if (w.callPhantom || w._phantom || w.phantom)
+		// sanch.pet: no check of window.phantom, the Phantom wallet defines it (README.md).
+		if (w.callPhantom || w._phantom)
 			return 150
 		if (w.__nightmare)
 			return 151
