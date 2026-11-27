@@ -9,6 +9,7 @@ import {
 import { GardenStyles } from "./local-plugins/garden-styles"
 import { InlineDrawings } from "./local-plugins/drawing"
 import { GardenBrand, HomeLogo } from "./local-plugins/brand"
+import { SiteFontFaces, SiteFonts } from "./local-plugins/fonts"
 import { ContentCards } from "./local-plugins/cards"
 import { Thumbnails } from "./local-plugins/thumbs"
 import { LoneDollars } from "./local-plugins/dollars"
@@ -53,6 +54,7 @@ config.plugins.transformers.push(
 // are full copies, hence our components go into each of them.
 export const layout = await loadQuartzLayout()
 const header = [
+  SiteFontFaces(),
   HomeLogo(),
   StreamLink(),
   LanguageSwitch(),
@@ -85,6 +87,7 @@ if (wrapped === 0) {
 config.plugins.emitters.push(
   LegacyRedirects(),
   GardenBrand(),
+  SiteFonts(),
   ContentCards(),
   Thumbnails(),
   RacesFeed(),

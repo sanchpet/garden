@@ -58,6 +58,11 @@ jobs:
           set -o pipefail
           npx quartz build -d content -o public 2>&1 | tee build.log
 
+      # Plugins load KaTeX, Mermaid, d3, pixi.js and Leaflet from CDNs; the site serves them
+      # itself, and a CDN address left in the output fails the publication.
+      - name: Serve third-party code from the site
+        run: npx tsx scripts/self-host/cli.ts public
+
       # With `shell: bash` a pipeline fails when its grep finds nothing, and «None.» is printed.
       - name: Report what the build stripped or could not use
         shell: bash
