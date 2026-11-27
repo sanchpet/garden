@@ -8,6 +8,8 @@ import { publishedSlugs } from "./garden"
 import { LANGUAGES, inLanguage, languageOf, relinked, type Language } from "./languages"
 // @ts-ignore
 import script from "./language-switch.inline"
+// @ts-ignore
+import rootScript from "./language-root.inline"
 
 export { LANGUAGES, languageOf }
 
@@ -146,6 +148,7 @@ export const LanguageSwitch = (() => {
     )
   }
 
+  Switch.beforeDOMLoaded = rootScript
   Switch.afterDOMLoaded = script
   Switch.css = `
 .language-switch {
