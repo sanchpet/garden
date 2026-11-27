@@ -20,7 +20,8 @@ configuration:
     - icon.png
     - og-image.png
   theme:
-    fontOrigin: googleFonts
+    # The site serves its fonts itself (local-plugins/fonts.ts); nothing is loaded from Google.
+    fontOrigin: local
     cdnCaching: true
     typography:
       header:
@@ -116,7 +117,7 @@ plugins:
     enabled: true
     # This plugin, not theme.typography, is what sets the font variables.
     options:
-      fontOrigin: googleFonts
+      fontOrigin: local
       useThemeFonts: false
       header:
         name: Literata
