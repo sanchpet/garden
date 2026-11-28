@@ -37,6 +37,7 @@ import {
   SourceTextsInPlace,
   withoutSourceTexts,
 } from "./local-plugins/sources"
+import { CatalogueTwins } from "./local-plugins/twins"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -47,6 +48,7 @@ config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.unshift(SourceTextsInPlace())
 config.plugins.transformers.unshift(LoneDollars(), VaultPaths())
 config.plugins.transformers.push(
+  CatalogueTwins(),
   ParagraphPerLine(),
   InlineDrawings(),
   DropCap(),

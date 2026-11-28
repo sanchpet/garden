@@ -1,4 +1,4 @@
-import { viewRegistry, type BasesEntry } from "@quartz-community/bases-page"
+import { viewRegistry } from "@quartz-community/bases-page"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
@@ -11,10 +11,29 @@ import {
   packShelves,
   type BookSize,
   type Point,
-  type ShelfGroup,
 } from "./bookcase/geometry"
 // @ts-ignore
 import script from "./bookcase.inline"
+import {
+  grouped,
+  ownLanguage,
+  plain,
+  sectionNames,
+  shelved,
+  statusOf,
+  withoutLanguage,
+  type Shelved,
+} from "./bookcase/shelving"
+export {
+  grouped,
+  ownLanguage,
+  plain,
+  sectionNames,
+  shelved,
+  statusOf,
+  withoutLanguage,
+  type Shelved,
+} from "./bookcase/shelving"
 
 // A Bases view, `type: bookcase`: the query result as one bookcase drawn in parallel
 // projection, a shelf run per `groupBy` value. The book sizes and the shelf packing are
@@ -127,15 +146,6 @@ export function statusLabel(lang: Language, status: unknown): string | undefined
   return typeof status === "string" && Object.hasOwn(words, status) ? words[status] : undefined
 }
 
-// A property as a reader would see it: the first of a list, a wikilink by its name.
-export function plain(value: unknown): string {
-  const first = Array.isArray(value) ? value[0] : value
-  if (typeof first !== "string" && typeof first !== "number") return ""
-  const text = String(first).trim()
-  const link = /^\[\[([^\]|]*)(?:\|([^\]]*))?\]\]$/.exec(text)
-  return link ? (link[2] ?? link[1].split("/").pop()!).trim() : text
-}
-
 export { blob, f, outline, seeded, wobble } from "./hand"
 import { blob, f, outline, seeded, wobble } from "./hand"
 
@@ -185,11 +195,6 @@ export function lettering(
   return { text: cut === text ? text : `${cut.replace(/[\s….,:;—-]+$/, "")}…`, size: smaller }
 }
 
-export interface Shelved {
-  entry: BasesEntry
-  foreign: boolean
-}
-
 interface Bounds {
   x0: number
   y0: number
@@ -207,46 +212,6 @@ const grow = (b: Bounds, points: readonly Point[]) => {
 }
 const empty = (): Bounds => ({ x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity })
 const rect = (b: Bounds) => [b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0].map(f).join(",")
-
-export const withoutLanguage = (slug: string) =>
-  languageOf(slug) ? slug.slice(slug.indexOf("/") + 1) : slug
-export const statusOf = (book: Shelved) =>
-  typeof book.entry.properties.status === "string" ? book.entry.properties.status : ""
-// A book begun or waiting is not on the shelves.
-export const shelved = (book: Shelved) => !["later", "in-progress"].includes(statusOf(book))
-
-// A book has one card; where both languages have it, the shelf shows the page's own.
-export function ownLanguage(entries: BasesEntry[], lang: Language): Shelved[] {
-  const byBook = new Map<string, Shelved>()
-  for (const entry of entries) {
-    const foreign = languageOf(entry.slug) !== undefined && languageOf(entry.slug) !== lang
-    const key = withoutLanguage(entry.slug)
-    if (!byBook.has(key) || !foreign) byBook.set(key, { entry, foreign })
-  }
-  return [...byBook.values()]
-}
-
-// Bases sorts the entries by the view's `sort`, so the shelves take their order from the
-// group value itself.
-export function grouped(
-  books: Shelved[],
-  property: string | undefined,
-  descending: boolean,
-): ShelfGroup<Shelved>[] {
-  const key = property?.replace(/^note\./, "")
-  const groups = new Map<string, Shelved[]>()
-  for (const book of books) {
-    const name = key ? plain(book.entry.properties[key]) : ""
-    groups.set(name, [...(groups.get(name) ?? []), book])
-  }
-  const named = [...groups].sort(
-    ([a], [b]) => (a === "" ? 1 : b === "" ? -1 : a.localeCompare(b)) * (descending ? -1 : 1),
-  )
-  return named.map(([label, members]) => ({
-    label: label || null,
-    books: members.map((item) => ({ path: withoutLanguage(item.entry.slug), item })),
-  }))
-}
 
 // A book's silhouette where it stands: the pointer is tested against this, not against the
 // faces a hover has nudged, or a book would flicker under a pointer resting at its edge.
@@ -344,6 +309,7 @@ viewRegistry.register({
       owned.filter(shelved),
       view.groupBy?.property,
       view.groupBy?.direction === "DESC",
+      sectionNames(entries, view.groupBy?.property, lang),
     )
     const layout = packShelves(groups)
     const shelves = Math.max(layout.shelves.length, MIN_SHELVES)
