@@ -4,16 +4,15 @@ import { unified } from "unified"
 import { escapeXml } from "./feed-atom"
 import type { Language } from "./languages"
 
-// What the feed says above its list when a browser opens it. The owner overrides it with
-// `feed_note` in the frontmatter of the language's home page.
+// What the feed says above its list when a browser opens it, unless `<lang>/site/feed.md` says it.
 export const DEFAULT_FEED_NOTE: Record<Language, string> = {
   ru: "Это лента для RSS-читалки. Скопируйте адрес страницы в читалку, чтобы подписаться.",
   en: "This is a feed for an RSS reader. Copy the page's address into your reader to subscribe.",
 }
 
-// The note as XHTML: the home page's `feed_note` when it says something, the default otherwise.
-export function feedNote(value: unknown, lang: Language): string {
-  const own = typeof value === "string" ? noteXhtml(value) : ""
+// The note as XHTML: the site text when it says something, the default otherwise.
+export function feedNote(markdown: string | undefined, lang: Language): string {
+  const own = markdown ? noteXhtml(markdown) : ""
   return own || noteXhtml(DEFAULT_FEED_NOTE[lang])
 }
 
