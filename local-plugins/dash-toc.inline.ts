@@ -3,19 +3,20 @@ import {
   currentSection,
   dockLengths,
   dockOpacity,
+  dockZone,
   DOCK,
   nearestIndex,
   readingLine,
 } from "./dash-toc-logic"
 
 // Marks the dash of the section being read, and swells the dashes around the pointer or the
-// focused dash like a dock.
+// focused dash like a dock, over a veil that dims and blurs the rest of the page.
 document.addEventListener("nav", () => {
   const nav = document.querySelector<HTMLElement>("nav.dash-toc")
   if (!nav) return
   const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-slug]")]
   const dashes = links.map((a) => a.querySelector<SVGSVGElement>("svg.dash"))
-  const rests = dashes.map((svg) => Number(svg?.getAttribute("width") ?? 20))
+  const rests = dashes.map((svg) => Number(svg?.getAttribute("width") ?? 18))
   const headings = links.map((a) => document.getElementById(a.dataset.slug ?? ""))
   let frame = 0
   let shown = -2
@@ -56,11 +57,13 @@ document.addEventListener("nav", () => {
   const drawn = [...rests]
   let pointerY: number | null = null
   let focused = -1
+  // Escape puts the veil away until the pointer or focus comes back to the strip anew.
+  let dismissed = false
   let dockFrame = 0
 
   const targets = (): { lengths: number[]; near: number } => {
     const y = focused >= 0 ? centres[focused] : pointerY
-    if (y === null) return { lengths: rests, near: -1 }
+    if (y === null || dismissed) return { lengths: rests, near: -1 }
     return { lengths: dockLengths(rests, centres, y), near: nearestIndex(centres, y) }
   }
 
@@ -81,6 +84,7 @@ document.addEventListener("nav", () => {
       links[i].classList.toggle("near", i === near)
     })
     nav.classList.toggle("docked", near >= 0)
+    nav.classList.toggle("dismissed", dismissed)
     if (near < 0 && !moving) {
       // Back at rest: the stylesheet draws the strip again.
       dashes.forEach((svg, i) => {
@@ -97,29 +101,41 @@ document.addEventListener("nav", () => {
   }
 
   const reach = DOCK.amp + Math.max(...rests)
+  // The name stands right of the longest stroke and ends at the reading column's right edge,
+  // or inside the window if the column is narrower.
+  const room = () => {
+    const left = nav.getBoundingClientRect().left + reach + 16
+    const column = document.querySelector(".center")?.getBoundingClientRect().right
+    const end = Math.min(column ?? window.innerWidth, window.innerWidth - 24)
+    nav.style.setProperty("--label-room", `${Math.max(160, end - left)}px`)
+  }
   const onMove = (event: PointerEvent) => {
-    const box = nav.getBoundingClientRect()
+    const zone = dockZone(nav.getBoundingClientRect(), reach)
     const inside =
-      event.clientY >= box.top - 12 &&
-      event.clientY <= box.bottom + 12 &&
-      event.clientX >= box.right - reach - 16 &&
-      event.clientX <= box.right + 16
+      event.clientY >= zone.top &&
+      event.clientY <= zone.bottom &&
+      event.clientX >= zone.left &&
+      event.clientX <= zone.right
     if (!inside) {
       pointerY = null
+      dismissed = false
       window.removeEventListener("pointermove", onMove)
     } else {
-      pointerY = event.clientY - box.top
+      pointerY = event.clientY - nav.getBoundingClientRect().top
     }
     dock()
   }
   const onEnter = (event: PointerEvent) => {
     if (event.pointerType !== "mouse" && event.pointerType !== "pen") return
     measure()
+    room()
     window.addEventListener("pointermove", onMove, { passive: true })
     onMove(event)
   }
   const onFocusIn = (event: FocusEvent) => {
     measure()
+    room()
+    dismissed = false
     const i = links.indexOf(event.target as HTMLAnchorElement)
     focused = i >= 0 && links[i].matches(":focus-visible") ? i : -1
     dock()
@@ -127,8 +143,15 @@ document.addEventListener("nav", () => {
   const onFocusOut = (event: FocusEvent) => {
     if (!links.includes(event.relatedTarget as HTMLAnchorElement)) {
       focused = -1
+      if (pointerY === null) dismissed = false
       dock()
     }
+  }
+  // Focus stays on its dash, so Tab goes on from where the reader was.
+  const onKey = (event: KeyboardEvent) => {
+    if (event.key !== "Escape" || !nav.classList.contains("docked")) return
+    dismissed = true
+    dock()
   }
 
   update()
@@ -137,6 +160,7 @@ document.addEventListener("nav", () => {
   nav.addEventListener("pointerenter", onEnter)
   nav.addEventListener("focusin", onFocusIn)
   nav.addEventListener("focusout", onFocusOut)
+  document.addEventListener("keydown", onKey)
   window.addCleanup(() => {
     cancelAnimationFrame(frame)
     cancelAnimationFrame(dockFrame)
@@ -146,5 +170,6 @@ document.addEventListener("nav", () => {
     nav.removeEventListener("pointerenter", onEnter)
     nav.removeEventListener("focusin", onFocusIn)
     nav.removeEventListener("focusout", onFocusOut)
+    document.removeEventListener("keydown", onKey)
   })
 })

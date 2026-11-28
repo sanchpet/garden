@@ -4,12 +4,14 @@ import {
   bell,
   currentSection,
   dashPath,
-  dashWidth,
   dockLengths,
+  dockZone,
   dockOpacity,
   hasContents,
   nearestIndex,
   readingLine,
+  REST_LENGTH,
+  restLengths,
 } from "./dash-toc-logic"
 
 describe("dash contents", () => {
@@ -21,8 +23,16 @@ describe("dash contents", () => {
     assert.strictEqual(hasContents([entry(0), entry(1)]), true)
   })
 
-  test("a deeper heading gets a shorter dash, down to a stub", () => {
-    assert.deepStrictEqual([0, 1, 2, 3, 6].map(dashWidth), [20, 15, 10, 8, 8])
+  test("every dash rests at one length whatever its heading's level", () => {
+    const lengths = restLengths([entry(0), entry(1), entry(2), entry(3)])
+    assert.deepStrictEqual(lengths, [REST_LENGTH, REST_LENGTH, REST_LENGTH, REST_LENGTH])
+  })
+
+  test("the dock stays open across the strip and rightwards over the longest stroke", () => {
+    const zone = dockZone({ left: 300, top: 100, bottom: 220 }, 118)
+    assert.deepStrictEqual(zone, { left: 284, right: 434, top: 88, bottom: 232 })
+    assert.ok(zone.right > 300 + 118, "the zone reaches past the longest stroke's tip")
+    assert.ok(zone.left > 300 - 118, "nothing to the strip's left keeps the dock")
   })
 
   test("a dash is the same stroke on every build and differs from its neighbour", () => {
@@ -39,12 +49,16 @@ describe("dash contents", () => {
 
   test("under the pointer the strokes swell in a bell, the nearest the most", () => {
     const centres = [6, 18, 30, 42, 54]
-    const lengths = dockLengths([20, 15, 20, 20, 10], centres, 30)
-    assert.strictEqual(lengths[2], 120)
-    assert.ok(lengths[1] > 15 && lengths[1] < lengths[2])
+    const rests = centres.map(() => REST_LENGTH)
+    const lengths = dockLengths(rests, centres, 30)
+    assert.strictEqual(lengths[2], REST_LENGTH + 100)
+    assert.ok(lengths[1] > REST_LENGTH && lengths[1] < lengths[2])
     assert.ok(lengths[3] < lengths[2] && lengths[3] > lengths[4])
-    assert.ok(Math.abs(lengths[1] - 15 - (lengths[3] - 20)) < 1e-9, "the bell is symmetric")
-    assert.ok(dockLengths([20], [6], 306)[0] - 20 < 0.01, "a far stroke stays at rest")
+    assert.ok(Math.abs(lengths[1] - lengths[3]) < 1e-9, "the bell is symmetric")
+    assert.ok(
+      dockLengths(rests, centres, 330).every((l) => l - REST_LENGTH < 0.01),
+      "far: at rest",
+    )
     assert.strictEqual(bell(0), 1)
     assert.ok(bell(30) > 0.6 && bell(30) < 0.61)
   })

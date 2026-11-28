@@ -14,9 +14,12 @@ export function hasContents(toc: readonly TocEntry[] | undefined): toc is TocEnt
   return (toc?.length ?? 0) >= MIN_ENTRIES
 }
 
-// The top level is the longest dash; each level down is shorter, down to a stub.
-export function dashWidth(depth: number): number {
-  return Math.max(8, 20 - 5 * Math.max(0, depth))
+// Every dash rests at one length: the dock is the only thing that draws them unequal, so a
+// level shown by length would read as a dock frozen in place.
+export const REST_LENGTH = 18
+
+export function restLengths(toc: readonly TocEntry[]): number[] {
+  return toc.map(() => REST_LENGTH)
 }
 
 // The dash as a baked pencil stroke, seeded by its place so every build draws it alike.
@@ -46,7 +49,7 @@ export function readingLine(viewport: number, scrolled: number, scrollable: numb
 // Under the pointer the strokes swell like a dock, after Aaron Pham's garden: each grows by a
 // bell of its distance from the pointer, the nearest the most, the far ones barely.
 export const DOCK = {
-  // How much the stroke under the pointer grows: a top-level stroke reaches six times its rest.
+  // How much the stroke under the pointer grows: it reaches about seven times its rest.
   amp: 100,
   // The bell's width: two and a half strokes either side still lift noticeably.
   sigma: 30,
@@ -72,6 +75,21 @@ export function nearestIndex(centres: readonly number[], y: number): number {
     if (best === -1 || Math.abs(centres[i] - y) < Math.abs(centres[best] - y)) best = i
   }
   return best
+}
+
+// Where the pointer keeps the dock open: the strip's height with a little slack, and from its
+// left edge across the longest a stroke can grow, since the strokes grow rightwards from there.
+export function dockZone(
+  strip: { left: number; top: number; bottom: number },
+  reach: number,
+  slack: number = 16,
+): { left: number; right: number; top: number; bottom: number } {
+  return {
+    left: strip.left - slack,
+    right: strip.left + reach + slack,
+    top: strip.top - 12,
+    bottom: strip.bottom + 12,
+  }
 }
 
 // The nearest stroke is full ink; the rest fade with distance down to a faint pencil.
