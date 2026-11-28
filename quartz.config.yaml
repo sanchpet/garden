@@ -122,17 +122,12 @@ plugins:
     options:
       fontOrigin: local
       useThemeFonts: false
-      header:
-        name: Literata
-        weights: [600, 700]
-      body:
-        name: Literata
-        weights: [400, 600]
-        includeItalic: true
-      code:
-        name: IBM Plex Mono
-        weights: [400, 600]
-      interface: '"Literata", serif'
+      # Stacks, not names: the fallback faces of local-plugins/fonts.ts hold the web fonts' room
+      # until they arrive. Weights only matter for Google Fonts, which this site does not use.
+      header: '"Literata", "Literata Fallback", serif'
+      body: '"Literata", "Literata Fallback", serif'
+      code: '"IBM Plex Mono", "IBM Plex Mono Fallback", monospace'
+      interface: '"Literata", "Literata Fallback", serif'
   - source: "@quartz-themes/core"
     enabled: false
     options:

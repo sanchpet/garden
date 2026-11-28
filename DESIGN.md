@@ -142,6 +142,8 @@ One palette for the page and for what is drawn on it: paper and ink, steel blue 
 
 **Character:** a printed page annotated by its owner. Literata carries reading; Caveat carries what the hand wrote, on an object or in the margin.
 
+Until Literata and Plex Mono arrive the page is set in Times New Roman and Courier New scaled to take the same room (`local-plugins/fonts.ts`, numbers from `brand/src/fallback_metrics.py`), so nothing moves on the swap. A cover's box is sized from its proportions before the image loads, for the same reason.
+
 ### Hierarchy
 
 - **Headline** (600, 2.2rem): the note's own title, underlined in pencil.
