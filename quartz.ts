@@ -27,7 +27,7 @@ import { Series, SeriesLinks } from "./local-plugins/series"
 import { PublicationFeed } from "./local-plugins/feed"
 import { BookcaseScript } from "./local-plugins/bookcase"
 import "./local-plugins/shelves"
-import "./local-plugins/radar"
+import { RadarScript } from "./local-plugins/radar"
 import { RaceCalendar, RacesFeed } from "./local-plugins/races"
 import { Stream, StreamLink } from "./local-plugins/stream"
 import {
@@ -73,6 +73,7 @@ const header = [
   LanguageSwitch(),
   GardenStyles(),
   BookcaseScript(),
+  RadarScript(),
   FootnoteTooltip(),
 ]
 const noteHeader = NoteHeader()

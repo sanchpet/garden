@@ -251,6 +251,8 @@ The library as one case in pencil with books in marker. Read books stand on the 
 
 A pencil instrument with a round scope, rings from the hub outwards, and a cream knob outlined in burgundy. Blips are numbered in Caveat on cream. The scope is the picture; the list under it is the content and works without a script.
 
+A blip's age is counted from its `since`, the day it took its ring: for its first 90 days it is new and is circled in pencil; after 365 days it fades to 45%, a place not looked at again for a year. Its number in the list carries the same mark (a pencil outline, or the same fade) and the word for it. The site builds daily so the marks move without a push. A blip that came from another ring keeps its pencil trace pointing where it came from. Dots in one cell push each other apart; a cell holds about 11 in the inner ring and 16 in the others before they touch, and a build that crosses that warns. A click on a blip goes through the SPA router; with a modifier key it keeps the browser's meaning.
+
 ### Bib
 
 A race the author picked, as a paper bib: cream ground, 2px outline, four pin dots in the corners, the distance as a large Caveat number. A planned race has a dashed outline; a registered one turns the number marker red; a finished one gets a burgundy uppercase stamp.
