@@ -1,5 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
+import vm from "node:vm"
 import { renderTranscludes, pageResources } from "./renderPage"
 import { Root, Element } from "hast"
 import { FullSlug } from "../util/path"
@@ -323,5 +324,29 @@ describe("pageResources", () => {
       !inlineJsServe.script.includes("/quartz/static/contentIndex.json"),
       `expected contentIndex fetch without /quartz/ prefix in serve mode, got: ${inlineJsServe.script}`,
     )
+  })
+
+  test("contentIndex is fetched on the first read of fetchData, once per page load", async () => {
+    const inline = pageResources("." as FullSlug, emptyResources).js.find(
+      (j) => j.contentType === "inline" && "script" in j,
+    )
+    assert.ok(inline && "script" in inline)
+    const index = { "ru/a": { title: "a" }, "en/b": { title: "b" } }
+    let fetches = 0
+    const window: Record<string, unknown> = {}
+    const document = { documentElement: { lang: "ru" } }
+    const fetch = async () => {
+      fetches++
+      return { json: async () => index }
+    }
+    vm.runInNewContext(inline.script, { window, document, fetch, Object, Map })
+    assert.strictEqual(fetches, 0, "the index must not be requested before something reads it")
+    const ru = await (window.fetchData as Promise<Record<string, unknown>>)
+    assert.deepStrictEqual(Object.keys(ru), ["ru/a"])
+    document.documentElement.lang = "en"
+    const en = await (window.fetchData as Promise<Record<string, unknown>>)
+    assert.deepStrictEqual(Object.keys(en), ["en/b"])
+    await window.fetchData
+    assert.strictEqual(fetches, 1, "every read after the first reuses the same request")
   })
 })

@@ -5,7 +5,8 @@ const indexedLanguages = new Set<string>([document.documentElement.lang])
 
 // Feed search each further language the reader reaches, by the switch or by a link.
 async function indexForSearch(lang: string) {
-  if (indexedLanguages.has(lang)) return
+  // Without search on the page, reading the index would only download it.
+  if (!document.querySelector(".search-container") || indexedLanguages.has(lang)) return
   indexedLanguages.add(lang)
   const data = await (window as any).fetchData
   document.dispatchEvent(
