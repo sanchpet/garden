@@ -17,6 +17,8 @@ const LABELS = {
     provider: "Где",
     year: "Год",
     status: "Статус",
+    read: "Прочитана",
+    taken: "Пройден",
     ring: "На радаре",
     since: "С",
     repo: "Репозиторий",
@@ -31,6 +33,8 @@ const LABELS = {
     provider: "Where",
     year: "Year",
     status: "Status",
+    read: "Finished",
+    taken: "Finished",
     ring: "On the radar",
     since: "Since",
     repo: "Repository",
@@ -68,18 +72,25 @@ export const NoteHeader = (() => {
     const lang = cfg.locale.startsWith("ru") ? "ru" : "en"
     const l = LABELS[lang]
     const ring = ringOf(fm.ring)
+    const finished = fm.status === "done" ? day(fm.finished, lang) || undefined : undefined
     const fields: [string, string | undefined][] = book
       ? [
           [l.author, plain(fm.author)],
           [l.year, plain(fm.year)],
-          [l.status, statusLabel(lang, fm.status)],
+          // A finished book says when instead of repeating that it is read.
+          finished ? [l.read, finished] : [l.status, statusLabel(lang, fm.status)],
         ]
       : course
         ? [
             [l.author, plain(fm.author)],
             [l.provider, plain(fm.provider)],
             [l.year, plain(fm.year)],
-            [l.status, typeof fm.status === "string" ? COURSE_STATUS[lang][fm.status] : undefined],
+            finished
+              ? [l.taken, finished]
+              : [
+                  l.status,
+                  typeof fm.status === "string" ? COURSE_STATUS[lang][fm.status] : undefined,
+                ],
           ]
         : tool
           ? [
