@@ -1,4 +1,7 @@
 import { viewRegistry, type BasesEntry } from "@quartz-community/bases-page"
+import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
+// @ts-ignore
+import script from "./radar.inline"
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
 import {
@@ -19,14 +22,31 @@ import {
   type Language,
 } from "./bookcase"
 import { hashPath, type Point } from "./bookcase/geometry"
+import {
+  BEZEL,
+  CX,
+  CY,
+  DOT,
+  EDGE,
+  R,
+  RINGS,
+  W,
+  ageOf,
+  dateOf,
+  overlaps,
+  place,
+  polar,
+  type Age,
+  type Ring,
+} from "./radar-layout"
 
 // A Bases view, `type: radar`: the author's own tech radar, drawn as a pencil instrument with
 // a round scope. A ring says how far his own experience with a tool goes, the nearest to
 // the hub being what he reaches for first; the sectors are named in the view's `sectors`,
-// four of them making the quadrants of the Thoughtworks radar. The scope is the picture, the list under it is the content. No script.
+// four of them making the quadrants of the Thoughtworks radar. The scope is the picture, the list under it is the content; the one script only
+// sends a click on a blip through the SPA router.
 
-export const RINGS = ["adopt", "trial", "assess", "hold"] as const
-export type Ring = (typeof RINGS)[number]
+export { RINGS, type Ring } from "./radar-layout"
 
 export const RING: Record<Language, Record<Ring, { name: string; means: string }>> = {
   ru: {
@@ -51,6 +71,8 @@ const UI = {
     unplaced: "не размещено",
     since: "с",
     was: "было",
+    new: "новое",
+    faded: "не пересматривал больше года",
   },
   en: {
     plate: "radar",
@@ -59,6 +81,8 @@ const UI = {
     unplaced: "not placed",
     since: "since",
     was: "was",
+    new: "new",
+    faded: "not revisited for over a year",
   },
 }
 
@@ -66,15 +90,9 @@ export function ringOf(value: unknown): Ring | undefined {
   return RINGS.find((ring) => ring === value)
 }
 
-// A frontmatter date arrives as a Date or as the string it was written with.
 export function day(value: unknown, lang: Language): string {
-  const date =
-    value instanceof Date
-      ? value
-      : typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)
-        ? new Date(`${value.slice(0, 10)}T00:00:00Z`)
-        : undefined
-  if (!date || Number.isNaN(date.getTime())) return ""
+  const date = dateOf(value)
+  if (!date) return ""
   return date.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", {
     day: "numeric",
     month: "short",
@@ -84,27 +102,9 @@ export function day(value: unknown, lang: Language): string {
 }
 
 // The scope is a disc; the panel under it starts at BASE.
-const W = 720
-const CX = W / 2
-const R = 270
-const BEZEL = 30
-const CY = 26 + BEZEL + R
 const BASE = CY + R + BEZEL + 6
 const PANEL = 104
 const H = BASE + PANEL + 26
-// Where each ring ends, from the hub outwards; the first begins clear of the knob.
-const EDGE: Record<Ring, [number, number]> = {
-  adopt: [24, 114],
-  trial: [114, 174],
-  assess: [174, 224],
-  hold: [224, R],
-}
-const DOT = 11
-
-const polar = (r: number, deg: number): Point => {
-  const a = (deg * Math.PI) / 180
-  return [CX + r * Math.cos(a), CY - r * Math.sin(a)]
-}
 
 // An arc drawn by hand: it leaves the true circle by up to `amp` and comes back.
 function arc(rnd: () => number, r: number, from: number, to: number, amp: number): string {
@@ -152,6 +152,7 @@ interface Blip {
   ring: Ring | undefined
   area: string
   was: Ring | undefined
+  age: Age | undefined
   number: number
   at?: Point
   deg?: number
@@ -174,6 +175,7 @@ viewRegistry.register({
       typeof area === "string" && Object.hasOwn(named, area) ? area : REST
     const sectorLabel = (id: string) => (id === REST ? ui.rest : plain(named[id]) || id)
 
+    const now = new Date()
     const blips: Blip[] = ownLanguage(entries, lang)
       .map(({ entry, foreign }) => ({
         entry,
@@ -183,6 +185,7 @@ viewRegistry.register({
         ring: ringOf(entry.properties.ring),
         area: sectorOf(entry.properties.area),
         was: ringOf(entry.properties.was),
+        age: ageOf(entry.properties.since, now),
         number: 0,
       }))
       .sort(
@@ -208,26 +211,23 @@ viewRegistry.register({
       return [start - i * span, start - (i + 1) * span]
     }
 
-    // A dot keeps clear of the ring edges, the spokes and the dots already down; the path
-    // decides where it lands, so a tool stays put from build to build.
-    const taken: Point[] = []
-    for (const blip of [...placed].sort((a, b) => a.path.localeCompare(b.path))) {
-      const rnd = seeded(hashPath(blip.path))
-      const [r0, r1] = EDGE[blip.ring!]
-      const [a0, a1] = bounds(blip.area)
-      let best: { at: Point; deg: number; room: number } | undefined
-      for (let i = 0; i < 40; i++) {
-        const r = r0 + DOT + 5 + rnd() * (r1 - r0 - 2 * DOT - 10)
-        const margin = Math.min(span / 2 - 1, (Math.asin((DOT + 7) / r) * 180) / Math.PI)
-        const deg = a1 + margin + rnd() * (a0 - a1 - 2 * margin)
-        const at = polar(r, deg)
-        const room = Math.min(...taken.map((p) => Math.hypot(p[0] - at[0], p[1] - at[1])), 999)
-        if (!best || room > best.room) best = { at, deg, room }
-        if (room >= DOT * 2 + 6) break
-      }
-      blip.at = best!.at
-      blip.deg = best!.deg
-      taken.push(best!.at)
+    // Where each dot lands is decided by its path alone (radar-layout.ts), so a tool stays
+    // put from build to build and crowded dots push each other apart inside their cell.
+    const seats = place(
+      placed.map((blip) => {
+        const [from, to] = bounds(blip.area)
+        return { path: blip.path, ring: blip.ring!, from, to }
+      }),
+    )
+    const touching = overlaps(seats.values())
+    if (touching > 0)
+      console.warn(
+        `radar ${slug}: ${touching} pairs of dots touch; a cell holds about 11 in adopt, 16 elsewhere`,
+      )
+    for (const blip of placed) {
+      const seat = seats.get(blip.path)!
+      blip.at = seat.at
+      blip.deg = seat.deg
     }
 
     const rnd = seeded(hashPath("radar"))
@@ -486,11 +486,24 @@ viewRegistry.register({
                 : 0
             return (
               <a
-                class="radar-blip"
+                class={`radar-blip${blip.age ? ` is-${blip.age}` : ""}`}
                 href={resolveRelative(from, blip.entry.slug as FullSlug)}
                 data-router-ignore
               >
-                <title>{`${blip.name}: ${RING[lang][blip.ring!].name}`}</title>
+                <title>
+                  {[`${blip.name}: ${RING[lang][blip.ring!].name}`, blip.age && ui[blip.age]]
+                    .filter(Boolean)
+                    .join(", ")}
+                </title>
+                {blip.age === "new" && (
+                  <path
+                    class="radar-new"
+                    d={round(seeded(hashPath(blip.path) + 2), at, DOT + 5, 1.2)}
+                    fill="none"
+                    stroke={PENCIL}
+                    stroke-width="1.3"
+                  />
+                )}
                 {out !== 0 &&
                   pencil(
                     wobble(
@@ -541,10 +554,14 @@ viewRegistry.register({
                         sectors.length > 1 || blip.area !== REST ? sectorLabel(blip.area) : "",
                         since && `${ui.since} ${since}`,
                         blip.was && blip.was !== ring && `${ui.was}: ${RING[lang][blip.was].name}`,
+                        blip.age && ui[blip.age],
                       ].filter(Boolean)
                       return (
                         <li>
-                          <span class="radar-dot" aria-hidden="true">
+                          <span
+                            class={`radar-dot${blip.age ? ` is-${blip.age}` : ""}`}
+                            aria-hidden="true"
+                          >
                             {blip.number}
                           </span>
                           <span>
@@ -623,6 +640,14 @@ article:has(.radar) + .page-listing {
 .radar-blip:focus-visible {
   outline: none;
 }
+.radar-blip.is-faded,
+.radar-dot.is-faded {
+  opacity: 0.45;
+}
+.radar-dot.is-new {
+  outline: 1.3px solid ${PENCIL};
+  outline-offset: 2px;
+}
 .radar-legend {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
@@ -690,3 +715,11 @@ article:has(.radar) + .page-listing {
 }
 `,
 })
+
+// The view's script travels with a header component, as the bookcase's does: a base embedded
+// in a note is rendered without the script a view registers.
+export const RadarScript = (() => {
+  const Script: QuartzComponent = () => null
+  Script.afterDOMLoaded = script
+  return Script
+}) satisfies QuartzComponentConstructor

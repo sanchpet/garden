@@ -3,6 +3,10 @@ name: Publish
 on:
   push:
     branches: [main]
+  # Daily, so what a page computes from today (the radar's new and faded marks) moves without a push.
+  # The announcement journal keeps this from posting a text twice.
+  schedule:
+    - cron: "7 0 * * *"
   workflow_dispatch:
   repository_dispatch:
     types: [garden-texts, races-feed]
