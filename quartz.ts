@@ -39,6 +39,7 @@ import {
   withoutSourceTexts,
 } from "./local-plugins/sources"
 import { CatalogueTwins } from "./local-plugins/twins"
+import { deferGraph } from "./local-plugins/graph"
 import { PageTypeDispatcher } from "./quartz/plugins/pageTypes/dispatcher"
 
 const config = await loadQuartzConfig()
@@ -92,6 +93,7 @@ const cursor = DrawnCursor()
 const siteFooter = SiteFooter()
 const dashToc = DashToc()
 let wrapped = 0
+let graphs = 0
 let tocs = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
@@ -119,6 +121,11 @@ for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)])
     wrapped++
     return withoutSourceTexts(component)
   })
+  for (const component of pageLayout.right ?? []) {
+    if (component.name !== "Graph") continue
+    graphs++
+    deferGraph(component)
+  }
 }
 if (tocs === 0) {
   throw new Error(
@@ -128,6 +135,11 @@ if (tocs === 0) {
 if (wrapped === 0) {
   throw new Error(
     "garden: no Backlinks component in any layout to wrap; a source card would list its texts twice",
+  )
+}
+if (graphs === 0) {
+  throw new Error(
+    "garden: no Graph component in any layout; its libraries would load with the page",
   )
 }
 config.plugins.emitters.push(

@@ -221,6 +221,10 @@ Under a post or an evergreen text, below the closing rule: the number of readers
 
 Language note and footnote tooltip share one form: page ground, 1px rule, 6px radius, 0.85rem text, a soft shadow, at most 24rem wide. The language note's text is the `## language` section of `<lang>/site.md` in the texts, shown as plain text; without it the note names the language only.
 
+### Graph
+
+Quartz's graph view, in the right column and under the text on a phone. Its d3 and pixi.js load after the page, once the browser is idle and the graph is within a screen of the viewport (`local-plugins/graph.ts`); the box keeps its size meanwhile, so nothing shifts when it draws. A phone reader who never scrolls to it never fetches them.
+
 ### Sources and texts list
 
 A plain list under the text with a 1.2rem heading; an entry's secondary part (kind, date) follows in 0.85rem muted text. No drawing.
