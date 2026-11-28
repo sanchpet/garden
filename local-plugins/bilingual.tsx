@@ -199,9 +199,13 @@ export const LanguageSwitch = (() => {
   line-height: 1.5;
   text-align: left;
   white-space: normal;
-  visibility: hidden;
+  /* Out of layout until shown: a hidden note is still laid out, so an English page would fetch the
+     Cyrillic Literata for its Russian note on every load. */
+  display: none;
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    display 0.12s allow-discrete;
 }
 .language-note strong {
   display: block;
@@ -214,15 +218,20 @@ export const LanguageSwitch = (() => {
 /* Touch screens have no hover: a tap switches the language, and a sticky note would cover the page. */
 @media (hover: hover) {
   .language-option:hover .language-note {
-    visibility: visible;
+    display: block;
     opacity: 1;
     transition-delay: 0.15s;
   }
 }
 /* Keyboard focus only: a tap also focuses the link and would pin the note open. */
 .language-option:has(:focus-visible) .language-note {
-  visibility: visible;
+  display: block;
   opacity: 1;
+}
+@starting-style {
+  .language-option .language-note {
+    opacity: 0;
+  }
 }
 `
   return Switch
