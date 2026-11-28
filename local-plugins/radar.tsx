@@ -276,222 +276,231 @@ viewRegistry.register({
         <svg
           class="radar-scope"
           viewBox={`0 0 ${W} ${H}`}
-          role="img"
+          role="group"
           aria-label={ui.plate}
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* the feet, then the case */}
-          {[left + 70, right - 70].map((x) => (
+          {/* The instrument is drawing only; a screen reader meets just the blips, each a link
+              named with its ring, and the list under the scope says the rest. */}
+          <g aria-hidden="true">
+            {/* the feet, then the case */}
+            {[left + 70, right - 70].map((x) => (
+              <path
+                d={outline(
+                  rnd,
+                  [
+                    [x - 34, bottom - 2],
+                    [x + 34, bottom - 2],
+                    [x + 28, bottom + 18],
+                    [x - 28, bottom + 18],
+                  ],
+                  0.8,
+                )}
+                fill={PENCIL}
+                stroke={PENCIL}
+                stroke-width="1.4"
+                stroke-linejoin="round"
+                opacity="0.75"
+              />
+            ))}
+            <path
+              class="radar-case"
+              d={outline(rnd, body, 1.4)}
+              stroke={PENCIL}
+              stroke-width="2.2"
+              stroke-linejoin="round"
+            />
+            {/* shade down the right side and along the foot */}
+            {pencil(
+              Array.from({ length: Math.ceil((bottom - top) / 15) }, (_, i) => {
+                const y = top + 34 + i * 15 + rnd() * 5
+                return y > bottom - 30
+                  ? ""
+                  : wobble(rnd, [right - 5, y], [right - 14 - rnd() * 6, y + 12 + rnd() * 5], 0.6)
+              }).join(""),
+              0.9,
+              0.55,
+            )}
+            {pencil(
+              Array.from({ length: 40 }, (_, i) => {
+                const x = left + 34 + i * 16 + rnd() * 6
+                return x > right - 34
+                  ? ""
+                  : wobble(rnd, [x, bottom - 5], [x + 9 + rnd() * 4, bottom - 13 - rnd() * 4], 0.6)
+              }).join(""),
+              0.9,
+              0.45,
+            )}
+            {screws.map((at) => (
+              <g>
+                <path d={round(rnd, at, 6, 0.7)} fill={PAPER} stroke={PENCIL} stroke-width="1.2" />
+                {pencil(wobble(rnd, [at[0] - 4, at[1] + 3], [at[0] + 4, at[1] - 3], 0.3), 1.1)}
+              </g>
+            ))}
+
+            {/* the bezel and the glass */}
+            <path
+              d={`${arc(rnd, R + BEZEL, 180, -180, 1.6)}Z`}
+              fill={PAPER}
+              stroke={PENCIL}
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+            <path
+              class="radar-glass"
+              d={`${arc(rnd, R, 180, -180, 1.2)}Z`}
+              stroke={PENCIL}
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            {pencil(arc(rnd, R - 3, 168, 24, 1.8), 0.8, 0.45)}
+
+            {/* the afterglow behind the sweep */}
+            {pencil(
+              Array.from({ length: 9 }, (_, i) => {
+                const deg = sweep + 3 + i * 2.6
+                return wobble(
+                  rnd,
+                  polar(40 + rnd() * 30, deg),
+                  polar(R - 12 - rnd() * 40, deg),
+                  1.2,
+                )
+              }).join(""),
+              0.8,
+              0.22,
+            )}
+            {pencil(wobble(rnd, polar(20, sweep), polar(R - 6, sweep), 1.2), 1.4, 0.7)}
+
+            {/* rings and spokes */}
+            {RINGS.slice(0, -1).map((ring) => (
+              <g>
+                {pencil(`${arc(rnd, EDGE[ring][1], 180, -180, 1.6)}Z`, 1.2, 0.85)}
+                {pencil(arc(rnd, EDGE[ring][1] + 1.5, 172, 9, 2), 0.7, 0.4)}
+              </g>
+            ))}
+            {sectors.length > 1 &&
+              sectors.map((id) =>
+                pencil(
+                  wobble(rnd, polar(EDGE.adopt[0], bounds(id)[0]), polar(R, bounds(id)[0]), 1.4),
+                ),
+              )}
+
+            {/* sector names round the bezel */}
+            {sectors.map((id, i) => {
+              const [a0, a1] = bounds(id)
+              const mid = (a0 + a1) / 2
+              const half = Math.min(span / 2 - 2, 60)
+              // Under the hub the lettering runs the other way round, so it is never upside down.
+              const lower = Math.sin((mid * Math.PI) / 180) < 0
+              const [p, q] = lower
+                ? [polar(R + 9, mid - half), polar(R + 9, mid + half)]
+                : [polar(R + 9, mid + half), polar(R + 9, mid - half)]
+              const room = ((2 * half * Math.PI) / 180) * (R + 9)
+              const label = lettering(sectorLabel(id), 22, room)
+              return (
+                <g class="radar-sector" data-sector={i}>
+                  <path
+                    id={`radar-rim-${i}`}
+                    d={`M${f(p[0])} ${f(p[1])}A${R + 9} ${R + 9} 0 0 ${lower ? 0 : 1} ${f(q[0])} ${f(q[1])}`}
+                    fill="none"
+                  />
+                  <text class="radar-rim" style={`fill:${PENCIL};font-size:${f(label.size)}px`}>
+                    <textPath href={`#radar-rim-${i}`} startOffset="50%" text-anchor="middle">
+                      {label.text}
+                    </textPath>
+                  </text>
+                </g>
+              )
+            })}
+
+            {/* the scale under the scope: the rings by name, as far from the middle as on the glass */}
+            {RINGS.map((ring) => {
+              const [r0, r1] = [ring === "adopt" ? 0 : EDGE[ring][0], EDGE[ring][1]]
+              const label = lettering(RING[lang][ring].name, 17, r1 - r0 - 4, 0.5)
+              return (
+                <g class="radar-step" data-ring={ring}>
+                  {pencil(wobble(rnd, [CX - r1, BASE + 4], [CX - r1, BASE + 13], 0.4), 1.1)}
+                  {pencil(wobble(rnd, [CX + r1, BASE + 4], [CX + r1, BASE + 13], 0.4), 1.1)}
+                  <text
+                    class="radar-scale"
+                    x={f(CX - (r0 + r1) / 2)}
+                    y={BASE + 22}
+                    style={`fill:${PENCIL};font-size:${f(label.size)}px`}
+                  >
+                    {label.text}
+                  </text>
+                </g>
+              )
+            })}
+
+            {/* the panel: a lamp, a switch, the plate and a valve for a knob */}
+            <path
+              d={round(rnd, [left + 62, BASE + 66], 8, 0.8)}
+              fill={MARK}
+              stroke={BURGUNDY}
+              stroke-width="1.6"
+            />
             <path
               d={outline(
                 rnd,
                 [
-                  [x - 34, bottom - 2],
-                  [x + 34, bottom - 2],
-                  [x + 28, bottom + 18],
-                  [x - 28, bottom + 18],
+                  [left + 96, BASE + 56],
+                  [left + 132, BASE + 56],
+                  [left + 132, BASE + 76],
+                  [left + 96, BASE + 76],
                 ],
-                0.8,
+                0.7,
               )}
-              fill={PENCIL}
+              fill={PAPER}
               stroke={PENCIL}
-              stroke-width="1.4"
+              stroke-width="1.3"
               stroke-linejoin="round"
-              opacity="0.75"
             />
-          ))}
-          <path
-            class="radar-case"
-            d={outline(rnd, body, 1.4)}
-            stroke={PENCIL}
-            stroke-width="2.2"
-            stroke-linejoin="round"
-          />
-          {/* shade down the right side and along the foot */}
-          {pencil(
-            Array.from({ length: Math.ceil((bottom - top) / 15) }, (_, i) => {
-              const y = top + 34 + i * 15 + rnd() * 5
-              return y > bottom - 30
-                ? ""
-                : wobble(rnd, [right - 5, y], [right - 14 - rnd() * 6, y + 12 + rnd() * 5], 0.6)
-            }).join(""),
-            0.9,
-            0.55,
-          )}
-          {pencil(
-            Array.from({ length: 40 }, (_, i) => {
-              const x = left + 34 + i * 16 + rnd() * 6
-              return x > right - 34
-                ? ""
-                : wobble(rnd, [x, bottom - 5], [x + 9 + rnd() * 4, bottom - 13 - rnd() * 4], 0.6)
-            }).join(""),
-            0.9,
-            0.45,
-          )}
-          {screws.map((at) => (
-            <g>
-              <path d={round(rnd, at, 6, 0.7)} fill={PAPER} stroke={PENCIL} stroke-width="1.2" />
-              {pencil(wobble(rnd, [at[0] - 4, at[1] + 3], [at[0] + 4, at[1] - 3], 0.3), 1.1)}
-            </g>
-          ))}
-
-          {/* the bezel and the glass */}
-          <path
-            d={`${arc(rnd, R + BEZEL, 180, -180, 1.6)}Z`}
-            fill={PAPER}
-            stroke={PENCIL}
-            stroke-width="1.8"
-            stroke-linejoin="round"
-          />
-          <path
-            class="radar-glass"
-            d={`${arc(rnd, R, 180, -180, 1.2)}Z`}
-            stroke={PENCIL}
-            stroke-width="1.6"
-            stroke-linejoin="round"
-          />
-          {pencil(arc(rnd, R - 3, 168, 24, 1.8), 0.8, 0.45)}
-
-          {/* the afterglow behind the sweep */}
-          {pencil(
-            Array.from({ length: 9 }, (_, i) => {
-              const deg = sweep + 3 + i * 2.6
-              return wobble(rnd, polar(40 + rnd() * 30, deg), polar(R - 12 - rnd() * 40, deg), 1.2)
-            }).join(""),
-            0.8,
-            0.22,
-          )}
-          {pencil(wobble(rnd, polar(20, sweep), polar(R - 6, sweep), 1.2), 1.4, 0.7)}
-
-          {/* rings and spokes */}
-          {RINGS.slice(0, -1).map((ring) => (
-            <g>
-              {pencil(`${arc(rnd, EDGE[ring][1], 180, -180, 1.6)}Z`, 1.2, 0.85)}
-              {pencil(arc(rnd, EDGE[ring][1] + 1.5, 172, 9, 2), 0.7, 0.4)}
-            </g>
-          ))}
-          {sectors.length > 1 &&
-            sectors.map((id) =>
-              pencil(
-                wobble(rnd, polar(EDGE.adopt[0], bounds(id)[0]), polar(R, bounds(id)[0]), 1.4),
-              ),
-            )}
-
-          {/* sector names round the bezel */}
-          {sectors.map((id, i) => {
-            const [a0, a1] = bounds(id)
-            const mid = (a0 + a1) / 2
-            const half = Math.min(span / 2 - 2, 60)
-            // Under the hub the lettering runs the other way round, so it is never upside down.
-            const lower = Math.sin((mid * Math.PI) / 180) < 0
-            const [p, q] = lower
-              ? [polar(R + 9, mid - half), polar(R + 9, mid + half)]
-              : [polar(R + 9, mid + half), polar(R + 9, mid - half)]
-            const room = ((2 * half * Math.PI) / 180) * (R + 9)
-            const label = lettering(sectorLabel(id), 22, room)
-            return (
-              <g class="radar-sector" data-sector={i}>
-                <path
-                  id={`radar-rim-${i}`}
-                  d={`M${f(p[0])} ${f(p[1])}A${R + 9} ${R + 9} 0 0 ${lower ? 0 : 1} ${f(q[0])} ${f(q[1])}`}
-                  fill="none"
-                />
-                <text class="radar-rim" style={`fill:${PENCIL};font-size:${f(label.size)}px`}>
-                  <textPath href={`#radar-rim-${i}`} startOffset="50%" text-anchor="middle">
-                    {label.text}
-                  </textPath>
-                </text>
-              </g>
-            )
-          })}
-
-          {/* the scale under the scope: the rings by name, as far from the middle as on the glass */}
-          {RINGS.map((ring) => {
-            const [r0, r1] = [ring === "adopt" ? 0 : EDGE[ring][0], EDGE[ring][1]]
-            const label = lettering(RING[lang][ring].name, 17, r1 - r0 - 4, 0.5)
-            return (
-              <g class="radar-step" data-ring={ring}>
-                {pencil(wobble(rnd, [CX - r1, BASE + 4], [CX - r1, BASE + 13], 0.4), 1.1)}
-                {pencil(wobble(rnd, [CX + r1, BASE + 4], [CX + r1, BASE + 13], 0.4), 1.1)}
-                <text
-                  class="radar-scale"
-                  x={f(CX - (r0 + r1) / 2)}
-                  y={BASE + 22}
-                  style={`fill:${PENCIL};font-size:${f(label.size)}px`}
-                >
-                  {label.text}
-                </text>
-              </g>
-            )
-          })}
-
-          {/* the panel: a lamp, a switch, the plate and a valve for a knob */}
-          <path
-            d={round(rnd, [left + 62, BASE + 66], 8, 0.8)}
-            fill={MARK}
-            stroke={BURGUNDY}
-            stroke-width="1.6"
-          />
-          <path
-            d={outline(
-              rnd,
-              [
-                [left + 96, BASE + 56],
-                [left + 132, BASE + 56],
-                [left + 132, BASE + 76],
-                [left + 96, BASE + 76],
-              ],
-              0.7,
-            )}
-            fill={PAPER}
-            stroke={PENCIL}
-            stroke-width="1.3"
-            stroke-linejoin="round"
-          />
-          {pencil(wobble(rnd, [left + 114, BASE + 66], [left + 126, BASE + 50], 0.4), 3.2)}
-          <text class="radar-plate" x={CX} y={BASE + 66} style={`fill:${PENCIL}`}>
-            {ui.plate}
-          </text>
-          {pencil(wobble(rnd, [CX - 62, BASE + 84], [CX + 62, BASE + 84], 1), 1, 0.6)}
-          <path
-            d={round(rnd, knob, 21, 1.2)}
-            fill={MARK}
-            stroke={BURGUNDY}
-            stroke-width="2.4"
-            stroke-linejoin="round"
-          />
-          {[20, 80, 140].map((deg) => {
-            const a = (deg * Math.PI) / 180
-            const [dx, dy] = [16 * Math.cos(a), 16 * Math.sin(a)]
-            return (
-              <path
-                d={wobble(rnd, [knob[0] - dx, knob[1] - dy], [knob[0] + dx, knob[1] + dy], 0.5)}
-                fill="none"
-                stroke={BURGUNDY}
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            )
-          })}
-          <path d={round(rnd, knob, 6, 0.5)} fill={CREAM} stroke={BURGUNDY} stroke-width="1.6" />
-
-          {/* a veil per sector: lighting a tool lays the others over the rest of the glass */}
-          {sectors.length > 1 &&
-            sectors.map((id, i) => {
-              const [a0, a1] = bounds(id)
-              const [p, q] = [polar(R - 2, a0), polar(R - 2, a1)]
+            {pencil(wobble(rnd, [left + 114, BASE + 66], [left + 126, BASE + 50], 0.4), 3.2)}
+            <text class="radar-plate" x={CX} y={BASE + 66} style={`fill:${PENCIL}`}>
+              {ui.plate}
+            </text>
+            {pencil(wobble(rnd, [CX - 62, BASE + 84], [CX + 62, BASE + 84], 1), 1, 0.6)}
+            <path
+              d={round(rnd, knob, 21, 1.2)}
+              fill={MARK}
+              stroke={BURGUNDY}
+              stroke-width="2.4"
+              stroke-linejoin="round"
+            />
+            {[20, 80, 140].map((deg) => {
+              const a = (deg * Math.PI) / 180
+              const [dx, dy] = [16 * Math.cos(a), 16 * Math.sin(a)]
               return (
                 <path
-                  class="radar-veil"
-                  data-sector={i}
-                  d={`M${CX} ${CY}L${f(p[0])} ${f(p[1])}A${R - 2} ${R - 2} 0 ${span > 180 ? 1 : 0} 1 ${f(q[0])} ${f(q[1])}Z`}
-                  fill={PAPER}
+                  d={wobble(rnd, [knob[0] - dx, knob[1] - dy], [knob[0] + dx, knob[1] + dy], 0.5)}
+                  fill="none"
+                  stroke={BURGUNDY}
+                  stroke-width="2"
+                  stroke-linecap="round"
                 />
               )
             })}
+            <path d={round(rnd, knob, 6, 0.5)} fill={CREAM} stroke={BURGUNDY} stroke-width="1.6" />
 
-          {/* the hub */}
-          <path d={round(rnd, [CX, CY], 9, 0.8)} fill={PENCIL} stroke={PENCIL} stroke-width="1" />
+            {/* a veil per sector: lighting a tool lays the others over the rest of the glass */}
+            {sectors.length > 1 &&
+              sectors.map((id, i) => {
+                const [a0, a1] = bounds(id)
+                const [p, q] = [polar(R - 2, a0), polar(R - 2, a1)]
+                return (
+                  <path
+                    class="radar-veil"
+                    data-sector={i}
+                    d={`M${CX} ${CY}L${f(p[0])} ${f(p[1])}A${R - 2} ${R - 2} 0 ${span > 180 ? 1 : 0} 1 ${f(q[0])} ${f(q[1])}Z`}
+                    fill={PAPER}
+                  />
+                )
+              })}
+
+            {/* the hub */}
+            <path d={round(rnd, [CX, CY], 9, 0.8)} fill={PENCIL} stroke={PENCIL} stroke-width="1" />
+          </g>
 
           {/* the blips, each with the trace of where it came from */}
           {placed.map((blip) => {
