@@ -80,7 +80,9 @@ jobs:
           grep 'garden: content problem' build.log | sed 's/^/::warning::/' || true
 
       # The cluster serves this branch through git-sync, so a single commit keeps its clone small.
+      # Only main publishes: a manual run on another branch builds and stops here.
       - name: Push to the public branch
+        if: github.ref == 'refs/heads/main'
         working-directory: public
         run: |
           texts=$(git -C ../content rev-parse --short HEAD)
@@ -93,6 +95,7 @@ jobs:
       # The site is out by now: nothing in these two steps may turn the publication red.
       # Copied out with their language folders: the artifact of a single file would lose its path.
       - name: Collect the publication feeds
+        if: github.ref == 'refs/heads/main'
         continue-on-error: true
         run: |
           for feed in public/*/feed.xml; do
