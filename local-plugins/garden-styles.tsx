@@ -257,7 +257,6 @@ article blockquote::before {
 /* Labels of blocks are written by hand: the right column's blocks, the lists under the text,
    the names of the note's fields. */
 .sidebar :is(.graph, .backlinks) > h3,
-.sidebar .toc .toc-header h3,
 .sources h2,
 .series h2,
 section.footnotes > h2,
@@ -268,8 +267,7 @@ section.footnotes > h2,
   text-transform: none !important;
   color: var(--dark) !important;
 }
-.sidebar :is(.graph, .backlinks) > h3,
-.sidebar .toc .toc-header h3 {
+.sidebar :is(.graph, .backlinks) > h3 {
   font-size: 1.45rem !important;
   line-height: 1.1 !important;
 }
@@ -319,15 +317,6 @@ article .garden-drawing a {
   text-decoration: none !important;
 }
 
-/* The contents list: an entry out of view is muted text, not faded text, so it stays legible. */
-.sidebar .toc .toc-content li > a {
-  font-weight: 400 !important;
-  color: var(--gray) !important;
-  opacity: 1 !important;
-}
-.sidebar .toc .toc-content li > a.in-view {
-  color: var(--dark) !important;
-}
 .sidebar .backlinks a {
   font-weight: 400 !important;
 }

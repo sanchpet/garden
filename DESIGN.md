@@ -157,7 +157,7 @@ One palette for the page and for what is drawn on it: paper and ink, steel blue 
 
 ## Layout
 
-A single reading column. The left sidebar is removed; on a wide screen its empty column keeps the text centred, with the table of contents and the graph in a 320px column on the right. Between 800px and 1200px the page is one column with the right column's content under the text; below 800px the same, with 2rem above the header. The header row holds the logo, and the language switch and theme toggle at its right end. A note marked as a landing page is one column of at most 800px with no sidebars.
+A single reading column. On a wide screen the left 320px column keeps the text centred and is empty but for a note's contents, drawn as dashes at its inner edge; the graph and backlinks stand in a 320px column on the right. Between 800px and 1200px the page is one column with the right column's content under the text; below 800px the same, with 2rem above the header. The header row holds the logo, and the language switch and theme toggle at its right end. A note marked as a landing page is one column of at most 800px with no sidebars.
 
 The fonts are set by the fonts plugin in `quartz.config.yaml`, not by the theme block. The garden's own CSS is emitted inside a cascade layer while the core's base rules are not, so an override of a base rule carries the important flag.
 
@@ -182,6 +182,10 @@ Drawn strokes are generated. A line from one point to another drifts off the str
 ### Note header
 
 Under the title: an italic annotation, then the note's fields as a row of pairs, a handwritten label over its value, wrapping with a 2.5rem gap. Tags are outlined boxes (1px rule, 3px radius) with no fill.
+
+### Contents
+
+A note with two or more headings (to the third level) carries its contents as a column of short pencil strokes in the left margin, right against the text and sticky with it, after [Aaron Pham's garden](https://aarnphm.xyz). One stroke per heading, seeded and baked like every stroke: 20px for the top level, 5px shorter per level down, 8px at the least; strokes 12px apart. They are pencil at 55%; the section being read (the last heading past a line a third down the screen, the screen's bottom at the page's end) is pencil at full strength and a little heavier. Under the pointer or keyboard focus a stroke grows by half towards the margin, takes the link colour, and the heading's name shows left of it in the body face at 0.95rem, wrapping at 13.5rem; a click goes to the heading. The pointer stays the plain pencil over the strokes: corners jumping from one stroke to the next would cover the name. Below 1200px there is no margin and no contents, as before. Motion is 160ms ease-out and none under reduced motion.
 
 ### Site footer
 

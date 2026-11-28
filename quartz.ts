@@ -20,6 +20,7 @@ import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
 import { NoteHeader } from "./local-plugins/note-header"
 import { ViewCount } from "./local-plugins/views"
 import { SiteFooter } from "./local-plugins/site-footer"
+import { DashToc } from "./local-plugins/dash-toc"
 import { DrawnCursor } from "./local-plugins/cursor"
 import { CoverImage, NoteCover } from "./local-plugins/cover"
 import { Series, SeriesLinks } from "./local-plugins/series"
@@ -82,7 +83,9 @@ const stream = Stream()
 const views = ViewCount()
 const cursor = DrawnCursor()
 const siteFooter = SiteFooter()
+const dashToc = DashToc()
 let wrapped = 0
+let tocs = 0
 for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)]) {
   pageLayout.header = [...(pageLayout.header ?? []), ...header]
   // The Properties table and content-meta are off in the YAML, so the end of beforeBody is under the title.
@@ -97,11 +100,23 @@ for (const pageLayout of [layout.defaults, ...Object.values(layout.byPageType)])
     siteFooter,
   ]
   pageLayout.footer = [...(pageLayout.footer ?? []), cursor]
+  // The contents move from the right column to dashes in the left margin (local-plugins/dash-toc.tsx).
+  pageLayout.left = [...(pageLayout.left ?? []), dashToc]
+  pageLayout.right = pageLayout.right?.filter((component) => {
+    if (component.name !== "TableOfContents") return true
+    tocs++
+    return false
+  })
   pageLayout.right = pageLayout.right?.map((component) => {
     if (component.name !== "Backlinks") return component
     wrapped++
     return withoutSourceTexts(component)
   })
+}
+if (tocs === 0) {
+  throw new Error(
+    "garden: no TableOfContents component in any layout; the right column would keep it",
+  )
 }
 if (wrapped === 0) {
   throw new Error(
