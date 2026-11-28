@@ -1,6 +1,16 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { currentSection, dashPath, dashWidth, hasContents, readingLine } from "./dash-toc-logic"
+import {
+  bell,
+  currentSection,
+  dashPath,
+  dashWidth,
+  dockLengths,
+  dockOpacity,
+  hasContents,
+  nearestIndex,
+  readingLine,
+} from "./dash-toc-logic"
 
 describe("dash contents", () => {
   const entry = (depth: number) => ({ depth, text: "x", slug: "x" })
@@ -25,6 +35,32 @@ describe("dash contents", () => {
     assert.strictEqual(readingLine(900, 0, 3000), 300)
     assert.strictEqual(readingLine(900, 2999, 3000), 900)
     assert.strictEqual(readingLine(900, 0, 0), 900)
+  })
+
+  test("under the pointer the strokes swell in a bell, the nearest the most", () => {
+    const centres = [6, 18, 30, 42, 54]
+    const lengths = dockLengths([20, 15, 20, 20, 10], centres, 30)
+    assert.strictEqual(lengths[2], 120)
+    assert.ok(lengths[1] > 15 && lengths[1] < lengths[2])
+    assert.ok(lengths[3] < lengths[2] && lengths[3] > lengths[4])
+    assert.ok(Math.abs(lengths[1] - 15 - (lengths[3] - 20)) < 1e-9, "the bell is symmetric")
+    assert.ok(dockLengths([20], [6], 306)[0] - 20 < 0.01, "a far stroke stays at rest")
+    assert.strictEqual(bell(0), 1)
+    assert.ok(bell(30) > 0.6 && bell(30) < 0.61)
+  })
+
+  test("the nearest stroke is the closest centre, the first of a tie", () => {
+    assert.strictEqual(nearestIndex([6, 18, 30], 20), 1)
+    assert.strictEqual(nearestIndex([6, 18, 30], -50), 0)
+    assert.strictEqual(nearestIndex([6, 18, 30], 500), 2)
+    assert.strictEqual(nearestIndex([6, 18], 12), 0)
+    assert.strictEqual(nearestIndex([], 12), -1)
+  })
+
+  test("the nearest stroke is full ink, the others fade with distance", () => {
+    assert.strictEqual(dockOpacity(0.2, true), 1)
+    assert.ok(dockOpacity(1, false) > dockOpacity(0.5, false))
+    assert.strictEqual(dockOpacity(0, false), 0.3)
   })
 
   test("the current section is the last heading above the reading line", () => {

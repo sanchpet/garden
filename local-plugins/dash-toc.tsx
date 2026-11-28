@@ -9,7 +9,8 @@ const LABEL: Record<Language, string> = { ru: "Оглавление", en: "Conte
 
 // The note's contents as pencil dashes in the margin left of the text, after Aaron Pham's
 // garden (aarnphm.xyz): a heading's name shows beside its dash under the pointer or focus.
-// The margin exists from 1200px up; below that the column has no room and the dashes go.
+// Under the pointer or focus the strokes swell like a dock (dash-toc.inline.ts). The margin
+// exists above 1200px; at 1200 the tablet layout still holds, so the dashes go there too.
 export const DashToc = (() => {
   const Toc: QuartzComponent = ({ fileData }) => {
     const toc = fileData.toc as TocEntry[] | undefined
@@ -29,9 +30,10 @@ export const DashToc = (() => {
                     width={width}
                     height="5"
                     viewBox={`0 0 ${width} 5`}
+                    preserveAspectRatio="none"
                     aria-hidden="true"
                   >
-                    <path d={dashPath(width, i)} />
+                    <path d={dashPath(width, i)} vector-effect="non-scaling-stroke" />
                   </svg>
                 </a>
               </li>
@@ -44,7 +46,7 @@ export const DashToc = (() => {
 
   Toc.afterDOMLoaded = script
   Toc.css = `
-@media (min-width: 1200px) {
+@media (min-width: 1201px) {
   .page[data-frame="default"] > #quartz-body .sidebar.left:has(.dash-toc) {
     display: flex;
   }
@@ -77,14 +79,18 @@ nav.dash-toc a {
   background: none;
 }
 nav.dash-toc svg.dash {
+  flex-shrink: 0;
   overflow: visible;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
   stroke-linecap: round;
   opacity: 0.55;
-  transform-origin: right center;
-  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), opacity 160ms ease-out;
+  transition: opacity 160ms ease-out;
+}
+/* While docked the script sets each stroke's length and opacity every frame. */
+nav.dash-toc.docked svg.dash {
+  transition: none;
 }
 nav.dash-toc a[aria-current="location"] {
   color: var(--dark);
@@ -93,22 +99,20 @@ nav.dash-toc a[aria-current="location"] svg.dash {
   opacity: 1;
   stroke-width: 2;
 }
-nav.dash-toc:hover svg.dash {
-  opacity: 0.8;
-}
-nav.dash-toc a:is(:hover, :focus-visible) {
+/* Without the script a stroke under the pointer or focus still lights up and names itself. */
+nav.dash-toc:not(.docked) a:is(:hover, :focus-visible),
+nav.dash-toc.docked a.near {
   color: var(--secondary);
 }
-nav.dash-toc a:is(:hover, :focus-visible) svg.dash {
+nav.dash-toc:not(.docked) a:is(:hover, :focus-visible) svg.dash {
   opacity: 1;
-  transform: scaleX(1.5);
 }
 nav.dash-toc .dash-label {
   position: absolute;
-  right: calc(100% + 0.7rem);
+  right: calc(max(100%, var(--len, 0px)) + 0.6rem);
   top: 50%;
   width: max-content;
-  max-width: 13.5rem;
+  max-width: 10rem;
   text-align: right;
   text-wrap: balance;
   font-size: 0.95rem;
@@ -121,12 +125,13 @@ nav.dash-toc .dash-label {
   transform: translate(0.3rem, -50%);
   transition: opacity 140ms ease-out, transform 160ms cubic-bezier(0.2, 0, 0, 1);
 }
-nav.dash-toc a:is(:hover, :focus-visible) .dash-label {
+nav.dash-toc:not(.docked) a:is(:hover, :focus-visible) .dash-label,
+nav.dash-toc.docked a.near .dash-label {
   opacity: 1;
   transform: translate(0, -50%);
 }
 /* Keyboard focus wins over a pointer resting elsewhere on the rail: one name at a time. */
-nav.dash-toc:has(a:focus-visible) a:hover:not(:focus-visible) .dash-label {
+nav.dash-toc:not(.docked):has(a:focus-visible) a:hover:not(:focus-visible) .dash-label {
   opacity: 0;
 }
 nav.dash-toc a:focus-visible {
