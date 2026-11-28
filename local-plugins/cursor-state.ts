@@ -44,6 +44,9 @@ const ACTION = [
 // A control that belongs to a row is framed with its row.
 const BLOCK = ["li.section-li", ".races-row"].join(", ")
 const SCOPE = ".radar-scope"
+// The margin's contents dashes stand a few pixels apart; corners jumping from one to the next
+// would hide the name the dash shows, so the pencil just points.
+const QUIET = "nav.dash-toc a"
 
 export function resolveCursor<T extends Closest>(target: T | null): Resolved<T> {
   if (!target) return { mode: "pencil", target: null }
@@ -52,6 +55,7 @@ export function resolveCursor<T extends Closest>(target: T | null): Resolved<T> 
   if (footnote) return { mode: "help", target: footnote }
   const drawn = at(DRAWN)
   if (drawn) return { mode: "marker", target: drawn }
+  if (at(QUIET)) return { mode: "pencil", target: null }
   const action = at(ACTION)
   if (action) {
     if (at(PROSE) && action.closest("a[href]") === action)

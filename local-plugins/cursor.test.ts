@@ -52,6 +52,12 @@ describe("resolveCursor", () => {
     assert.deepStrictEqual(resolveCursor(button), { mode: "bracket", target: button })
   })
 
+  test("a dash of the margin contents keeps the plain pencil", () => {
+    const nav = new Node("nav", is("nav.dash-toc"))
+    const dash = new Node("a", is("a[href]", "nav.dash-toc a"), nav)
+    assert.deepStrictEqual(resolveCursor(dash), { mode: "pencil", target: null })
+  })
+
   test("a button inside a code block is framed", () => {
     const pre = new Node("pre", is(PROSE))
     const copy = new Node("button", is("button:not(:disabled)"), pre)
