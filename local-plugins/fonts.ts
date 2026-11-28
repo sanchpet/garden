@@ -44,9 +44,10 @@ const SOURCES: Source[] = [
     dir: "node_modules/@fontsource-variable/literata",
     css: ["opsz.css", "opsz-italic.css"],
     family: "Literata",
-    // brand/build.sh drops the weights under 400, which the site never sets: a fifth of each file.
+    // brand/build.sh cuts the axes to what the site sets, weights 400-700 and optical sizes from
+    // 12: a quarter to a third of each file.
     files: LITERATA,
-    weight: "400 900",
+    weight: "400 700",
   },
   {
     dir: "node_modules/@fontsource/ibm-plex-mono",
@@ -76,6 +77,9 @@ export function faces(
     let rule = body
       .replace(/font-family: [^;]+;/, `font-family: "${family}";`)
       .replace(`./files/${file}`, `/${OUT}/${rename(file)}`)
+      // fontsource lists a WOFF copy after the WOFF2; every browser that reads the rule takes the
+      // WOFF2, and the copy is not served.
+      .replace(/, url\(\.\/files\/[^)]+\.woff\) format\('woff'\)/, "")
     if (weight) rule = rule.replace(/font-weight: [^;]+;/, `font-weight: ${weight};`)
     out.push(`@font-face {${rule}}`)
   }
@@ -173,7 +177,7 @@ const FALLBACKS: [Fallback, Metrics][] = [
       weight: "500 900",
       style: "normal",
     },
-    { size: 114.39, ascent: 102.89, descent: 26.92, lineGap: 0 },
+    { size: 114.44, ascent: 102.85, descent: 26.91, lineGap: 0 },
   ],
   [
     {
@@ -203,7 +207,7 @@ const FALLBACKS: [Fallback, Metrics][] = [
       style: "normal",
       range: CYRILLIC_RANGE,
     },
-    { size: 114.5, ascent: 102.8, descent: 26.9, lineGap: 0 },
+    { size: 114.5, ascent: 102.79, descent: 26.9, lineGap: 0 },
   ],
   [
     {

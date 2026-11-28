@@ -58,6 +58,33 @@ describe("font faces", () => {
     assert.ok(!found.css.includes("200 900"))
   })
 
+  test("fontsource's WOFF copy is not linked, only the WOFF2 the site serves", () => {
+    const withWoff = face("ibm-plex-mono-latin-400-normal", "U+0000-00FF").replace(
+      "format('woff2-variations');",
+      "format('woff2'), url(./files/ibm-plex-mono-latin-400-normal.woff) format('woff');",
+    )
+    const found = faces(withWoff, "IBM Plex Mono")
+    assert.doesNotMatch(found.css, /\.woff\)/)
+    assert.match(
+      found.css,
+      /url\(\/static\/fonts\/ibm-plex-mono-latin-400-normal\.woff2\) format\('woff2'\);/,
+    )
+    assert.doesNotMatch(textFontFaces(), /\.woff\)/)
+  })
+
+  // The rules must claim the weights the cut files hold: a range wider than the file makes the
+  // browser pick this face for weights it no longer has.
+  test("Literata's weight range is the one brand/build.sh cuts the files to", () => {
+    const cut = /"wght": \((\d+), (\d+)\)/.exec(
+      fs.readFileSync("brand/src/crop_weight.py", "utf8"),
+    )!
+    const literata = textFontFaces()
+      .match(/@font-face \{[^}]*\}/g)!
+      .filter((rule) => rule.includes('"Literata"'))
+    assert.ok(literata.length > 0)
+    for (const rule of literata) assert.match(rule, new RegExp(`font-weight: ${cut[1]} ${cut[2]};`))
+  })
+
   // The served Literata files are fontsource's, cut by brand/build.sh: after a fontsource bump the
   // set of files must still match, or the site would link files it does not have.
   test("brand/out/fonts holds exactly the Literata files the faces link", () => {

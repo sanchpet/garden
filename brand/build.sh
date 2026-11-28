@@ -17,7 +17,7 @@ uv run -q --with fonttools --with brotli pyftsubset "fonts/Neucha.ttf" \
   --unicodes="U+0020-007E,U+00A0-00FF,U+0400-045F,U+2010-2026,U+00AB,U+00BB" \
   --no-hinting --drop-tables+=hdmx,VDMX \
   --flavor=woff2 --output-file=out/neucha.woff2
-# The text face: fontsource's Literata subsets with nothing lighter than 400, which the site never
-# sets. Needs `npm ci` first.
+# The text face: fontsource's Literata subsets cut to weights 400-700 and optical sizes from 12,
+# the range the site sets. Needs `npm ci` first.
 uv run -q --with fonttools --with brotli python src/crop_weight.py out/fonts \
   ../node_modules/@fontsource-variable/literata/files/literata-{latin,latin-ext,cyrillic,cyrillic-ext}-opsz-{normal,italic}.woff2
