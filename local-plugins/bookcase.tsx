@@ -2,7 +2,7 @@ import { viewRegistry, type BasesEntry } from "@quartz-community/bases-page"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
-import { coverName } from "./cover"
+import { coverCopyPath, coverName } from "./cover"
 import { dayOf, formatDay } from "./stream-events"
 import {
   CASE,
@@ -398,7 +398,9 @@ viewRegistry.register({
     }
     type Described = ReturnType<typeof describe>
     const from = slug as FullSlug
-    const coverUrl = (b: Described) => (b.image ? resolveRelative(from, b.image as FullSlug) : "")
+    // Every cover a book card names has a WebP copy (thumbs.tsx), lighter than the original.
+    const coverUrl = (b: Described) =>
+      b.image ? resolveRelative(from, coverCopyPath(b.image) as FullSlug) : ""
     // `face` is the board the cover goes on once the book is pulled out: its corner, the end
     // of its top edge and the end of its spine edge.
     const link = (b: Described, group: number, thick: number, face: Point[]) => ({

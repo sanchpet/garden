@@ -4,6 +4,7 @@ import sharp from "sharp"
 import type { Element, Root } from "hast"
 import type { QuartzEmitterPlugin } from "../quartz/plugins/types"
 import { FilePath, joinSegments, slugifyFilePath } from "../quartz/util/path"
+import { COVER_WIDTH, coverCopyOf, coverOf } from "./cover"
 
 // The stream shows a note's pictures small, and a phone photo at full size would make it the
 // heaviest page of the site. Each picture of a note gets a copy this wide, for 2x screens.
@@ -40,6 +41,21 @@ export const Thumbnails: QuartzEmitterPlugin = () => ({
   async *emit(ctx, content) {
     const done = new Set<string>()
     for (const [tree, file] of content) {
+      // A cover gets a WebP copy for the page (cover.tsx names it and gives its size); the
+      // original stays for link previews.
+      const cover = coverOf(file.data)
+      const copy = coverCopyOf(file.data)
+      if (cover && copy && !done.has(copy.path)) {
+        done.add(copy.path)
+        const out = joinSegments(ctx.argv.output, copy.path) as FilePath
+        await fs.promises.mkdir(path.dirname(out), { recursive: true })
+        await sharp(path.join(ctx.argv.directory, cover))
+          .rotate()
+          .resize({ width: COVER_WIDTH, withoutEnlargement: true })
+          .webp({ quality: 80 })
+          .toFile(out)
+        yield out
+      }
       const fm = (file.data.frontmatter ?? {}) as Record<string, unknown>
       if (fm.type !== "note" || !file.data.filePath?.endsWith(".md")) continue
       for (const src of pictures(tree as Root)) {
