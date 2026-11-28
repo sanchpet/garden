@@ -3,6 +3,7 @@ import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/comp
 import { FullSlug, resolveRelative } from "../quartz/util/path"
 import { languageOf } from "./bilingual"
 import { coverCopyPath, coverName } from "./cover"
+import { caveatFace } from "./fonts"
 import { dayOf, formatDay } from "./stream-events"
 import {
   CASE,
@@ -134,12 +135,7 @@ export const UI = {
 }
 
 export const FONT_FACE = `
-@font-face {
-  font-family: "Caveat";
-  src: url("/static/caveat.woff2") format("woff2");
-  font-weight: 400 700;
-  font-display: swap;
-}`
+${caveatFace()}`
 
 export function statusLabel(lang: Language, status: unknown): string | undefined {
   const words: Record<string, string> = STATUS[lang]

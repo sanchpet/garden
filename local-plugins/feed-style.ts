@@ -1,3 +1,5 @@
+import { caveatFace } from "./fonts"
+
 // What a browser shows when someone opens the feed itself: the title, a note on what the
 // feed is for, then one line per entry, its title or a note's
 // address on the left and its day on the right. Both are XHTML that feed-atom.ts writes into
@@ -5,12 +7,7 @@
 
 export function feedCss(textFaces: string): string {
   return `${textFaces}
-@font-face {
-  font-family: "Caveat";
-  src: url("/static/caveat.woff2") format("woff2");
-  font-weight: 400 700;
-  font-display: swap;
-}
+${caveatFace()}
 feed {
   --ground: #faf5e9;
   --text: #33302b;

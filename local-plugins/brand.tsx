@@ -21,8 +21,6 @@ const FILES: Record<string, string> = {
   "static/favicon-32.png": "favicon-32.png",
   "static/favicon-48.png": "favicon-48.png",
   "static/apple-touch-icon.png": "apple-touch-icon.png",
-  "static/caveat.woff2": "caveat.woff2",
-  "static/neucha.woff2": "neucha.woff2",
   "static/og-image.png": "og-image-ru.png",
   "static/og-image-ru.png": "og-image-ru.png",
   "static/og-image-en.png": "og-image-en.png",
