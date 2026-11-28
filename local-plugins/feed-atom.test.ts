@@ -304,12 +304,16 @@ describe("rendering", () => {
     })
     assert.ok(
       xml.includes(
-        '<h:div class="subscribe"><h:p class="label">подписка</h:p><h:p>Скопируйте <h:a href="https://x.test/">адрес</h:a>.</h:p></h:div>\n  <entry>',
+        '<h:div class="subscribe"><h:p class="label">подписка</h:p><h:p>Скопируйте <h:a href="https://x.test/">адрес</h:a>.</h:p><h:script src="/static/feed.js" defer="defer"></h:script></h:div>\n  <entry>',
       ),
     )
     assert.deepStrictEqual(parseFeed(xml), parseFeed(renderFeed(plain)))
     const en = renderFeed(feed([], "en"))
-    assert.ok(en.includes('<h:p class="label">subscribe</h:p></h:div>'))
+    assert.ok(
+      en.includes(
+        '<h:p class="label">subscribe</h:p><h:script src="/static/feed.js" defer="defer"></h:script></h:div>',
+      ),
+    )
   })
 
   test("the whole feed", () => {
@@ -327,7 +331,7 @@ describe("rendering", () => {
   <author>
     <name>sanchpet</name>
   </author>
-  <h:div class="subscribe"><h:p class="label">подписка</h:p></h:div>
+  <h:div class="subscribe"><h:p class="label">подписка</h:p><h:script src="/static/feed.js" defer="defer"></h:script></h:div>
   <entry>
     <title>За секунду</title>
     <id>https://sanch.pet/ru/posts/za-sekundu</id>

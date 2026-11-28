@@ -12,6 +12,7 @@ import {
   type Entry,
 } from "./feed-atom"
 import { feedNote } from "./feed-note"
+import { FEED_SCRIPT, feedScript } from "./feed-copy"
 import { feedCss } from "./feed-style"
 import { siteText } from "./site-texts"
 import { textFontFaces } from "./fonts"
@@ -60,6 +61,12 @@ export const PublicationFeed: QuartzEmitterPlugin = () => ({
       slug: FEED_STYLESHEET.slice(1).replace(/\.css$/, "") as FullSlug,
       ext: ".css",
       content: feedCss(textFontFaces()),
+    })
+    yield write({
+      ctx,
+      slug: FEED_SCRIPT.slice(1).replace(/\.js$/, "") as FullSlug,
+      ext: ".js",
+      content: feedScript(),
     })
   },
   externalResources: (ctx) => ({

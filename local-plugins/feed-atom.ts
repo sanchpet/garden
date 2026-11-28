@@ -2,6 +2,7 @@
 // the clock, git or the file system: unchanged texts must give a byte-identical feed, since
 // consumers treat a changed entry as an event.
 
+import { FEED_SCRIPT } from "./feed-copy"
 import { isText } from "./kinds"
 import type { Language } from "./languages"
 
@@ -315,11 +316,12 @@ export const FEED_STYLESHEET = "/static/feed.css"
 
 const SUBSCRIBE: Record<string, string> = { ru: "подписка", en: "subscribe" }
 
-// The label and the note on what the feed is for; the note says where the address is.
+// The label and the note on what the feed is for; the note says where the address is, and the
+// script copies a command from it on a click.
 function subscribe(feed: Feed): string {
   const x = escapeXml
   const label = SUBSCRIBE[feed.lang] ?? SUBSCRIBE.en
-  return `  <h:div class="subscribe"><h:p class="label">${x(label)}</h:p>${feed.note ?? ""}</h:div>
+  return `  <h:div class="subscribe"><h:p class="label">${x(label)}</h:p>${feed.note ?? ""}<h:script src="${FEED_SCRIPT}" defer="defer"></h:script></h:div>
 `
 }
 

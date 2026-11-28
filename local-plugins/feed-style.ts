@@ -96,6 +96,16 @@ div.subscribe a:hover {
 div.subscribe code {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.9em;
+  user-select: all;
+  -webkit-user-select: all;
+  cursor: copy;
+}
+span.copied {
+  margin-left: 0.5rem;
+  color: var(--note);
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: 1.15rem;
 }
 div.subscribe div.callout {
   display: block;
