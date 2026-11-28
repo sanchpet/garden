@@ -74,14 +74,17 @@ export function pageResources(
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
   // On a site with a top-level folder per language (en/, ru/, …), graph and explorer
   // stay within the current page's language; the getter follows <html lang> across SPA navigations.
-  // The index is fetched on the first read, not with the page: most pages never read it.
+  // The index is fetched on the first read, not with the page: most pages never read it. Its
+  // address is relative to the page that loaded this script, so it is resolved now, before SPA
+  // navigation moves the document to a page at another depth.
   const contentIndexScript = `(() => {
+    const url = new URL("${contentIndexPath}", location.href)
     let all
     const scoped = new Map()
     Object.defineProperty(window, "fetchData", {
       configurable: true,
       get() {
-        all ??= fetch("${contentIndexPath}").then((data) => data.json())
+        all ??= fetch(url).then((data) => data.json())
         const lang = document.documentElement.lang
         if (!scoped.has(lang)) {
           scoped.set(lang, all.then((data) => {

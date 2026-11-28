@@ -327,7 +327,8 @@ describe("pageResources", () => {
   })
 
   test("contentIndex is fetched on the first read of fetchData, once per page load", async () => {
-    const inline = pageResources("." as FullSlug, emptyResources).js.find(
+    // The page ru/colophon, one level under the root.
+    const inline = pageResources(".." as FullSlug, emptyResources).js.find(
       (j) => j.contentType === "inline" && "script" in j,
     )
     assert.ok(inline && "script" in inline)
@@ -335,11 +336,16 @@ describe("pageResources", () => {
     let fetches = 0
     const window: Record<string, unknown> = {}
     const document = { documentElement: { lang: "ru" } }
-    const fetch = async () => {
+    const location = { href: "https://example.com/ru/colophon" }
+    const requested: string[] = []
+    const fetch = async (url: URL) => {
       fetches++
+      requested.push(String(url))
       return { json: async () => index }
     }
-    vm.runInNewContext(inline.script, { window, document, fetch, Object, Map })
+    vm.runInNewContext(inline.script, { window, document, location, fetch, Object, Map, URL })
+    // An SPA navigation to a deeper page before the first read must not move the index's address.
+    location.href = "https://example.com/ru/posts/a"
     assert.strictEqual(fetches, 0, "the index must not be requested before something reads it")
     const ru = await (window.fetchData as Promise<Record<string, unknown>>)
     assert.deepStrictEqual(Object.keys(ru), ["ru/a"])
@@ -348,5 +354,6 @@ describe("pageResources", () => {
     assert.deepStrictEqual(Object.keys(en), ["en/b"])
     await window.fetchData
     assert.strictEqual(fetches, 1, "every read after the first reuses the same request")
+    assert.deepStrictEqual(requested, ["https://example.com/static/contentIndex.json"])
   })
 })
