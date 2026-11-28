@@ -1,6 +1,9 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { coverCopyPath, coverImage, coverOf, copySize } from "./cover"
+import { h } from "preact"
+import { render } from "preact-render-to-string"
+import type { QuartzComponentProps } from "../quartz/components/types"
+import { coverCopyPath, coverImage, coverOf, copySize, NoteCover } from "./cover"
 import { thumbPath } from "./thumbs"
 
 describe("cover copies", () => {
@@ -47,5 +50,19 @@ describe("cover copies", () => {
   test("a cover without a copy is shown as it is, and a page without one shows none", () => {
     assert.deepStrictEqual(coverImage({ cover: "media/a.jpg" }), { src: "media/a.jpg" })
     assert.strictEqual(coverImage({}), undefined)
+  })
+
+  // The CSS sizes the box from this ratio, so the title beside the cover wraps before it loads.
+  test("the page's cover carries its ratio, a cover without a size none", () => {
+    const Cover = NoteCover()
+    const page = (fileData: object) =>
+      render(h(Cover, { fileData } as unknown as QuartzComponentProps))
+    const sized = page({
+      slug: "ru/posts/a",
+      cover: "media/a.jpg",
+      coverCopy: { path: "static/covers/media/a.webp", width: 640, height: 800 },
+    })
+    assert.match(sized, /style="--cover-ratio: 0\.8"/)
+    assert.doesNotMatch(page({ slug: "ru/posts/a", cover: "media/a.jpg" }), /--cover-ratio/)
   })
 })
