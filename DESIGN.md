@@ -189,7 +189,7 @@ The last line under every page, in the column, written in Caveat at label size a
 
 ### Feed
 
-The Atom feed of each language, opened in a browser, is styled by `/static/feed.css` (no XSLT, no script): the site's ground and text in light or dark by `prefers-color-scheme`, the feed title, a subscribe block, then a compact list, one line per entry: its title as a link on the left, its day in muted text on the right, a light rule between lines; below 480px the day goes under the title. A note has no title, so its line names it by its address (`2026-11-22-1840`) in IBM Plex Mono. The lines are XHTML that the feed carries in each entry (with a viewport for phones); feed readers skip it as foreign markup, and the Atom text itself is hidden. The subscribe block is a Caveat label («подписка», "subscribe"), the note on what the address is for, and the feed's own address in IBM Plex Mono on a band-paper chip with hand-cut corners that one click selects whole. The note is the file `<lang>/site/feed.md` in the texts, written in Markdown with ordinary links: paragraphs, links, bold, italic and inline code survive, everything else keeps only its text; without the file the engine says what the address is for itself. The stream carries "rss" in Caveat above the first year's rule, at its right end.
+The Atom feed of each language, opened in a browser, is styled by `/static/feed.css` (no XSLT, no script): the site's ground and text in light or dark by `prefers-color-scheme`, the feed title, a subscribe block, then a compact list, one line per entry: its title as a link on the left, its day in muted text on the right, a light rule between lines; below 480px the day goes under the title. A note has no title, so its line names it by its address (`2026-11-22-1840`) in IBM Plex Mono. The lines are XHTML that the feed carries in each entry (with a viewport for phones); feed readers skip it as foreign markup, and the Atom text itself is hidden. The subscribe block is a Caveat label («подписка», "subscribe"), the note on what the address is for, and the feed's own address in IBM Plex Mono on a band-paper chip with hand-cut corners that one click selects whole. The note is the `## feed` section of `<lang>/site.md` in the texts, written in Markdown with ordinary links: paragraphs, links, bold, italic and inline code survive, everything else keeps only its text; without the section the engine says what the address is for itself. The stream carries "rss" in Caveat above the first year's rule, at its right end.
 
 ### Language switch
 
@@ -213,7 +213,7 @@ Under a post or an evergreen text, below the closing rule: the number of readers
 
 ### Popover
 
-Language note and footnote tooltip share one form: page ground, 1px rule, 6px radius, 0.85rem text, a soft shadow, at most 24rem wide. The language note's text is the file `<lang>/site/language.md` in the texts, shown as plain text; without the file the note names the language only.
+Language note and footnote tooltip share one form: page ground, 1px rule, 6px radius, 0.85rem text, a soft shadow, at most 24rem wide. The language note's text is the `## language` section of `<lang>/site.md` in the texts, shown as plain text; without it the note names the language only.
 
 ### Sources and texts list
 

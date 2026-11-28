@@ -5,21 +5,50 @@ import remarkParse from "remark-parse"
 import { unified } from "unified"
 import type { Language } from "./languages"
 
-// What the site itself says around the texts lives as Markdown files in `<lang>/site/`, so the
-// owner edits it like any text. quartz.config.yaml keeps the folder out of the pages; the engine
-// reads the files here. A missing or empty file is `undefined`, and the caller decides the default.
+// What the site itself says around the texts lives in one Markdown file per language,
+// `<lang>/site.md`, one `## key` section per text, so the owner edits it like any text and a new
+// text is a new heading. quartz.config.yaml keeps the file out of the pages; the engine reads it
+// here. A missing file or section, or an empty one, is `undefined`, and the caller decides.
 export type SiteText = "feed" | "language"
 
 export function siteText(contentDir: string, lang: Language, name: SiteText): string | undefined {
   let raw: string
   try {
-    raw = fs.readFileSync(path.join(contentDir, lang, "site", `${name}.md`), "utf8")
+    raw = fs.readFileSync(path.join(contentDir, lang, "site.md"), "utf8")
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined
     throw error
   }
+  return siteSections(raw).get(name)
+}
+
+// Splits the file at `## ` headings outside fenced code; text before the first one is ignored.
+export function siteSections(raw: string): Map<string, string> {
   const body = raw.startsWith("---\n") ? raw.slice(raw.indexOf("\n---", 4) + 4) : raw
-  return body.trim() || undefined
+  const sections = new Map<string, string>()
+  let key: string | undefined
+  let lines: string[] = []
+  let fence: string | undefined
+  const close = () => {
+    const text = lines.join("\n").trim()
+    if (key !== undefined && text && !sections.has(key)) sections.set(key, text)
+  }
+  for (const line of body.split("\n")) {
+    const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1]
+    if (
+      marker &&
+      (fence === undefined || (marker[0] === fence[0] && marker.length >= fence.length))
+    )
+      fence = fence === undefined ? marker : undefined
+    const heading = fence === undefined && !marker ? /^##[ \t]+(.+?)[ \t#]*$/.exec(line) : null
+    if (heading) {
+      close()
+      key = heading[1].trim().toLowerCase()
+      lines = []
+    } else lines.push(line)
+  }
+  close()
+  return sections
 }
 
 // The language note sits in a tooltip, so it is plain text: Markdown keeps only its words.

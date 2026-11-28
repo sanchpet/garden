@@ -17,8 +17,8 @@ configuration:
     # Drawing sources; the page embeds the SVG rendered from them.
     - "**/*.excalidraw.md"
     # What the site itself says (feed note, language note); local-plugins/site-texts.ts reads them.
-    - ru/site/**
-    - en/site/**
+    - ru/site.md
+    - en/site.md
     # Quartz's own icon and social card; local-plugins/brand.tsx emits ours.
     - icon.png
     - og-image.png

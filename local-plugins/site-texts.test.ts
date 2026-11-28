@@ -13,22 +13,41 @@ const put = (file: string, text: string) => {
   fs.mkdirSync(path.dirname(path.join(content, file)), { recursive: true })
   fs.writeFileSync(path.join(content, file), text)
 }
-put("ru/site/feed.md", "Первый абзац с [ссылкой](https://example.org/).\n\nВторой абзац.\n")
-put("en/site/feed.md", "---\naliases: [Feed note]\n---\n\nThe body only.\n")
-put("ru/site/language.md", "  \n")
+put(
+  "ru/site.md",
+  [
+    "Вступление до первого раздела не текст.",
+    "",
+    "## Feed ",
+    "",
+    "Первый абзац с [ссылкой](https://example.org/).",
+    "",
+    "```md",
+    "## language",
+    "```",
+    "",
+    "Второй абзац.",
+    "",
+    "## language",
+    "",
+    "  ",
+  ].join("\n"),
+)
+put("en/site.md", "---\naliases: [Site]\nfeed: not this\n---\n\n## feed\n\nThe body only.\n")
 
 describe("site texts", () => {
-  test("a file's body is the text, its frontmatter is not", () => {
+  test("each ## section of the file is a text, its key matched loosely", () => {
     assert.strictEqual(
       siteText(content, "ru", "feed"),
-      "Первый абзац с [ссылкой](https://example.org/).\n\nВторой абзац.",
+      "Первый абзац с [ссылкой](https://example.org/).\n\n```md\n## language\n```\n\nВторой абзац.",
     )
     assert.strictEqual(siteText(content, "en", "feed"), "The body only.")
   })
 
-  test("a missing or empty file says nothing", () => {
+  test("a missing file, a missing section or an empty one says nothing", () => {
     assert.strictEqual(siteText(content, "en", "language"), undefined)
     assert.strictEqual(siteText(content, "ru", "language"), undefined)
+    assert.strictEqual(siteText(path.join(content, "nowhere"), "ru", "feed"), undefined)
   })
 
   test("the language note keeps only the words of its Markdown", () => {
@@ -43,15 +62,15 @@ describe("site texts", () => {
     const config = parse(fs.readFileSync("quartz.config.yaml", "utf8"))
     const ignore: string[] = config.configuration.ignorePatterns
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "site-glob-"))
-    const files = ["ru/site/feed.md", "en/site/language.md", "ru/site.md", "ru/posts/site/x.md"]
+    const files = ["ru/site.md", "en/site.md", "ru/site/x.md", "ru/posts/site.md", "en/sites.md"]
     for (const file of files) {
       fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true })
       fs.writeFileSync(path.join(dir, file), "")
     }
     const built = (await globby("**/*.*", { cwd: dir, ignore })).sort()
-    assert.deepStrictEqual(built, ["ru/posts/site/x.md", "ru/site.md"])
+    assert.deepStrictEqual(built, ["en/sites.md", "ru/posts/site.md", "ru/site/x.md"])
     // The watcher of `quartz build --serve` matches the same patterns with minimatch.
     const watched = files.filter((file) => !ignore.some((pattern) => minimatch(file, pattern)))
-    assert.deepStrictEqual(watched.sort(), ["ru/posts/site/x.md", "ru/site.md"])
+    assert.deepStrictEqual(watched.sort(), ["en/sites.md", "ru/posts/site.md", "ru/site/x.md"])
   })
 })
