@@ -39,7 +39,12 @@ document.addEventListener("nav", () => {
 
   void indexForSearch(document.documentElement.lang)
   for (const link of document.querySelectorAll<HTMLAnchorElement>(".language-switch a")) {
-    if (link.classList.contains("twin")) window.spaPrefetch(new URL(link.href))
+    // Fetched when the reader reaches for the switch, not on every page: most never use it.
+    const prefetch = () => link.classList.contains("twin") && window.spaPrefetch(new URL(link.href))
+    for (const intent of ["pointerenter", "focus", "touchstart"]) {
+      link.addEventListener(intent, prefetch, { passive: true })
+      window.addCleanup(() => link.removeEventListener(intent, prefetch))
+    }
     const onClick = (event: MouseEvent) => {
       rememberLanguage(link.dataset.lang!)
       if (!link.classList.contains("twin") || event.ctrlKey || event.metaKey) return

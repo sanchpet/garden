@@ -14,6 +14,7 @@ import { ContentCards } from "./local-plugins/cards"
 import { Thumbnails } from "./local-plugins/thumbs"
 import { LoneDollars } from "./local-plugins/dollars"
 import { DropCap } from "./local-plugins/dropcap"
+import { mathOnlyWhereUsed } from "./local-plugins/math"
 import { ParagraphPerLine } from "./local-plugins/paragraphs"
 import { VaultPaths } from "./local-plugins/vault-paths"
 import { FootnoteLinks, FootnoteTooltip } from "./local-plugins/footnotes"
@@ -47,6 +48,9 @@ const config = await loadQuartzConfig()
 config.plugins.transformers.unshift(ObsidianOnlyBlocks())
 config.plugins.transformers.unshift(SourceTextsInPlace())
 config.plugins.transformers.unshift(LoneDollars(), VaultPaths())
+const latex = config.plugins.transformers.findIndex((t) => t.name === "Latex")
+if (latex === -1) throw new Error("garden: no Latex transformer to load per page")
+config.plugins.transformers[latex] = mathOnlyWhereUsed(config.plugins.transformers[latex])
 config.plugins.transformers.push(
   CatalogueTwins(),
   ParagraphPerLine(),

@@ -14,7 +14,8 @@ const BRAND = path.join("brand", "out")
 // the core Static emitter by ignorePatterns, so these are the only ones on the site.
 const FILES: Record<string, string> = {
   "favicon.ico": "favicon.ico",
-  "static/icon.png": "icon.png",
+  // Head.tsx links this without sizes, so browsers fetch it as one more favicon: the 48 px one.
+  "static/icon.png": "favicon-48.png",
   "static/logo-88.png": "logo-88.png",
   "static/favicon-16.png": "favicon-16.png",
   "static/favicon-32.png": "favicon-32.png",
