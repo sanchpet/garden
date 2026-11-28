@@ -245,7 +245,7 @@ A dated post may carry a cover image. Covers are black and white, with grain. No
 
 ### Bookcase
 
-The library as one case in pencil with books in marker. Read books stand on the shelves, a shelf run per group. Books not yet begun lie in stacks on nightstands beside the case, still in their paper band; the ones being read lie on top. A book can be pulled out to show its card.
+The library as one case in pencil with books in marker. Read books stand on the shelves, a shelf run per group. Books not yet begun lie in stacks on nightstands beside the case, still in their paper band; the ones being read lie on top. A book can be pulled out to show its card. A book whose card is not yet translated stands on the other language's shelf among its translated neighbours, under their name for the section.
 
 ### Radar
 

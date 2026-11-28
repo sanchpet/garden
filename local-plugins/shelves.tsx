@@ -20,6 +20,7 @@ import {
   luminance,
   outline,
   ownLanguage,
+  sectionNames,
   plain,
   seeded,
   shelved,
@@ -247,6 +248,7 @@ viewRegistry.register({
       owned.filter(shelved),
       view.groupBy?.property,
       view.groupBy?.direction === "DESC",
+      sectionNames(entries, view.groupBy?.property, lang),
     )
     // The stacks, each listed from the top down: what is being read lies on the first one.
     const aside = (status: string) =>
