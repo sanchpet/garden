@@ -142,7 +142,7 @@ One palette for the page and for what is drawn on it: paper and ink, steel blue 
 
 **Character:** a printed page annotated by its owner. Literata carries reading; Caveat carries what the hand wrote, on an object or in the margin.
 
-Until Literata and Plex Mono arrive the page is set in Times New Roman and Courier New scaled to take the same room (`local-plugins/fonts.ts`, numbers from `brand/src/fallback_metrics.py`), so nothing moves on the swap. A cover's box is sized from its proportions before the image loads, for the same reason.
+The roman Literata faces are preloaded with `font-display: block`: the text waits for them, up to the browser's 3 s, rather than being drawn in another face and rewrapped. The other faces swap in, over Times New Roman and Courier New scaled to take the same room (`local-plugins/fonts.ts`, numbers from `brand/src/fallback_metrics.py`), which is also what a page shows if the roman faces never come. A cover's box is sized from its proportions before the image loads, for the same reason.
 
 ### Hierarchy
 
