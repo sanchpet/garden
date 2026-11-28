@@ -8,6 +8,7 @@ import {
   BURGUNDY,
   CREAM,
   FONT_FACE,
+  INK,
   MARK,
   PAPER,
   PENCIL,
@@ -43,8 +44,8 @@ import {
 // A Bases view, `type: radar`: the author's own tech radar, drawn as a pencil instrument with
 // a round scope. A ring says how far his own experience with a tool goes, the nearest to
 // the hub being what he reaches for first; the sectors are named in the view's `sectors`,
-// four of them making the quadrants of the Thoughtworks radar. The scope is the picture, the list under it is the content; the one script only
-// sends a click on a blip through the SPA router.
+// four of them making the quadrants of the Thoughtworks radar. The scope is the picture, the list under it is the content; the script
+// lights one tool on both and sends a click on a blip through the SPA router.
 
 export { RINGS, type Ring } from "./radar-layout"
 
@@ -268,6 +269,10 @@ viewRegistry.register({
 
     return (
       <div class="radar">
+        <div class="radar-label" hidden aria-hidden="true">
+          <span class="radar-label-name" />
+          <span class="radar-label-note" />
+        </div>
         <svg
           class="radar-scope"
           viewBox={`0 0 ${W} ${H}`}
@@ -385,7 +390,7 @@ viewRegistry.register({
             const room = ((2 * half * Math.PI) / 180) * (R + 9)
             const label = lettering(sectorLabel(id), 22, room)
             return (
-              <g>
+              <g class="radar-sector" data-sector={i}>
                 <path
                   id={`radar-rim-${i}`}
                   d={`M${f(p[0])} ${f(p[1])}A${R + 9} ${R + 9} 0 0 ${lower ? 0 : 1} ${f(q[0])} ${f(q[1])}`}
@@ -405,7 +410,7 @@ viewRegistry.register({
             const [r0, r1] = [ring === "adopt" ? 0 : EDGE[ring][0], EDGE[ring][1]]
             const label = lettering(RING[lang][ring].name, 17, r1 - r0 - 4, 0.5)
             return (
-              <g>
+              <g class="radar-step" data-ring={ring}>
                 {pencil(wobble(rnd, [CX - r1, BASE + 4], [CX - r1, BASE + 13], 0.4), 1.1)}
                 {pencil(wobble(rnd, [CX + r1, BASE + 4], [CX + r1, BASE + 13], 0.4), 1.1)}
                 <text
@@ -470,6 +475,21 @@ viewRegistry.register({
           })}
           <path d={round(rnd, knob, 6, 0.5)} fill={CREAM} stroke={BURGUNDY} stroke-width="1.6" />
 
+          {/* a veil per sector: lighting a tool lays the others over the rest of the glass */}
+          {sectors.length > 1 &&
+            sectors.map((id, i) => {
+              const [a0, a1] = bounds(id)
+              const [p, q] = [polar(R - 2, a0), polar(R - 2, a1)]
+              return (
+                <path
+                  class="radar-veil"
+                  data-sector={i}
+                  d={`M${CX} ${CY}L${f(p[0])} ${f(p[1])}A${R - 2} ${R - 2} 0 ${span > 180 ? 1 : 0} 1 ${f(q[0])} ${f(q[1])}Z`}
+                  fill={PAPER}
+                />
+              )
+            })}
+
           {/* the hub */}
           <path d={round(rnd, [CX, CY], 9, 0.8)} fill={PENCIL} stroke={PENCIL} stroke-width="1" />
 
@@ -484,17 +504,19 @@ viewRegistry.register({
                   ? 1
                   : -1
                 : 0
+            const said = [RING[lang][blip.ring!].name, blip.age && ui[blip.age]].filter(Boolean)
             return (
               <a
                 class={`radar-blip${blip.age ? ` is-${blip.age}` : ""}`}
                 href={resolveRelative(from, blip.entry.slug as FullSlug)}
                 data-router-ignore
+                data-n={blip.number}
+                data-sector={sectors.indexOf(blip.area)}
+                data-ring={blip.ring}
+                data-name={blip.name}
+                data-note={said.join(" · ")}
+                aria-label={`${blip.name}: ${said.join(", ")}`}
               >
-                <title>
-                  {[`${blip.name}: ${RING[lang][blip.ring!].name}`, blip.age && ui[blip.age]]
-                    .filter(Boolean)
-                    .join(", ")}
-                </title>
                 {blip.age === "new" && (
                   <path
                     class="radar-new"
@@ -557,7 +579,7 @@ viewRegistry.register({
                         blip.age && ui[blip.age],
                       ].filter(Boolean)
                       return (
-                        <li>
+                        <li data-n={ring ? blip.number : undefined}>
                           <span
                             class={`radar-dot${blip.age ? ` is-${blip.age}` : ""}`}
                             aria-hidden="true"
@@ -592,6 +614,8 @@ viewRegistry.register({
   css: `
 ${FONT_FACE}
 .radar {
+  position: relative;
+  container-type: inline-size;
   margin: 1.5rem 0 2rem;
 }
 /* The radar is its folder's index note; the folder listing under it would repeat the legend. */
@@ -634,8 +658,10 @@ article:has(.radar) + .page-listing {
   transform-origin: center;
 }
 .radar-blip:hover > path:last-of-type,
-.radar-blip:focus-visible > path:last-of-type {
+.radar-blip:focus-visible > path:last-of-type,
+.radar-blip.is-on > path:last-of-type {
   transform: scale(1.25);
+  stroke-width: 2.6;
 }
 .radar-blip:focus-visible {
   outline: none;
@@ -643,6 +669,92 @@ article:has(.radar) + .page-listing {
 .radar-blip.is-faded,
 .radar-dot.is-faded {
   opacity: 0.45;
+}
+/* One tool lit: the other blips step back, the other sectors and rings less so. */
+.radar-blip,
+.radar-veil,
+.radar-sector,
+.radar-step {
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.radar-veil {
+  opacity: 0;
+  pointer-events: none;
+}
+.radar.is-focus .radar-blip:not(.is-on) {
+  opacity: 0.28;
+}
+.radar.is-focus .radar-blip.is-on {
+  opacity: 1;
+}
+.radar.is-focus .radar-veil:not(.is-on) {
+  opacity: 0.5;
+}
+.radar.is-focus .radar-sector:not(.is-on),
+.radar.is-focus .radar-step:not(.is-on) {
+  opacity: 0.4;
+}
+/* The label is a paper slip, cream in both themes, outlined in pencil. */
+.radar-label {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: min(16rem, calc(100% - 12px));
+  padding: 0.3rem 0.75rem 0.4rem;
+  border: 1.5px solid ${PENCIL};
+  border-radius: 10px 4px 9px 5px / 5px 9px 4px 10px;
+  background: ${CREAM};
+  color: ${INK};
+  font-family: "Caveat", cursive;
+  line-height: 1.1;
+  pointer-events: none;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  animation: radar-label-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.radar-label[hidden] {
+  display: none;
+}
+.radar-label::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--tip, 50%) - 6px);
+  bottom: -7px;
+  width: 11px;
+  height: 11px;
+  box-sizing: border-box;
+  border: solid ${PENCIL};
+  border-width: 0 1.5px 1.5px 0;
+  background: ${CREAM};
+  transform: rotate(45deg);
+}
+.radar-label.is-below::after {
+  top: -7px;
+  bottom: auto;
+  border-width: 1.5px 0 0 1.5px;
+}
+/* The slip shrinks with the scope on a phone, so it does not cover a quarter of it. */
+.radar-label-name {
+  font-size: clamp(1.1rem, 3.2cqi, 1.45rem);
+  font-weight: 700;
+}
+.radar-label-note {
+  font-size: clamp(0.9rem, 2.4cqi, 1.05rem);
+  font-weight: 600;
+  opacity: 0.75;
+}
+@keyframes radar-label-in {
+  from {
+    opacity: 0;
+    translate: 0 3px;
+  }
+}
+.radar-ring li.is-on .radar-dot {
+  transform: scale(1.25);
+}
+.radar-ring li.is-on a.internal {
+  text-decoration-color: currentColor !important;
 }
 .radar-dot.is-new {
   outline: 1.3px solid ${PENCIL};
@@ -702,6 +814,7 @@ article:has(.radar) + .page-listing {
   font-weight: 700;
   line-height: 1.25rem;
   text-align: center;
+  transition: transform 0.15s ease-out;
 }
 .radar-meta {
   display: block;
@@ -709,8 +822,16 @@ article:has(.radar) + .page-listing {
   color: var(--gray);
 }
 @media (prefers-reduced-motion: reduce) {
-  .radar-blip > path {
+  .radar-blip > path,
+  .radar-blip,
+  .radar-veil,
+  .radar-sector,
+  .radar-step,
+  .radar-dot {
     transition: none;
+  }
+  .radar-label {
+    animation: none;
   }
 }
 `,
