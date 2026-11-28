@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
@@ -13,6 +14,27 @@ import { languageOf } from "./languages"
 const SCRIPTS = ["latin", "cyrillic"]
 const OUT = "static/fonts"
 
+// A served font's name carries its content hash, like Quartz's CSS and JS, so the server can mark
+// it immutable: a returning reader never asks for it again, and a changed file is a new address.
+const names = new Map<string, string>()
+export function hashedName(file: string): string {
+  let name = names.get(file)
+  if (!name) {
+    const hash = createHash("sha256").update(fs.readFileSync(file)).digest("hex").slice(0, 8)
+    const ext = path.extname(file)
+    name = `${path.basename(file, ext)}-${hash}${ext}`
+    names.set(file, name)
+  }
+  return name
+}
+
+export const fontUrl = (file: string) => `/${OUT}/${hashedName(file)}`
+
+const LITERATA = path.join("brand", "out", "fonts")
+// The hand faces, cut by brand/build.sh.
+export const CAVEAT = path.join("brand", "out", "caveat.woff2")
+export const NEUCHA = path.join("brand", "out", "neucha.woff2")
+
 // `files`: where the served files come from when they are not fontsource's own; `weight`: their
 // font-weight range, when they differ from fontsource's.
 type Source = { dir: string; css: string[]; family: string; files?: string; weight?: string }
@@ -23,7 +45,7 @@ const SOURCES: Source[] = [
     css: ["opsz.css", "opsz-italic.css"],
     family: "Literata",
     // brand/build.sh drops the weights under 400, which the site never sets: a fifth of each file.
-    files: "brand/out/fonts",
+    files: LITERATA,
     weight: "400 900",
   },
   {
@@ -36,11 +58,13 @@ const SOURCES: Source[] = [
 const FACE = /\/\* ([\w-]+) \*\/\s*@font-face \{([^}]*)\}/g
 
 // The @font-face rules of one fontsource stylesheet for SCRIPTS, under `family` and, if given,
-// with `weight` as their range, with their files at /static/fonts; also the names of those files.
+// with `weight` as their range, with their files at /static/fonts under the names `rename`
+// gives; also the fontsource names of those files.
 export function faces(
   css: string,
   family: string,
   weight?: string,
+  rename: (file: string) => string = (file) => file,
 ): { css: string; files: string[] } {
   const out: string[] = []
   const files: string[] = []
@@ -51,7 +75,7 @@ export function faces(
     files.push(file)
     let rule = body
       .replace(/font-family: [^;]+;/, `font-family: "${family}";`)
-      .replace(`./files/${file}`, `/${OUT}/${file}`)
+      .replace(`./files/${file}`, `/${OUT}/${rename(file)}`)
     if (weight) rule = rule.replace(/font-weight: [^;]+;/, `font-weight: ${weight};`)
     out.push(`@font-face {${rule}}`)
   }
@@ -64,9 +88,11 @@ function load() {
   for (const source of SOURCES) {
     for (const sheet of source.css) {
       const sheetCss = fs.readFileSync(path.join(source.dir, sheet), "utf8")
-      const found = faces(sheetCss, source.family, source.weight)
-      css.push(found.css)
       const dir = source.files ?? path.join(source.dir, "files")
+      const found = faces(sheetCss, source.family, source.weight, (file) =>
+        hashedName(path.join(dir, file)),
+      )
+      css.push(found.css)
       files.push(...found.files.map((file) => path.join(dir, file)))
     }
   }
@@ -76,8 +102,8 @@ function load() {
 export const SiteFonts: QuartzEmitterPlugin = () => ({
   name: "SiteFonts",
   async *emit(ctx) {
-    for (const file of load().files) {
-      const out = joinSegments(ctx.argv.output, OUT, path.basename(file)) as FilePath
+    for (const file of [...load().files, CAVEAT, NEUCHA]) {
+      const out = joinSegments(ctx.argv.output, OUT, hashedName(file)) as FilePath
       await fs.promises.mkdir(path.dirname(out), { recursive: true })
       await fs.promises.copyFile(file, out)
       yield out
@@ -98,13 +124,15 @@ const ROMAN = {
   cyrillic: "literata-cyrillic-opsz-normal.woff2",
 }
 
+const romanUrl = (file: string) => fontUrl(path.join(LITERATA, file))
+
 export function preloads(page: Pick<QuartzPluginData, "slug">) {
   const files = [ROMAN.latin]
   if (languageOf(page.slug) === "ru") files.push(ROMAN.cyrillic)
   return files.map((file) =>
     h("link", {
       rel: "preload",
-      href: `/${OUT}/${file}`,
+      href: romanUrl(file),
       as: "font",
       type: "font/woff2",
       crossOrigin: "",
@@ -114,7 +142,7 @@ export function preloads(page: Pick<QuartzPluginData, "slug">) {
 
 export function holdRoman(css: string): string {
   return css.replace(/@font-face \{[^}]*\}/g, (rule) =>
-    Object.values(ROMAN).some((file) => rule.includes(`/${file}`))
+    Object.values(ROMAN).some((file) => rule.includes(`url(${romanUrl(file)})`))
       ? rule.replace("font-display: swap;", "font-display: block;")
       : rule,
   )
@@ -205,6 +233,25 @@ export function fallbackFaces(): string {
     return `@font-face { font-family: "${face.family}"; src: ${src}; font-weight: ${face.weight}; font-style: ${face.style}; size-adjust: ${m.size}%; ascent-override: ${m.ascent}%; descent-override: ${m.descent}%; line-gap-override: ${m.lineGap}%;${range} }`
   })
   return rules.join("\n")
+}
+
+// The hand faces, for every stylesheet that sets them: the page bundle, the drawn objects, the feed.
+export function caveatFace(): string {
+  return `@font-face {
+  font-family: "Caveat";
+  src: url("${fontUrl(CAVEAT)}") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}`
+}
+
+export function neuchaFace(): string {
+  return `@font-face {
+  font-family: "Neucha";
+  src: url("${fontUrl(NEUCHA)}") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}`
 }
 
 // The same rules for a stylesheet outside the pages, such as the feed's.

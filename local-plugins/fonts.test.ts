@@ -1,8 +1,26 @@
 import assert from "node:assert"
 import fs from "node:fs"
+import os from "node:os"
+import path from "node:path"
 import test, { describe } from "node:test"
 import { render } from "preact-render-to-string"
-import { faces, fallbackFaces, holdRoman, preloads, textFontFaces } from "./fonts"
+import { feedCss } from "./feed-style"
+import {
+  caveatFace,
+  faces,
+  fallbackFaces,
+  hashedName,
+  holdRoman,
+  neuchaFace,
+  preloads,
+  SiteFonts,
+  SiteFontFaces,
+  textFontFaces,
+} from "./fonts"
+import { GardenStyles } from "./garden-styles"
+
+const HASHED = /-[0-9a-f]{8}\.woff2$/
+const unhash = (name: string) => name.replace(/-[0-9a-f]{8}(\.woff2)$/, "$1")
 
 const face = (name: string, range: string) => `/* ${name} */
 @font-face {
@@ -96,9 +114,9 @@ describe("preloads", () => {
       .join("")
 
   test("every page asks for the Latin roman face, a Russian one for the Cyrillic too", () => {
-    assert.match(head("en/colophon"), /literata-latin-opsz-normal\.woff2/)
+    assert.match(head("en/colophon"), /literata-latin-opsz-normal-[0-9a-f]{8}\.woff2/)
     assert.doesNotMatch(head("en/colophon"), /cyrillic/)
-    assert.match(head("ru/colophon"), /literata-cyrillic-opsz-normal\.woff2/)
+    assert.match(head("ru/colophon"), /literata-cyrillic-opsz-normal-[0-9a-f]{8}\.woff2/)
   })
 
   // A font preload without crossorigin is fetched twice: fonts are requested in CORS mode.
@@ -109,7 +127,9 @@ describe("preloads", () => {
       assert.match(html, /rel="preload"/)
       assert.match(html, /as="font"/)
       assert.match(html, /crossorigin/)
-      assert.ok(files.includes(/fonts\/([^"]+)"/.exec(html)![1]))
+      const name = /fonts\/([^"]+)"/.exec(html)![1]
+      assert.match(name, HASHED)
+      assert.ok(files.includes(unhash(name)))
     }
   })
 })
@@ -119,7 +139,7 @@ describe("holding the roman faces", () => {
 
   test("only the preloaded faces wait for their files, the rest swap in", () => {
     const held = rules.filter((rule) => rule.includes("font-display: block;"))
-    assert.deepStrictEqual(held.map((rule) => /fonts\/([^)]+)\)/.exec(rule)![1]).sort(), [
+    assert.deepStrictEqual(held.map((rule) => unhash(/fonts\/([^)]+)\)/.exec(rule)![1])).sort(), [
       "literata-cyrillic-opsz-normal.woff2",
       "literata-latin-opsz-normal.woff2",
     ])
@@ -129,5 +149,67 @@ describe("holding the roman faces", () => {
   // The feed's stylesheet loads none of them ahead, so it keeps swap everywhere.
   test("the feed's faces are left as fontsource writes them", () => {
     assert.doesNotMatch(textFontFaces(), /font-display: block/)
+  })
+})
+
+describe("hashed font files", () => {
+  test("a file's name carries the hash of its bytes", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "fonts-"))
+    const write = (name: string, bytes: string) => {
+      fs.writeFileSync(path.join(dir, name), bytes)
+      return hashedName(path.join(dir, name))
+    }
+    const a = write("face.woff2", "one")
+    assert.match(a, /^face-[0-9a-f]{8}\.woff2$/)
+    assert.strictEqual(write("same.woff2", "one").slice(-14), a.slice(-14))
+    assert.notStrictEqual(write("other.woff2", "two").slice(-14), a.slice(-14))
+  })
+
+  // A preload that names another URL than the stylesheet's is fetched for nothing, and the font
+  // is fetched again: they must agree to the byte.
+  test("each preload asks for a URL the page's stylesheet uses", () => {
+    const css = SiteFontFaces().css!
+    for (const slug of ["ru/a", "en/a"]) {
+      for (const link of preloads({ slug: slug as never })) {
+        const href = /href="([^"]+)"/.exec(render(link))![1]
+        assert.ok(css.includes(`url(${href})`), href)
+      }
+    }
+  })
+
+  // Every stylesheet that sets a served font points at a hashed file the build writes.
+  test("every font URL in the site's stylesheets is hashed and emitted", async () => {
+    const out = fs.mkdtempSync(path.join(os.tmpdir(), "site-"))
+    const ctx = { argv: { output: out } } as never
+    const emitted: string[] = []
+    for await (const file of SiteFonts().emit!(ctx, [], {} as never) as AsyncIterable<string>) {
+      emitted.push(path.basename(file))
+    }
+    const sheets = [
+      SiteFontFaces().css!,
+      GardenStyles().css!,
+      feedCss(textFontFaces()),
+      caveatFace(),
+      neuchaFace(),
+    ].join("\n")
+    const urls = [...sheets.matchAll(/url\("?([^)"]+\.woff2)"?\)/g)].map((m) => m[1])
+    assert.ok(urls.length > 0)
+    for (const url of urls) {
+      assert.match(url, /^\/static\/fonts\//, url)
+      assert.match(url, HASHED, url)
+      assert.ok(emitted.includes(path.basename(url)), url)
+    }
+    for (const name of emitted) assert.match(name, HASHED)
+    assert.ok(emitted.some((name) => name.startsWith("caveat-")))
+    assert.ok(emitted.some((name) => name.startsWith("neucha-")))
+  })
+
+  // A font written into a stylesheet by hand would keep an address the build no longer serves.
+  test("no stylesheet names a font file by hand", () => {
+    for (const name of fs.readdirSync("local-plugins")) {
+      if (!/\.tsx?$/.test(name) || name.endsWith(".test.ts")) continue
+      const source = fs.readFileSync(path.join("local-plugins", name), "utf8")
+      assert.doesNotMatch(source, /url\(["']?\/static\/[^)]*\.woff2/, name)
+    }
   })
 })

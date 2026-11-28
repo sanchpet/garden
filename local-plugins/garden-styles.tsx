@@ -1,4 +1,5 @@
 import type { QuartzComponent, QuartzComponentConstructor } from "../quartz/components/types"
+import { caveatFace, neuchaFace } from "./fonts"
 
 // Renders nothing; it only carries the garden's own CSS into the page bundle.
 export const GardenStyles = (() => {
@@ -47,18 +48,8 @@ article:has(.bases-page) + .page-listing {
 
 /* A drawing inlined by InlineDrawings: column width on a wide screen, its own width
    with a horizontal scroll on a narrow one, where it would shrink past reading. */
-@font-face {
-  font-family: "Caveat";
-  src: url("/static/caveat.woff2") format("woff2");
-  font-weight: 400 700;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Neucha";
-  src: url("/static/neucha.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
+${caveatFace()}
+${neuchaFace()}
 .garden-drawing {
   margin: 1.5rem 0;
   overflow-x: auto;
