@@ -59,7 +59,7 @@ describe("mathOnlyWhereUsed", () => {
   })
 
   test("a page with a formula links the stylesheet in its head", () => {
-    assert.match(head({ math: true }), new RegExp(`<link rel="stylesheet" href="${CSS}"`))
+    assert.ok(head({ math: true }).includes(`<link rel="stylesheet" href="${CSS}"`))
   })
 
   test("a page without one links nothing", () => {
@@ -71,7 +71,9 @@ describe("mathOnlyWhereUsed", () => {
     const loader = resources().js!.find((r) => r.contentType === "inline")
     assert.ok(loader && loader.contentType === "inline")
     assert.strictEqual(loader.loadTime, "afterDOMReady")
-    assert.ok(loader.script.includes(JSON.stringify(JS)))
+    // Literal, so that the self-host step finds and rewrites the CDN address.
+    assert.ok(loader.script.includes(JS))
+    assert.ok(!loader.script.includes("</"), "a script-ending sequence survives in the loader")
     assert.ok(loader.script.includes('querySelector(".katex")'))
   })
 
@@ -87,5 +89,13 @@ describe("mathOnlyWhereUsed", () => {
 describe("loaderFor", () => {
   test("runs once per page load, not once per navigation", () => {
     assert.match(loaderFor([JS]), /window\.__mathScripts\|\|/)
+  })
+})
+
+describe("loaderFor escaping", () => {
+  test("an address cannot close the script it is written into", () => {
+    const script = loaderFor(["/x</script><script>alert(1)</script>"])
+    assert.ok(!script.includes("</script>"))
+    assert.ok(script.includes("\\u003c/script\\u003e"))
   })
 })

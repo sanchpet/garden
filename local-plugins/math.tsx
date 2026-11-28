@@ -20,10 +20,18 @@ export function hasMath(tree: Root): boolean {
   return found
 }
 
+// JSON with the characters that could end a script or a JS string escaped. Slashes stay:
+// the self-host step finds CDN addresses in scripts by their literal text.
+const scriptLiteral = (value: unknown) =>
+  JSON.stringify(value).replace(
+    /[<>\u2028\u2029]/g,
+    (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`,
+  )
+
 // A script the router would not run: scripts in a head fetched by SPA navigation are inert.
 // So the loader comes with every page and fetches the script once a page shows a formula.
 export function loaderFor(srcs: string[]): string {
-  return `document.addEventListener("nav",()=>{if(window.__mathScripts||!document.querySelector(".katex"))return;window.__mathScripts=1;for(const src of ${JSON.stringify(srcs)}){const s=document.createElement("script");s.src=src;s.dataset.persist="";document.head.appendChild(s)}})`
+  return `document.addEventListener("nav",()=>{if(window.__mathScripts||!document.querySelector(".katex"))return;window.__mathScripts=1;for(const src of ${scriptLiteral(srcs)}){const s=document.createElement("script");s.src=src;s.dataset.persist="";document.head.appendChild(s)}})`
 }
 
 // The latex plugin declares KaTeX's stylesheet and copy script for every page, though few
