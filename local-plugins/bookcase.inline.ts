@@ -1,3 +1,5 @@
+import { fingerOwner } from "./bookcase-touch"
+
 // The bookcase as an object: a camera over the scene (zoom, drag, fit, full screen), a book
 // that slides out of its shelf when picked, and a panel with its card. Without this script the
 // scene is a scrollable drawing whose books are plain links.
@@ -355,6 +357,37 @@ function mount(root: HTMLElement) {
   }
   on(stage, "pointerup", release)
   on(stage, "pointercancel", release)
+
+  // `touch-action: pan-y` lets the browser scroll the page on any finger move with a vertical
+  // part, and Safari takes a slanted drag on the case for a scroll. The first move decides once
+  // instead: unless it is clearly vertical, the gesture is the case's and the page stays put.
+  let owner: "case" | "page" | null = null
+  let touchStart = { x: 0, y: 0 }
+  on(
+    stage,
+    "touchstart",
+    (event: TouchEvent) => {
+      const [touch] = event.touches
+      owner = event.touches.length > 1 ? "case" : null
+      touchStart = { x: touch.clientX, y: touch.clientY }
+      if ((event.target as Element).closest(".bookcase-panel")) owner = "page"
+    },
+    { passive: true },
+  )
+  on(
+    stage,
+    "touchmove",
+    (event: TouchEvent) => {
+      if (root.classList.contains("is-full")) return
+      if (event.touches.length > 1) owner = "case"
+      if (owner === null) {
+        const [touch] = event.touches
+        owner = fingerOwner(touch.clientX - touchStart.x, touch.clientY - touchStart.y)
+      }
+      if (owner === "case" && event.cancelable) event.preventDefault()
+    },
+    { passive: false },
+  )
 
   // The first click pulls a book out; a click on the pulled book opens its card.
   on(stage, "click", (event: MouseEvent) => {
