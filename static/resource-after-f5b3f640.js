@@ -1,0 +1,1 @@
+(function(){document.addEventListener("nav",()=>{if(!(window.__mathScripts||!document.querySelector(".katex"))){window.__mathScripts=1;for(const e of["/static/vendor/katex/contrib/copy-tex.min.js"]){const t=document.createElement("script");t.src=e,t.dataset.persist="",document.head.appendChild(t)}}})})();

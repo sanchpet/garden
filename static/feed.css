@@ -1,0 +1,290 @@
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-cyrillic-ext-opsz-normal-e97d1f80.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-cyrillic-opsz-normal-57509e63.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-latin-ext-opsz-normal-c2e912f1.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-latin-opsz-normal-deb2987f.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-cyrillic-ext-opsz-italic-14841f76.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-cyrillic-opsz-italic-1dac9c85.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-latin-ext-opsz-italic-c1d24a1b.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url(/static/fonts/literata-latin-opsz-italic-d5075046.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/static/fonts/ibm-plex-mono-cyrillic-ext-400-normal-f8c22ec1.woff2) format('woff2');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/static/fonts/ibm-plex-mono-cyrillic-400-normal-7635422b.woff2) format('woff2');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/static/fonts/ibm-plex-mono-latin-ext-400-normal-6bc0f226.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/static/fonts/ibm-plex-mono-latin-400-normal-08949f72.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/static/fonts/ibm-plex-mono-cyrillic-ext-600-normal-83109cdd.woff2) format('woff2');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/static/fonts/ibm-plex-mono-cyrillic-600-normal-2b05a869.woff2) format('woff2');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/static/fonts/ibm-plex-mono-latin-ext-600-normal-32057cf5.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/static/fonts/ibm-plex-mono-latin-600-normal-0d1f0b8d.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Caveat";
+  src: url("/static/fonts/caveat-52452088.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+feed {
+  --ground: #faf5e9;
+  --text: #33302b;
+  --heading: #1b1a1c;
+  --note: #6b6459;
+  --rule: #e3d9c4;
+  --link: #1e3959;
+  --hover: #8c2f39;
+  display: block;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+  background: var(--ground);
+  color: var(--text);
+  font-family: "Literata", Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+@media (prefers-color-scheme: dark) {
+  feed {
+    --ground: #161819;
+    --text: #dad3c5;
+    --heading: #f5ecdc;
+    --note: #a39b8c;
+    --rule: #3b3832;
+    --link: #9dbadb;
+    --hover: #e0b25a;
+  }
+}
+::selection {
+  background: #f2b705;
+  color: #1b1a1c;
+}
+/* Only the feed's own parts show: an element a browser extension puts into the document
+   (Dark Reader adds a style element) would otherwise be drawn as text. */
+feed > :not(title, div.subscribe, entry),
+style,
+script {
+  display: none !important;
+}
+id,
+link,
+updated,
+published,
+category,
+author {
+  display: none;
+}
+feed > title {
+  display: block;
+  margin-bottom: 2rem;
+  color: var(--heading);
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+div.subscribe {
+  display: block;
+  margin: 0 0 2.25rem;
+}
+div.subscribe p {
+  margin: 0 0 0.6rem;
+}
+div.subscribe p.label {
+  margin: 0 0 0.25rem;
+  color: var(--note);
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+div.subscribe a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--link) 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+div.subscribe a:hover {
+  color: var(--hover);
+  text-decoration-color: currentColor;
+}
+div.subscribe code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9em;
+  user-select: all;
+  -webkit-user-select: all;
+  cursor: copy;
+}
+span.copied {
+  margin-left: 0.5rem;
+  color: var(--note);
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+div.subscribe div.callout {
+  display: block;
+  margin: 0.9rem 0;
+  padding: 0.6rem 0.9rem 0.05rem;
+  border: 1px solid color-mix(in srgb, var(--link) 35%, transparent);
+  border-radius: 4px 6px 5px 7px;
+  background: color-mix(in srgb, var(--link) 6%, transparent);
+}
+div.subscribe p.callout-title {
+  color: var(--link);
+  font-weight: 600;
+}
+entry > *:not(a) {
+  display: none;
+}
+entry {
+  display: block;
+  border-top: 1px solid var(--rule);
+}
+entry:last-of-type {
+  border-bottom: 1px solid var(--rule);
+}
+a.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.55rem 0;
+  color: var(--link);
+  line-height: 1.4;
+  text-decoration: none;
+}
+a.row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+a.row:hover {
+  color: var(--hover);
+}
+a.row:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+a.note span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.95rem;
+}
+a.row time {
+  flex: none;
+  color: var(--note);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  a.row {
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+}

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="/static/feed.css"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:h="http://www.w3.org/1999/xhtml" xml:lang="ru">
+  <h:meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>sanchpet</title>
+  <id>https://sanch.pet/ru/feed.xml</id>
+  <link rel="self" type="application/atom+xml" href="https://sanch.pet/ru/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://sanch.pet/ru/"/>
+  <updated>2026-11-23T00:00:00Z</updated>
+  <author>
+    <name>sanchpet</name>
+  </author>
+  <h:div class="subscribe"><h:p class="label">подписка</h:p><h:p>Вы попали на <h:a href="https://www.rfc-editor.org/rfc/rfc4287.txt">Atom ленту</h:a> RSS-читалок для моих заметок. Сюда попадают вообще все заметки. Какая-то часть из них может вас смутить, поскольку пишу я их, в первую очередь, для себя.</h:p><h:p>Если вы хотели попасть на сайт, то вам <h:a href="https://sanch.pet/">сюда</h:a>. Если вам интересно, как подключать ленты других людей к читалкам, загляните на <h:a href="https://aboutfeeds.com/">About Feeds</h:a>.</h:p><h:div class="callout"><h:p class="callout-title">Как подписаться</h:p><h:p>В большинстве интерфейсов slash-command достаточно выполнить <h:code>/feed subscribe https://sanch.pet/ru/feed.xml</h:code></h:p></h:div><h:script src="/static/feed.js" defer="defer"></h:script></h:div>
+  <entry>
+    <title>Нерациональное поведение по Талеру</title>
+    <id>https://sanch.pet/ru/posts/ekonomicheskie-kognitivnye-iskazheniya</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/ekonomicheskie-kognitivnye-iskazheniya"/>
+    <published>2026-11-23T00:00:00Z</published>
+    <updated>2026-11-23T00:00:00Z</updated>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/ekonomicheskie-kognitivnye-iskazheniya"><h:span>Нерациональное поведение по Талеру</h:span> <h:time datetime="2026-11-23">23 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Дочитал «Misbehaving» Ричарда Талера - это первая книга, которую я купил по…</title>
+    <id>https://sanch.pet/ru/notes/2026-11-22-1840</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/notes/2026-11-22-1840"/>
+    <link rel="enclosure" type="image/jpeg" href="https://sanch.pet/media/pasted-image-20261122184044.jpg"/>
+    <published>2026-11-22T14:51:00Z</published>
+    <updated>2026-11-22T14:51:00Z</updated>
+    <content type="text">Дочитал «Misbehaving» Ричарда Талера - это первая книга, которую я купил по приезде в Грузию, когда на одной из прогулок заглянул в книжный. Читал её почти 4 месяца урывками: в автобусах, на обеде, в очередях за документами. Очень плотная.
+
+Всего в Грузии я купил лишь три книги. Больше попросту было не нужно - что-то я привёз с собой сам, а остальную мою пачку непрочитанных книг потом привезли родители. Поэтому эта книга одна из немногих таких, которая сохранит в себе всё моё пребывание в этом свежем кавказском регионе, от начала и до конца.
+
+Сел разбирать интересные и полезные места на заметки. В ближайшие дни будет поток всякого по ней.</content>
+    <category term="lytdybr"/>
+    <category scheme="https://sanch.pet/ns/kind" term="note"/>
+    <h:a class="row note" href="https://sanch.pet/ru/notes/2026-11-22-1840"><h:span>2026-11-22-1840</h:span> <h:time datetime="2026-11-22">22 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Моделирование распределённых систем</title>
+    <id>https://sanch.pet/ru/evergreen/modelirovanie-raspredelennyh-sistem</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/evergreen/modelirovanie-raspredelennyh-sistem"/>
+    <published>2026-11-22T00:00:00Z</published>
+    <updated>2026-11-22T00:00:00Z</updated>
+    <summary type="text">Из чего строится модель распределённой системы</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+    <h:a class="row" href="https://sanch.pet/ru/evergreen/modelirovanie-raspredelennyh-sistem"><h:span>Моделирование распределённых систем</h:span> <h:time datetime="2026-11-22">22 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Сижу, ковыряю сайтец. Пытаюсь сделать умную штуку - включить на сайте ленту…</title>
+    <id>https://sanch.pet/ru/notes/2026-11-21-2004</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/notes/2026-11-21-2004"/>
+    <published>2026-11-21T16:17:00Z</published>
+    <updated>2026-11-21T16:17:00Z</updated>
+    <content type="text">Сижу, ковыряю сайтец. Пытаюсь сделать умную штуку - включить на сайте ленту Atom (современный аналог RSS), на которую можно подписаться и получать обновления с сайта.
+
+А еще настраиваю пайплайн, который при сборке сайта будет рассылать новые записи в мои телеграм-каналы самостоятельно. Не барское это дело - копировать, ну либо токены тратить.
+
+Обычный вечер выходного дня. Приятно провести его за инженерными побрякушками.</content>
+    <category term="lytdybr"/>
+    <category scheme="https://sanch.pet/ns/kind" term="note"/>
+    <h:a class="row note" href="https://sanch.pet/ru/notes/2026-11-21-2004"><h:span>2026-11-21-2004</h:span> <h:time datetime="2026-11-21">21 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Распределенные системы</title>
+    <id>https://sanch.pet/ru/evergreen/raspredelennye-sistemy</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/evergreen/raspredelennye-sistemy"/>
+    <published>2026-11-21T00:00:00Z</published>
+    <updated>2026-11-21T00:00:00Z</updated>
+    <summary type="text">Небольшое введение в теорию распределенных систем</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+    <h:a class="row" href="https://sanch.pet/ru/evergreen/raspredelennye-sistemy"><h:span>Распределенные системы</h:span> <h:time datetime="2026-11-21">21 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>За секунду</title>
+    <id>https://sanch.pet/ru/posts/za-sekundu</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/za-sekundu"/>
+    <link rel="related" href="https://t.me/sanchpetlytdybr/335"/>
+    <published>2026-11-15T00:00:00Z</published>
+    <updated>2026-11-15T00:00:00Z</updated>
+    <category term="lytdybr"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/za-sekundu"><h:span>За секунду</h:span> <h:time datetime="2026-11-15">15 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Мышление</title>
+    <id>https://sanch.pet/ru/evergreen/myshlenie</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/evergreen/myshlenie"/>
+    <published>2026-11-02T00:00:00Z</published>
+    <updated>2026-11-02T00:00:00Z</updated>
+    <summary type="text">Что есть мышление и зачем учиться мыслить</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+    <h:a class="row" href="https://sanch.pet/ru/evergreen/myshlenie"><h:span>Мышление</h:span> <h:time datetime="2026-11-02">2 ноября 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Зачем коллекционировать книги</title>
+    <id>https://sanch.pet/ru/posts/why-collect-books</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/why-collect-books"/>
+    <link rel="related" href="https://t.me/sanchpetblog/357"/>
+    <published>2026-05-14T00:00:00Z</published>
+    <updated>2026-05-14T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/why-collect-books"><h:span>Зачем коллекционировать книги</h:span> <h:time datetime="2026-05-14">14 мая 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Что я имею в виду, называя себя оптимистом</title>
+    <id>https://sanch.pet/ru/posts/what-optimism-means</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/what-optimism-means"/>
+    <link rel="related" href="https://t.me/sanchpetblog/355"/>
+    <link rel="related" href="https://systemsworld.club/t/chto-ya-imeyu-v-vidu-nazyvaya-sebya-optimistom/38907"/>
+    <published>2026-05-07T00:00:00Z</published>
+    <updated>2026-05-07T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category term="mim-club"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/what-optimism-means"><h:span>Что я имею в виду, называя себя оптимистом</h:span> <h:time datetime="2026-05-07">7 мая 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>О стиле жизни (и можно ли проснуться другим человеком?)</title>
+    <id>https://sanch.pet/ru/posts/on-lifestyle</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/on-lifestyle"/>
+    <link rel="related" href="https://t.me/sanchpetblog/352"/>
+    <published>2026-04-14T00:00:00Z</published>
+    <updated>2026-04-14T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/on-lifestyle"><h:span>О стиле жизни (и можно ли проснуться другим человеком?)</h:span> <h:time datetime="2026-04-14">14 апреля 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Целеполагание как набор дисциплин</title>
+    <id>https://sanch.pet/ru/posts/goals-as-disciplines</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/goals-as-disciplines"/>
+    <link rel="related" href="https://t.me/sanchpetblog/342"/>
+    <published>2026-01-11T00:00:00Z</published>
+    <updated>2026-01-11T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/goals-as-disciplines"><h:span>Целеполагание как набор дисциплин</h:span> <h:time datetime="2026-01-11">11 января 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Эскапист</title>
+    <id>https://sanch.pet/ru/posts/the-escapist</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/the-escapist"/>
+    <link rel="related" href="https://t.me/sanchpetblog/340"/>
+    <published>2026-01-04T00:00:00Z</published>
+    <updated>2026-01-04T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/the-escapist"><h:span>Эскапист</h:span> <h:time datetime="2026-01-04">4 января 2026</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Мне предложили взойти на гору</title>
+    <id>https://sanch.pet/ru/posts/invited-to-climb-a-mountain</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/invited-to-climb-a-mountain"/>
+    <link rel="related" href="https://t.me/sanchpetblog/336"/>
+    <published>2025-11-22T00:00:00Z</published>
+    <updated>2025-11-22T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/invited-to-climb-a-mountain"><h:span>Мне предложили взойти на гору</h:span> <h:time datetime="2025-11-22">22 ноября 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Кем же мне быть?</title>
+    <id>https://sanch.pet/ru/posts/who-should-i-become</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/who-should-i-become"/>
+    <link rel="related" href="https://t.me/sanchpetblog/332"/>
+    <published>2025-10-04T00:00:00Z</published>
+    <updated>2025-10-04T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/who-should-i-become"><h:span>Кем же мне быть?</h:span> <h:time datetime="2025-10-04">4 октября 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Сложность хорошей рефлексии</title>
+    <id>https://sanch.pet/ru/posts/the-difficulty-of-reflection</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/the-difficulty-of-reflection"/>
+    <link rel="related" href="https://t.me/sanchpetblog/325"/>
+    <published>2025-09-13T00:00:00Z</published>
+    <updated>2025-09-13T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/the-difficulty-of-reflection"><h:span>Сложность хорошей рефлексии</h:span> <h:time datetime="2025-09-13">13 сентября 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Математика миллиардеров</title>
+    <id>https://sanch.pet/ru/posts/billionaire-math</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/billionaire-math"/>
+    <link rel="related" href="https://t.me/sanchpetblog/313"/>
+    <published>2025-08-10T00:00:00Z</published>
+    <updated>2025-08-10T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/billionaire-math"><h:span>Математика миллиардеров</h:span> <h:time datetime="2025-08-10">10 августа 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Корабль привычек</title>
+    <id>https://sanch.pet/ru/posts/patching-the-hull</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/patching-the-hull"/>
+    <link rel="related" href="https://t.me/sanchpetblog/311"/>
+    <published>2025-07-16T00:00:00Z</published>
+    <updated>2025-07-16T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/patching-the-hull"><h:span>Корабль привычек</h:span> <h:time datetime="2025-07-16">16 июля 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Сломанный компас</title>
+    <id>https://sanch.pet/ru/posts/the-broken-compass</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/the-broken-compass"/>
+    <link rel="related" href="https://t.me/sanchpetblog/307"/>
+    <published>2025-07-06T00:00:00Z</published>
+    <updated>2025-07-06T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/the-broken-compass"><h:span>Сломанный компас</h:span> <h:time datetime="2025-07-06">6 июля 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>О молчании</title>
+    <id>https://sanch.pet/ru/posts/on-silence</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/on-silence"/>
+    <link rel="related" href="https://t.me/sanchpetblog/305"/>
+    <published>2025-04-14T00:00:00Z</published>
+    <updated>2025-04-14T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/on-silence"><h:span>О молчании</h:span> <h:time datetime="2025-04-14">14 апреля 2025</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Машина времени</title>
+    <id>https://sanch.pet/ru/posts/time-machine</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/time-machine"/>
+    <link rel="related" href="https://t.me/sanchpetblog/254"/>
+    <published>2024-09-21T00:00:00Z</published>
+    <updated>2024-09-21T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/time-machine"><h:span>Машина времени</h:span> <h:time datetime="2024-09-21">21 сентября 2024</h:time></h:a>
+  </entry>
+  <entry>
+    <title>Стекло</title>
+    <id>https://sanch.pet/ru/posts/the-glass</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/ru/posts/the-glass"/>
+    <link rel="related" href="https://t.me/sanchpetblog/141"/>
+    <published>2024-03-10T00:00:00Z</published>
+    <updated>2024-03-10T00:00:00Z</updated>
+    <category term="sanchpetblog"/>
+    <category scheme="https://sanch.pet/ns/kind" term="post"/>
+    <h:a class="row" href="https://sanch.pet/ru/posts/the-glass"><h:span>Стекло</h:span> <h:time datetime="2024-03-10">10 марта 2024</h:time></h:a>
+  </entry>
+</feed>

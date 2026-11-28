@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="/static/feed.css"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:h="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <h:meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>sanchpet</title>
+  <id>https://sanch.pet/en/feed.xml</id>
+  <link rel="self" type="application/atom+xml" href="https://sanch.pet/en/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://sanch.pet/en/"/>
+  <updated>2026-11-02T00:00:00Z</updated>
+  <author>
+    <name>sanchpet</name>
+  </author>
+  <h:div class="subscribe"><h:p class="label">subscribe</h:p><h:p>You&apos;ve landed on the <h:a href="https://www.rfc-editor.org/rfc/rfc4287.txt">Atom feed</h:a> of my notes for RSS readers. Every note ends up here. Some of them may puzzle you, since I write them first of all for myself.</h:p><h:p>If you meant to get to the site, it&apos;s <h:a href="https://sanch.pet/">here</h:a>. If you&apos;re curious how to add other people&apos;s feeds to a reader, have a look at <h:a href="https://aboutfeeds.com/">About Feeds</h:a>.</h:p><h:div class="callout"><h:p class="callout-title">How to subscribe</h:p><h:p>In most slash-command interfaces it&apos;s enough to run <h:code>/feed subscribe https://sanch.pet/en/feed.xml</h:code></h:p></h:div><h:script src="/static/feed.js" defer="defer"></h:script></h:div>
+  <entry>
+    <title>Thinking</title>
+    <id>https://sanch.pet/en/evergreen/myshlenie</id>
+    <link rel="alternate" type="text/html" href="https://sanch.pet/en/evergreen/myshlenie"/>
+    <published>2026-11-02T00:00:00Z</published>
+    <updated>2026-11-02T00:00:00Z</updated>
+    <summary type="text">What thinking is and why learn to think</summary>
+    <category scheme="https://sanch.pet/ns/kind" term="evergreen"/>
+    <h:a class="row" href="https://sanch.pet/en/evergreen/myshlenie"><h:span>Thinking</h:span> <h:time datetime="2026-11-02">2 November 2026</h:time></h:a>
+  </entry>
+</feed>
