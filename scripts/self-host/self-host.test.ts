@@ -105,7 +105,7 @@ describe("selfHost", () => {
     assert.ok(fs.existsSync(path.join(out, "static/vendor/leaflet/images/sample.png")))
   })
 
-  test("refuses a library at another version than the plugins load", () => {
+  test("refuses a library at another version than the site expects", () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "self-host-"))
     modules(path.join(tmp, "node_modules"), { katex: "0.16.12" })
     fs.mkdirSync(path.join(tmp, "public"))
