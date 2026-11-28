@@ -296,7 +296,7 @@ describe("rendering", () => {
     assert.deepStrictEqual(parseFeed(xml), parseFeed(bare))
   })
 
-  test("a browser gets the note and the address above the list; a feed reader ignores both", () => {
+  test("a browser gets the note above the list; a feed reader ignores it", () => {
     const plain = feed([myshlenie, zaSekundu])
     const xml = renderFeed({
       ...plain,
@@ -304,16 +304,12 @@ describe("rendering", () => {
     })
     assert.ok(
       xml.includes(
-        '<h:div class="subscribe"><h:p class="label">подписка</h:p><h:p>Скопируйте <h:a href="https://x.test/">адрес</h:a>.</h:p><h:code class="address">https://sanch.pet/ru/feed.xml</h:code></h:div>\n  <entry>',
+        '<h:div class="subscribe"><h:p class="label">подписка</h:p><h:p>Скопируйте <h:a href="https://x.test/">адрес</h:a>.</h:p></h:div>\n  <entry>',
       ),
     )
     assert.deepStrictEqual(parseFeed(xml), parseFeed(renderFeed(plain)))
     const en = renderFeed(feed([], "en"))
-    assert.ok(
-      en.includes(
-        '<h:p class="label">subscribe</h:p><h:code class="address">https://sanch.pet/en/feed.xml</h:code>',
-      ),
-    )
+    assert.ok(en.includes('<h:p class="label">subscribe</h:p></h:div>'))
   })
 
   test("the whole feed", () => {
@@ -331,7 +327,7 @@ describe("rendering", () => {
   <author>
     <name>sanchpet</name>
   </author>
-  <h:div class="subscribe"><h:p class="label">подписка</h:p><h:code class="address">https://sanch.pet/ru/feed.xml</h:code></h:div>
+  <h:div class="subscribe"><h:p class="label">подписка</h:p></h:div>
   <entry>
     <title>За секунду</title>
     <id>https://sanch.pet/ru/posts/za-sekundu</id>
