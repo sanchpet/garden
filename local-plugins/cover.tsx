@@ -95,7 +95,15 @@ export const NoteCover = (() => {
     const src = joinSegments(pathToRoot(fileData.slug as FullSlug), encodeURI(cover.src))
     return (
       <div class="note-cover">
-        <img src={src} width={cover.width} height={cover.height} alt="" />
+        <img
+          src={src}
+          width={cover.width}
+          height={cover.height}
+          style={
+            cover.width && cover.height ? `--cover-ratio: ${cover.width / cover.height}` : undefined
+          }
+          alt=""
+        />
       </div>
     )
   }
@@ -115,6 +123,11 @@ export const NoteCover = (() => {
   border-radius: 4px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
+/* The box the image will fill, known before it loads: the title and the text beside it wrap
+   once instead of reflowing when the image arrives. */
+.note-cover img[style] {
+  width: min(300px, 340px * var(--cover-ratio));
+}
 .center > hr {
   clear: both;
 }
@@ -127,6 +140,9 @@ export const NoteCover = (() => {
   max-width: 110px;
   max-height: 140px;
   box-shadow: none;
+}
+.popover .note-cover img[style] {
+  width: min(110px, 140px * var(--cover-ratio));
 }
 @media (max-width: 800px) {
   .page-header .popover-hint:has(> .note-cover) {
@@ -141,6 +157,9 @@ export const NoteCover = (() => {
   .note-cover img {
     max-width: 100%;
     max-height: 220px;
+  }
+  .note-cover img[style] {
+    width: min(100%, 220px * var(--cover-ratio));
   }
 }
 `
