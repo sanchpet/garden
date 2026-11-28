@@ -17,12 +17,11 @@ describe("feed note", () => {
     )
   })
 
-  test("a missing or empty field falls back to the default", () => {
+  test("a missing or empty site text falls back to the default", () => {
     const fallback = noteXhtml(DEFAULT_FEED_NOTE.ru)
     assert.ok(fallback.startsWith("<h:p>Это лента для RSS-читалки."))
     assert.strictEqual(feedNote(undefined, "ru"), fallback)
     assert.strictEqual(feedNote("  \n", "ru"), fallback)
-    assert.strictEqual(feedNote(42, "ru"), fallback)
     assert.strictEqual(feedNote("Своё.", "ru"), "<h:p>Своё.</h:p>")
   })
 })

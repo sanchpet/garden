@@ -6,6 +6,7 @@ import { write } from "../quartz/plugins/emitters/helpers"
 import { FilePath, FullSlug, resolveRelative, simplifySlug } from "../quartz/util/path"
 import { publishedSlugs } from "./garden"
 import { LANGUAGES, inLanguage, languageOf, relinked, type Language } from "./languages"
+import { plainText, siteText } from "./site-texts"
 // @ts-ignore
 import script from "./language-switch.inline"
 // @ts-ignore
@@ -100,14 +101,14 @@ export const LegacyRedirects: QuartzEmitterPlugin = () => ({
 })
 
 export const LanguageSwitch = (() => {
-  const Switch: QuartzComponent = ({ fileData, ctx, allFiles }) => {
+  const Switch: QuartzComponent = ({ fileData, ctx }) => {
     const slug = fileData.slug!
     const current = languageOf(slug)
     const published = publishedSlugs(ctx)
-    // The note about the site's languages lives in each language's home note, so it is edited as text.
-    const noteOf = (lang: Language) =>
-      allFiles.find((file) => file.slug === `${lang}/index`)?.frontmatter?.language_note as
-        string | undefined
+    const noteOf = (lang: Language) => {
+      const text = siteText(ctx.argv.directory, lang, "language")
+      return text && plainText(text)
+    }
     return (
       <nav class="language-switch" aria-label="Language / Язык">
         {LANGUAGES.map((lang) => {
