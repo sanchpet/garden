@@ -1,4 +1,4 @@
-import type { Nodes, PhrasingContent, Root } from "mdast"
+import type { Blockquote, Nodes, Paragraph, PhrasingContent, Root } from "mdast"
 import remarkParse from "remark-parse"
 import { unified } from "unified"
 import { escapeXml } from "./feed-atom"
@@ -17,17 +17,24 @@ export function feedNote(markdown: string | undefined, lang: Language): string {
   return own || noteXhtml(DEFAULT_FEED_NOTE[lang])
 }
 
-// Only these reach the feed: paragraphs, links, emphasis, inline code and line breaks. Raw HTML
-// is dropped, any other block keeps its text, and a link keeps its href only on a safe scheme.
+// Only these reach the feed: paragraphs, Obsidian callouts, links, emphasis, inline code and line
+// breaks. Raw HTML is dropped, any other block keeps its text, and a link keeps its href only on
+// a safe scheme.
 const SAFE_HREF = /^(https?:|mailto:|\/(?!\/))/i
 
 export function noteXhtml(markdown: string): string {
   // A script or style element goes whole: Markdown would keep the text between its tags.
   const bare = markdown.replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, "")
-  const tree = unified().use(remarkParse).parse(bare) as Root
+  return blocks(unified().use(remarkParse).parse(bare) as Root)
+}
+
+function blocks(tree: Root): string {
   const paragraphs: string[] = []
   const collect = (node: Nodes) => {
-    if (node.type === "paragraph" || node.type === "heading") {
+    const callout = node.type === "blockquote" ? calloutOf(node) : undefined
+    if (callout) {
+      paragraphs.push(callout)
+    } else if (node.type === "paragraph" || node.type === "heading") {
       const inner = node.children.map(phrasing).join("").trim()
       if (inner) paragraphs.push(`<h:p>${inner}</h:p>`)
     } else if (node.type === "code") {
@@ -38,6 +45,25 @@ export function noteXhtml(markdown: string): string {
   }
   collect(tree)
   return paragraphs.join("")
+}
+
+// `> [!type] Title` and the lines under it, as Obsidian writes a callout.
+const CALLOUT = /^\[!([\w-]+)\][+-]?[ \t]*([^\n]*)\n?/
+
+function calloutOf(quote: Blockquote): string | undefined {
+  const [first, ...rest] = quote.children
+  const lead = first?.type === "paragraph" ? first.children[0] : undefined
+  const match = lead?.type === "text" ? CALLOUT.exec(lead.value) : null
+  if (!first || first.type !== "paragraph" || !lead || lead.type !== "text" || !match) return
+  const [marker, kind, title] = match
+  const remainder = lead.value.slice(marker.length)
+  const opening: Paragraph = {
+    ...first,
+    children: [...(remainder ? [{ ...lead, value: remainder }] : []), ...first.children.slice(1)],
+  }
+  const body = blocks({ type: "root", children: [opening, ...rest] })
+  const heading = title.trim() || kind
+  return `<h:div class="callout"><h:p class="callout-title">${escapeXml(heading)}</h:p>${body}</h:div>`
 }
 
 function phrasing(node: PhrasingContent): string {
