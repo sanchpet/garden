@@ -29,3 +29,5 @@ It needs [uv](https://docs.astral.sh/uv/); Python dependencies are pulled per ru
 ## Fonts
 
 [Caveat](https://github.com/googlefonts/caveat), [Literata](https://github.com/googlefonts/literata) and Neucha (from [Google Fonts](https://github.com/google/fonts/tree/main/ofl/neucha)), all under the SIL Open Font License 1.1 (`fonts/OFL.txt`, `fonts/OFL-Literata.txt`, `fonts/OFL-Neucha.txt`). Neucha is the hand of the annotations in the text. The Literata files are cut down to Latin and Cyrillic.
+
+The site's text face is served from `out/fonts`: fontsource's Literata subsets with the weights under 400 cut off, which the site never sets. Rerun `build.sh` after bumping `@fontsource-variable/literata`; a test fails while the set of files there differs from the one the fontsource stylesheets link.
