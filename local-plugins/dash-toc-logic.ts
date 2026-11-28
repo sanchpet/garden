@@ -42,3 +42,39 @@ export function currentSection(tops: readonly number[], line: number): number {
 export function readingLine(viewport: number, scrolled: number, scrollable: number): number {
   return scrolled >= scrollable - 2 ? viewport : viewport / 3
 }
+
+// Under the pointer the strokes swell like a dock, after Aaron Pham's garden: each grows by a
+// bell of its distance from the pointer, the nearest the most, the far ones barely.
+export const DOCK = {
+  // How much the stroke under the pointer grows: a top-level stroke reaches six times its rest.
+  amp: 100,
+  // The bell's width: two and a half strokes either side still lift noticeably.
+  sigma: 30,
+}
+
+export function bell(distance: number, sigma: number = DOCK.sigma): number {
+  return Math.exp(-(distance * distance) / (2 * sigma * sigma))
+}
+
+export function dockLengths(
+  rests: readonly number[],
+  centres: readonly number[],
+  y: number,
+  amp: number = DOCK.amp,
+): number[] {
+  return rests.map((rest, i) => rest + amp * bell(centres[i] - y))
+}
+
+// The stroke the pointer is on: the one whose centre is closest, the first of a tie.
+export function nearestIndex(centres: readonly number[], y: number): number {
+  let best = -1
+  for (let i = 0; i < centres.length; i++) {
+    if (best === -1 || Math.abs(centres[i] - y) < Math.abs(centres[best] - y)) best = i
+  }
+  return best
+}
+
+// The nearest stroke is full ink; the rest fade with distance down to a faint pencil.
+export function dockOpacity(lift: number, nearest: boolean): number {
+  return nearest ? 1 : 0.3 + 0.6 * lift
+}
