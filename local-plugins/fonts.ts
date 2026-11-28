@@ -10,13 +10,18 @@ import { FilePath, joinSegments } from "../quartz/util/path"
 const SCRIPTS = ["latin", "cyrillic"]
 const OUT = "static/fonts"
 
-type Source = { dir: string; css: string[]; family: string }
+// `files`: where the served files come from when they are not fontsource's own; `weight`: their
+// font-weight range, when they differ from fontsource's.
+type Source = { dir: string; css: string[]; family: string; files?: string; weight?: string }
 const SOURCES: Source[] = [
   // The opsz files carry both axes, so headings and body text get their optical sizes.
   {
     dir: "node_modules/@fontsource-variable/literata",
     css: ["opsz.css", "opsz-italic.css"],
     family: "Literata",
+    // brand/build.sh drops the weights under 400, which the site never sets: a fifth of each file.
+    files: "brand/out/fonts",
+    weight: "400 900",
   },
   {
     dir: "node_modules/@fontsource/ibm-plex-mono",
@@ -27,9 +32,13 @@ const SOURCES: Source[] = [
 
 const FACE = /\/\* ([\w-]+) \*\/\s*@font-face \{([^}]*)\}/g
 
-// The @font-face rules of one fontsource stylesheet for SCRIPTS, under `family`, with their
-// files at /static/fonts; also the names of those files.
-export function faces(css: string, family: string): { css: string; files: string[] } {
+// The @font-face rules of one fontsource stylesheet for SCRIPTS, under `family` and, if given,
+// with `weight` as their range, with their files at /static/fonts; also the names of those files.
+export function faces(
+  css: string,
+  family: string,
+  weight?: string,
+): { css: string; files: string[] } {
   const out: string[] = []
   const files: string[] = []
   for (const [, name, body] of css.matchAll(FACE)) {
@@ -37,9 +46,10 @@ export function faces(css: string, family: string): { css: string; files: string
     const file = /url\(\.\/files\/([^)]+)\)/.exec(body)?.[1]
     if (!file) continue
     files.push(file)
-    const rule = body
+    let rule = body
       .replace(/font-family: [^;]+;/, `font-family: "${family}";`)
       .replace(`./files/${file}`, `/${OUT}/${file}`)
+    if (weight) rule = rule.replace(/font-weight: [^;]+;/, `font-weight: ${weight};`)
     out.push(`@font-face {${rule}}`)
   }
   return { css: out.join("\n"), files }
@@ -50,9 +60,11 @@ function load() {
   const files: string[] = []
   for (const source of SOURCES) {
     for (const sheet of source.css) {
-      const found = faces(fs.readFileSync(path.join(source.dir, sheet), "utf8"), source.family)
+      const sheetCss = fs.readFileSync(path.join(source.dir, sheet), "utf8")
+      const found = faces(sheetCss, source.family, source.weight)
       css.push(found.css)
-      files.push(...found.files.map((file) => path.join(source.dir, "files", file)))
+      const dir = source.files ?? path.join(source.dir, "files")
+      files.push(...found.files.map((file) => path.join(dir, file)))
     }
   }
   return { css: css.join("\n"), files }
