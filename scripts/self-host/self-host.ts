@@ -10,7 +10,8 @@ export type Library = {
   // The address prefix the plugins use; the rest of each address is a path under `dist`.
   url: string
   pkg: string
-  // A major version for a range like d3@7, the exact one otherwise.
+  // The installed version: a major one for a range like d3@7, the exact one otherwise. It may be
+  // newer than the one in `url` when a security fix is installed ahead of the plugin's address.
   version: string
   dist: string
   // Paths under `dist` to copy; a trailing /* takes the directory's files with that extension.
@@ -23,7 +24,9 @@ export const LIBRARIES: Library[] = [
   {
     url: "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/",
     pkg: "katex",
-    version: "0.16.11",
+    // The latex plugin renders with its bundled KaTeX 0.16.47; the stylesheet must be the same
+    // version, since 0.17 renamed the classes it styles.
+    version: "0.16.47",
     dist: "dist",
     // The stylesheet lists woff2 first; every browser that runs the site takes it.
     files: ["katex.min.css", "contrib/copy-tex.min.js", "fonts/*.woff2"],
@@ -31,7 +34,7 @@ export const LIBRARIES: Library[] = [
   {
     url: "https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/",
     pkg: "mermaid",
-    version: "11.4.0",
+    version: "11.17.2",
     dist: "dist",
     files: ["mermaid.esm.min.mjs", "chunks/mermaid.esm.min/*.mjs"],
   },
@@ -140,7 +143,7 @@ export function selfHost(out: string, modules = "node_modules"): string[] {
     const pkg = path.join(modules, lib.pkg)
     const { version } = JSON.parse(fs.readFileSync(path.join(pkg, "package.json"), "utf8"))
     if (version !== lib.version && !version.startsWith(`${lib.version}.`)) {
-      throw new Error(`${lib.pkg} ${version} is installed, the plugins load ${lib.version}`)
+      throw new Error(`${lib.pkg} ${version} is installed, the site expects ${lib.version}`)
     }
     const root = path.join(pkg, lib.dist)
     for (const file of lib.files.flatMap((pattern) => expand(root, pattern))) {
