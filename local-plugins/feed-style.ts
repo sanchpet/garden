@@ -92,6 +92,18 @@ div.subscribe code {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.9em;
 }
+div.subscribe div.callout {
+  display: block;
+  margin: 0.9rem 0;
+  padding: 0.6rem 0.9rem 0.05rem;
+  border: 1px solid color-mix(in srgb, var(--link) 35%, transparent);
+  border-radius: 4px 6px 5px 7px;
+  background: color-mix(in srgb, var(--link) 6%, transparent);
+}
+div.subscribe p.callout-title {
+  color: var(--link);
+  font-weight: 600;
+}
 code.address {
   display: block;
   margin-top: 0.9rem;

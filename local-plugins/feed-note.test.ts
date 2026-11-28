@@ -17,6 +17,20 @@ describe("feed note", () => {
     )
   })
 
+  test("an Obsidian callout becomes a titled block", () => {
+    assert.strictEqual(
+      noteXhtml(
+        "Текст.\n\n> [!note] Как подписаться\n> Выполните `/feed subscribe`.\n>\n> Второй абзац.",
+      ),
+      '<h:p>Текст.</h:p><h:div class="callout"><h:p class="callout-title">Как подписаться</h:p><h:p>Выполните <h:code>/feed subscribe</h:code>.</h:p><h:p>Второй абзац.</h:p></h:div>',
+    )
+    assert.strictEqual(
+      noteXhtml("> [!tip]\n> Без заголовка."),
+      '<h:div class="callout"><h:p class="callout-title">tip</h:p><h:p>Без заголовка.</h:p></h:div>',
+    )
+    assert.strictEqual(noteXhtml("> Просто цитата."), "<h:p>Просто цитата.</h:p>")
+  })
+
   test("a missing or empty site text falls back to the default", () => {
     const fallback = noteXhtml(DEFAULT_FEED_NOTE.ru)
     assert.ok(fallback.startsWith("<h:p>Это лента для RSS-читалки."))
