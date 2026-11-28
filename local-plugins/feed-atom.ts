@@ -41,7 +41,7 @@ export type Feed = {
   title: string
   author: string
   entries: Entry[]
-  // XHTML paragraphs (feed-note.ts) a browser shows above the list, with the feed's address.
+  // XHTML paragraphs (feed-note.ts) a browser shows above the list.
   note?: string
 }
 
@@ -315,11 +315,11 @@ export const FEED_STYLESHEET = "/static/feed.css"
 
 const SUBSCRIBE: Record<string, string> = { ru: "подписка", en: "subscribe" }
 
-// The note and the address a reader copies into a feed reader; one click selects the address.
+// The label and the note on what the feed is for; the note says where the address is.
 function subscribe(feed: Feed): string {
   const x = escapeXml
   const label = SUBSCRIBE[feed.lang] ?? SUBSCRIBE.en
-  return `  <h:div class="subscribe"><h:p class="label">${x(label)}</h:p>${feed.note ?? ""}<h:code class="address">${x(feed.id)}</h:code></h:div>
+  return `  <h:div class="subscribe"><h:p class="label">${x(label)}</h:p>${feed.note ?? ""}</h:div>
 `
 }
 

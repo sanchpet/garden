@@ -1,5 +1,5 @@
 // What a browser shows when someone opens the feed itself: the title, a note on what the
-// address is for with the address to copy, then one line per entry, its title or a note's
+// feed is for, then one line per entry, its title or a note's
 // address on the left and its day on the right. Both are XHTML that feed-atom.ts writes into
 // the feed; the Atom text is hidden.
 
@@ -19,7 +19,6 @@ feed {
   --rule: #e3d9c4;
   --link: #1e3959;
   --hover: #8c2f39;
-  --band: #f3ead8;
   display: block;
   max-width: 44rem;
   margin: 0 auto;
@@ -39,12 +38,18 @@ feed {
     --rule: #3b3832;
     --link: #9dbadb;
     --hover: #e0b25a;
-    --band: #222426;
   }
 }
 ::selection {
   background: #f2b705;
   color: #1b1a1c;
+}
+/* Only the feed's own parts show: an element a browser extension puts into the document
+   (Dark Reader adds a style element) would otherwise be drawn as text. */
+feed > :not(title, div.subscribe, entry),
+style,
+script {
+  display: none !important;
 }
 id,
 link,
@@ -103,19 +108,6 @@ div.subscribe div.callout {
 div.subscribe p.callout-title {
   color: var(--link);
   font-weight: 600;
-}
-code.address {
-  display: block;
-  margin-top: 0.9rem;
-  padding: 0.55rem 0.8rem;
-  border-radius: 3px 5px 4px 6px;
-  background: var(--band);
-  color: var(--heading);
-  font-size: 0.9rem;
-  overflow-wrap: anywhere;
-  user-select: all;
-  -webkit-user-select: all;
-  cursor: text;
 }
 entry > *:not(a) {
   display: none;
