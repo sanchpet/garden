@@ -199,7 +199,7 @@ The Atom feed of each language, opened in a browser, is styled by `/static/feed.
 
 ### Language switch
 
-Two short options at the top right. The current language is filled with the link colour; the other is plain text. A language the note does not exist in is shown at half opacity, and pointing at it opens a popover that says so.
+Two short options at the top right. The current language is filled with the link colour; the other is plain text. A language the note does not exist in is shown at half opacity, and pointing at it opens a popover that says so. The twin page is fetched when the pointer, focus or a touch reaches the switch, so the swap is still in place without every page paying for it.
 
 ### Link
 
