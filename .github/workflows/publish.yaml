@@ -67,8 +67,9 @@ jobs:
       - name: Serve third-party code from the site
         run: npx tsx scripts/self-host/cli.ts public
 
-      # A .br copy beside each text file, which the server sends to browsers that accept brotli.
-      - name: Compress for the server
+      # A .br copy beside each text file, which the server sends to browsers that accept brotli,
+      # and an .etag beside every file, so both replicas answer a revalidation alike.
+      - name: Compress and tag for the server
         run: npx tsx scripts/precompress/cli.ts public
 
       # With `shell: bash` a pipeline fails when its grep finds nothing, and «None.» is printed.

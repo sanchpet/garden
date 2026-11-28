@@ -1,3 +1,4 @@
+import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 import zlib from "node:zlib"
@@ -37,4 +38,26 @@ export function precompress(dir: string): Totals {
     totals.compressed += br.length
   }
   return totals
+}
+
+// Two replicas check the site out separately, so the file times the server would build an ETag
+// from differ between them, and a revalidation that lands on the other one downloads the file
+// again. An `.etag` file beside each file, the `.br` copies included, carries a validator taken
+// from the content instead. Run after `precompress`.
+export const ETAG_SUFFIX = ".etag"
+
+export function etag(data: Buffer): string {
+  return `"${crypto.createHash("sha256").update(data).digest("base64url").slice(0, 22)}"`
+}
+
+export function writeEtags(dir: string): number {
+  let files = 0
+  for (const entry of fs.readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (!entry.isFile() || entry.name.endsWith(ETAG_SUFFIX)) continue
+    if (entry.parentPath.split(path.sep).includes(".git")) continue
+    const file = path.join(entry.parentPath, entry.name)
+    fs.writeFileSync(file + ETAG_SUFFIX, etag(fs.readFileSync(file)))
+    files++
+  }
+  return files
 }

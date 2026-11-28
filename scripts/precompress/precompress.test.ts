@@ -5,7 +5,7 @@ import os from "node:os"
 import path from "node:path"
 import zlib from "node:zlib"
 import test, { describe } from "node:test"
-import { MIN_BYTES, brotli, precompress } from "./precompress"
+import { ETAG_SUFFIX, MIN_BYTES, brotli, etag, precompress, writeEtags } from "./precompress"
 
 const text = (n: number) => "the quick brown fox jumps over the lazy dog\n".repeat(n)
 
@@ -59,5 +59,37 @@ describe("precompress", () => {
   test("compresses at the top quality, well under the best gzip", () => {
     const data = fs.readFileSync("node_modules/katex/dist/katex.min.js")
     assert.ok(brotli(data).length < zlib.gzipSync(data, { level: 9 }).length * 0.86)
+  })
+})
+
+describe("writeEtags", () => {
+  test("every file and its .br copy get a quoted validator taken from their own bytes", () => {
+    const dir = site({ "ru/index.html": text(100), "static/cover.webp": text(3) })
+    precompress(dir)
+    assert.strictEqual(writeEtags(dir), 3)
+    for (const name of ["ru/index.html", "ru/index.html.br", "static/cover.webp"]) {
+      const tag = fs.readFileSync(path.join(dir, name + ETAG_SUFFIX), "utf8")
+      assert.match(tag, /^"[A-Za-z0-9_-]{22}"$/)
+      assert.strictEqual(tag, etag(fs.readFileSync(path.join(dir, name))))
+    }
+    const html = fs.readFileSync(path.join(dir, "ru/index.html.etag"), "utf8")
+    assert.notStrictEqual(html, fs.readFileSync(path.join(dir, "ru/index.html.br.etag"), "utf8"))
+  })
+
+  test("the same content gets the same validator on any checkout, other content another", () => {
+    const a = site({ "a.css": "a{color:red}" })
+    const b = site({ "b/a.css": "a{color:red}", "c.css": "a{color:blue}" })
+    writeEtags(a)
+    writeEtags(b)
+    const read = (d: string, n: string) => fs.readFileSync(path.join(d, n + ETAG_SUFFIX), "utf8")
+    assert.strictEqual(read(a, "a.css"), read(b, "b/a.css"))
+    assert.notStrictEqual(read(b, "b/a.css"), read(b, "c.css"))
+  })
+
+  test("a second run does not tag the tags", () => {
+    const dir = site({ "a.css": "a{}" })
+    writeEtags(dir)
+    assert.strictEqual(writeEtags(dir), 1)
+    assert.ok(!fs.existsSync(path.join(dir, "a.css.etag.etag")))
   })
 })
