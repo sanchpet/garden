@@ -4,7 +4,8 @@ import { unified } from "unified"
 import { escapeXml } from "./feed-atom"
 import type { Language } from "./languages"
 
-// What the feed says above its list when a browser opens it, unless `<lang>/site/feed.md` says it.
+// What the feed says above its list when a browser opens it, unless the `## feed` section of
+// `<lang>/site.md` says it.
 export const DEFAULT_FEED_NOTE: Record<Language, string> = {
   ru: "Это лента для RSS-читалки. Скопируйте адрес страницы в читалку, чтобы подписаться.",
   en: "This is a feed for an RSS reader. Copy the page's address into your reader to subscribe.",
